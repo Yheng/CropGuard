@@ -17,99 +17,37 @@ export interface AnalysisResult {
   }[]
 }
 
-// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
-// Mock analysis results for demonstration
-const mockAnalysisResults: Omit<AnalysisResult, 'id' | 'timestamp'>[] = [
-  {
-    confidence: 0.92,
-    condition: 'disease',
-    title: 'Early Blight Detected',
-    description: 'Early signs of early blight (Alternaria solani) detected on tomato leaves. This fungal disease appears as dark spots with concentric rings and can spread rapidly in warm, humid conditions.',
-    severity: 'medium',
-    recommendations: [
-      'Remove affected leaves immediately and dispose of them away from garden',
-      'Improve air circulation around plants by proper spacing',
-      'Apply copper-based organic fungicide every 7-10 days',
-      'Water at soil level to avoid wetting leaves',
-      'Mulch around plants to prevent soil splash onto leaves'
-    ]
-  },
-  {
-    confidence: 0.88,
-    condition: 'pest',
-    title: 'Aphid Infestation',
-    description: 'Green aphids detected on leaf undersides. These small insects can multiply rapidly and weaken plants by sucking sap, while also transmitting viral diseases.',
-    severity: 'medium',
-    recommendations: [
-      'Spray affected areas with insecticidal soap solution',
-      'Introduce beneficial insects like ladybugs or lacewings',
-      'Use neem oil spray in early morning or evening',
-      'Remove heavily infested leaves',
-      'Install reflective mulch to deter aphids'
-    ]
-  },
-  {
-    confidence: 0.95,
-    condition: 'healthy',
-    title: 'Healthy Crop',
-    description: 'No signs of disease or pest damage detected. The crop appears healthy with good leaf color and structure. Continue current care practices.',
-    severity: 'low',
-    recommendations: [
-      'Maintain current watering and fertilization schedule',
-      'Continue regular monitoring for early detection of issues',
-      'Ensure proper plant spacing for good air circulation',
-      'Monitor weather conditions for potential disease pressure'
-    ]
-  },
-  {
-    confidence: 0.85,
-    condition: 'disease',
-    title: 'Powdery Mildew',
-    description: 'White powdery patches detected on leaf surfaces, indicating powdery mildew infection. This fungal disease thrives in warm days and cool nights with high humidity.',
-    severity: 'high',
-    recommendations: [
-      'Apply baking soda solution (1 tsp per quart water) weekly',
-      'Improve air circulation by pruning dense growth',
-      'Apply organic sulfur-based fungicide',
-      'Remove and destroy severely affected leaves',
-      'Avoid overhead watering, especially in evening'
-    ]
-  }
-]
+// Mock analysis results removed - using real backend API
 
 export const analysisService = {
   analyzeImage: async (imageFile: File): Promise<AnalysisResult> => {
     try {
-      // Simulate API processing time
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000))
+      const formData = new FormData()
+      formData.append('image', imageFile)
+      formData.append('cropType', 'tomato') // Default crop type
       
-      // For demo purposes, randomly select a mock result
-      const mockResult = mockAnalysisResults[Math.floor(Math.random() * mockAnalysisResults.length)]
+      const response = await axios.post(`${API_BASE_URL}/analysis/analyze`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       
-      const result: AnalysisResult = {
-        ...mockResult,
-        id: `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: new Date(),
-        imageUrl: URL.createObjectURL(imageFile)
+      const analysis = response.data.data.analysis
+      
+      // Transform backend response to frontend format
+      return {
+        id: analysis.id.toString(),
+        confidence: analysis.confidence,
+        condition: analysis.condition,
+        title: analysis.title,
+        description: analysis.description,
+        severity: analysis.severity,
+        recommendations: analysis.recommendations,
+        timestamp: new Date(analysis.created_at),
+        imageUrl: `http://localhost:3000${analysis.image_url}`
       }
-      
-      // Add some variation to confidence for realism
-      result.confidence = Math.max(0.7, Math.min(0.98, result.confidence + (Math.random() - 0.5) * 0.1))
-      
-      return result
-      
-      // TODO: Replace with actual API call when backend is ready
-      // const formData = new FormData()
-      // formData.append('image', imageFile)
-      // 
-      // const response = await axios.post(`${API_BASE_URL}/analysis/analyze`, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // })
-      // 
-      // return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Analysis failed')

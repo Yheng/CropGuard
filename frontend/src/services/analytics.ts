@@ -1,4 +1,5 @@
-// Mock analytics service for generating chart data
+// Analytics service for generating chart data
+import axios from 'axios'
 
 export interface HealthDataPoint {
   date: string
@@ -121,45 +122,60 @@ const generateCropDistributionData = (): CropTypeData[] => {
   }))
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+
 export const analyticsService = {
   getHealthTrend: async (timeRange: '7d' | '30d' | '90d' | '1y'): Promise<HealthDataPoint[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const days = {
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      '1y': 365
-    }[timeRange]
-    
-    return generateHealthTrendData(days)
+    try {
+      const response = await axios.get(`${API_BASE_URL}/analytics/health-trend`, {
+        params: { timeRange }
+      })
+      return response.data.data.healthTrend
+    } catch (error) {
+      // Fallback to mock data if backend fails
+      console.warn('Failed to fetch health trend from backend, using mock data')
+      const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[timeRange]
+      return generateHealthTrendData(days)
+    }
   },
 
   getAnalysisHistory: async (timeRange: '6m' | '1y' | '2y'): Promise<AnalysisHistoryData[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const months = {
-      '6m': 6,
-      '1y': 12,
-      '2y': 24
-    }[timeRange]
-    
-    return generateAnalysisHistoryData(months)
+    try {
+      const response = await axios.get(`${API_BASE_URL}/analytics/analysis-history`, {
+        params: { timeRange }
+      })
+      return response.data.data.analysisHistory
+    } catch (error) {
+      // Fallback to mock data if backend fails
+      console.warn('Failed to fetch analysis history from backend, using mock data')
+      const months = { '6m': 6, '1y': 12, '2y': 24 }[timeRange]
+      return generateAnalysisHistoryData(months)
+    }
   },
 
   getCropDistribution: async (): Promise<CropTypeData[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return generateCropDistributionData()
+    try {
+      const response = await axios.get(`${API_BASE_URL}/analytics/crop-distribution`)
+      return response.data.data.cropDistribution
+    } catch (error) {
+      // Fallback to mock data if backend fails
+      console.warn('Failed to fetch crop distribution from backend, using mock data')
+      return generateCropDistributionData()
+    }
   },
 
   getAnalyticsDashboard: async (): Promise<AnalyticsData> => {
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    return {
-      healthTrend: generateHealthTrendData(30),
-      analysisHistory: generateAnalysisHistoryData(6),
-      cropDistribution: generateCropDistributionData()
+    try {
+      const response = await axios.get(`${API_BASE_URL}/analytics/dashboard`)
+      return response.data.data
+    } catch (error) {
+      // Fallback to mock data if backend fails
+      console.warn('Failed to fetch analytics dashboard from backend, using mock data')
+      return {
+        healthTrend: generateHealthTrendData(30),
+        analysisHistory: generateAnalysisHistoryData(6),
+        cropDistribution: generateCropDistributionData()
+      }
     }
   },
 
