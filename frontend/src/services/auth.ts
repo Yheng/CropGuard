@@ -16,11 +16,20 @@ export interface LoginResponse {
   }
 }
 
+// Custom event for auth state changes
+export const AUTH_CHANGE_EVENT = 'authStateChange'
+
+const dispatchAuthChange = () => {
+  window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT))
+}
+
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     // Use demo mode if enabled or if backend is not available
     if (DEMO_MODE) {
-      return demoAuthService.login(email, password)
+      const result = await demoAuthService.login(email, password)
+      dispatchAuthChange()
+      return result
     }
     
     try {
@@ -32,6 +41,7 @@ export const authService = {
       const { token, user } = response.data.data
       localStorage.setItem('auth_token', token)
       localStorage.setItem('user_data', JSON.stringify(user))
+      dispatchAuthChange()
       
       return { token, user }
     } catch (error) {
@@ -63,6 +73,7 @@ export const authService = {
       const { token, user } = response.data.data
       localStorage.setItem('auth_token', token)
       localStorage.setItem('user_data', JSON.stringify(user))
+      dispatchAuthChange()
       
       return { token, user }
     } catch (error) {
@@ -80,6 +91,7 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
+    dispatchAuthChange()
   },
   
   isAuthenticated: (): boolean => {

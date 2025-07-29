@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain } from 'lucide-react'
+import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu, X, User, BarChart3 } from 'lucide-react'
 import { authService } from '../services/auth'
 import { useFieldMode } from '../contexts/FieldModeContext'
 import { useFieldMetrics } from '../hooks/useFieldMetrics'
@@ -9,6 +9,7 @@ import OneHandedNavigation from '../components/navigation/OneHandedNavigation'
 
 export function Dashboard() {
   const [user, setUser] = useState(authService.getCurrentUser() || { name: 'User', role: 'farmer' })
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const { fieldMode, settings, weatherData, isFieldOptimized, setFieldMode } = useFieldMode()
   const { startTask, metrics, getFieldUsabilityScore } = useFieldMetrics()
@@ -59,207 +60,354 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen field-background">
-      {/* Header */}
-      <header className={`border-b ${isFieldOptimized ? 'border-gray-400 bg-field-adaptive-bg' : 'border-gray-600'}`}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Modern Header with Mobile Menu */}
+      <header className="bg-slate-900/95 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Brand */}
             <div className="flex items-center space-x-3">
-              <Leaf className={`${isFieldOptimized ? 'w-10 h-10' : 'w-8 h-8'} text-[#10B981]`} />
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Leaf className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <h1 className={`${isFieldOptimized ? 'text-3xl' : 'text-2xl'} font-bold high-contrast-text`}>
-                  CropGuard
-                </h1>
+                <h1 className="text-xl font-bold text-white">CropGuard</h1>
                 {weatherData && (
-                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <div className="flex items-center gap-2 text-xs text-emerald-300">
                     {getWeatherIcon()}
                     <span>{weatherData.condition} • {weatherData.brightness}% bright</span>
                   </div>
                 )}
               </div>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Field mode toggle */}
-              {!settings.oneHandedMode && (
-                <FieldOptimizedButton
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFieldMode(fieldMode === 'standard' ? 'field' : 'standard')}
-                  className="hidden md:flex"
-                >
-                  {isFieldOptimized ? 'Farm Mode' : 'Enable Farm Mode'}
-                </FieldOptimizedButton>
-              )}
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-6">
+              <button
+                onClick={() => navigate('/analysis')}
+                className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                Analyze
+              </button>
+              <button
+                onClick={() => navigate('/analytics')}
+                className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Reports
+              </button>
+              <button
+                onClick={() => navigate('/settings')}
+                className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </button>
               
-              <Bell className={`${isFieldOptimized ? 'w-6 h-6' : 'w-5 h-5'} text-gray-400 hover:text-white cursor-pointer`} />
-              <div className="flex items-center space-x-2">
-                <div className={`${isFieldOptimized ? 'w-10 h-10' : 'w-8 h-8'} bg-[#10B981] rounded-full flex items-center justify-center`}>
-                  <span className={`${isFieldOptimized ? 'text-base' : 'text-sm'} font-medium`}>
+              {/* Field mode toggle */}
+              <button
+                onClick={() => setFieldMode(fieldMode === 'standard' ? 'field' : 'standard')}
+                className="bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-500/30 transition-colors"
+              >
+                {isFieldOptimized ? 'Standard Mode' : 'Field Mode'}
+              </button>
+              
+              <Bell className="w-5 h-5 text-slate-400 hover:text-emerald-400 cursor-pointer transition-colors" />
+              
+              {/* User Menu */}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
                     {user.name.split(' ').map((n: string) => n[0]).join('')}
                   </span>
                 </div>
-                <span className={`${isFieldOptimized ? 'text-base' : 'text-sm'} high-contrast-text`}>{user.name}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-white">{user.name}</span>
+                  <span className="text-xs text-emerald-400 capitalize">{user.role}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-slate-400 hover:text-red-400 transition-colors p-2"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-              <FieldOptimizedButton
-                onClick={handleLogout}
-                variant="secondary"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </FieldOptimizedButton>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden p-2 text-slate-300 hover:text-white transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden border-t border-slate-700 py-4">
+              <div className="space-y-4">
+                {/* User Info */}
+                <div className="flex items-center space-x-3 px-4 py-2 bg-slate-800/50 rounded-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">
+                      {user.name.split(' ').map((n: string) => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">{user.name}</p>
+                    <p className="text-xs text-emerald-400 capitalize">{user.role}</p>
+                  </div>
+                </div>
+                
+                {/* Navigation Links */}
+                <button
+                  onClick={() => {
+                    navigate('/analysis')
+                    setMobileMenuOpen(false)
+                  }}
+                  className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
+                >
+                  <Camera className="w-5 h-5" />
+                  <span>Analyze Crops</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/analytics')
+                    setMobileMenuOpen(false)
+                  }}
+                  className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span>View Reports</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/settings')
+                    setMobileMenuOpen(false)
+                  }}
+                  className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
+                >
+                  <Settings className="w-5 h-5" />
+                  <span>Farm Settings</span>
+                </button>
+                
+                {/* Field Mode Toggle */}
+                <button
+                  onClick={() => setFieldMode(fieldMode === 'standard' ? 'field' : 'standard')}
+                  className="flex items-center gap-3 w-full text-left bg-emerald-500/20 text-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-500/30 transition-all"
+                >
+                  <Sun className="w-5 h-5" />
+                  <span>{isFieldOptimized ? 'Standard Mode' : 'Field Mode'}</span>
+                </button>
+                
+                {/* Sign Out */}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 w-full text-left text-red-400 hover:text-red-300 py-2 px-4 rounded-lg hover:bg-red-500/10 transition-all"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className={`container mx-auto px-4 py-8 ${settings.oneHandedMode ? 'one-handed-reach' : ''}`}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className={`${isFieldOptimized ? 'text-4xl' : 'text-3xl'} font-bold mb-2 high-contrast-text`}>
+        <div className="mb-12">
+          <h2 className="text-4xl font-bold mb-4 text-white">
             {getGreeting()}, {user.name}!
           </h2>
-          <p className={`${isFieldOptimized ? 'text-lg' : 'text-base'} text-gray-300`}>
-            Check your crops and get smart insights for better farming decisions.
+          <p className="text-xl text-slate-300 mb-6">
+            Monitor your crops and make data-driven farming decisions with AI-powered insights.
           </p>
           
           {/* Field usability score */}
           {metrics && isFieldOptimized && (
-            <div className="mt-4 p-4 bg-green-100 dark:bg-green-900/20 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-green-700 dark:text-green-300 font-medium">
-                  Farm Mode Score: {getFieldUsabilityScore()}/100
-                </span>
-                <span className="text-sm text-green-600 dark:text-green-400">
-                  {getFieldUsabilityScore() > 80 ? 'Excellent field usability!' : 'Good field performance'}
-                </span>
+            <div className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-500/30 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-emerald-300 font-semibold">
+                    Farm Mode Score: {getFieldUsabilityScore()}/100
+                  </p>
+                  <p className="text-sm text-emerald-400">
+                    {getFieldUsabilityScore() > 80 ? 'Excellent field usability!' : 'Good field performance'}
+                  </p>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className={`grid ${isFieldOptimized ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-4'} gap-6 mb-8`}>
-          <FieldOptimizedButton
+        {/* Quick Actions Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {/* Examine Plant Card */}
+          <button
             onClick={() => handleQuickAction('analysis', '/analysis')}
-            className="card p-6 text-left h-auto flex-col items-start justify-start"
-            variant="secondary"
+            className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/10"
           >
-            <Camera className={`${isFieldOptimized ? 'w-10 h-10' : 'w-8 h-8'} text-[#10B981] mb-3`} />
-            <h3 className={`${isFieldOptimized ? 'text-xl' : 'text-lg'} font-semibold mb-1 high-contrast-text`}>
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Camera className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
               Examine Plant
             </h3>
-            <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-              Take photo to check plant health
+            <p className="text-slate-400 group-hover:text-slate-300 transition-colors">
+              Take photos to analyze plant health and detect diseases instantly
             </p>
-          </FieldOptimizedButton>
+            <div className="mt-4 flex items-center text-emerald-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              Start Analysis →
+            </div>
+          </button>
 
-          <FieldOptimizedButton
+          {/* Crop Reports Card */}
+          <button
             onClick={() => handleQuickAction('navigation', '/analytics')}
-            className="card p-6 text-left h-auto flex-col items-start justify-start"
-            variant="secondary"
+            className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10"
           >
-            <TrendingUp className={`${isFieldOptimized ? 'w-10 h-10' : 'w-8 h-8'} text-[#2DD4BF] mb-3`} />
-            <h3 className={`${isFieldOptimized ? 'text-xl' : 'text-lg'} font-semibold mb-1 high-contrast-text`}>
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
               Crop Reports
             </h3>
-            <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-              View your field's health trends
+            <p className="text-slate-400 group-hover:text-slate-300 transition-colors">
+              View comprehensive analytics and health trends for your crops
             </p>
-          </FieldOptimizedButton>
+            <div className="mt-4 flex items-center text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              View Reports →
+            </div>
+          </button>
 
-          <FieldOptimizedButton
+          {/* Farm Settings Card */}
+          <button
             onClick={() => navigate('/settings')}
-            className="card p-6 text-left h-auto flex-col items-start justify-start"
-            variant="secondary"
+            className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-amber-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/10"
           >
-            <Settings className={`${isFieldOptimized ? 'w-10 h-10' : 'w-8 h-8'} text-[#F59E0B] mb-3`} />
-            <h3 className={`${isFieldOptimized ? 'text-xl' : 'text-lg'} font-semibold mb-1 high-contrast-text`}>
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Settings className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">
               Farm Settings
             </h3>
-            <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-              Configure your farm profile
+            <p className="text-slate-400 group-hover:text-slate-300 transition-colors">
+              Configure your farm profile, preferences, and notification settings
             </p>
-          </FieldOptimizedButton>
-
-          <div className="card p-6">
-            <div className={`text-[#10B981] ${isFieldOptimized ? 'text-4xl' : 'text-2xl'} font-bold high-contrast-text`}>
-              12
+            <div className="mt-4 flex items-center text-amber-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              Open Settings →
             </div>
-            <h3 className={`${isFieldOptimized ? 'text-xl' : 'text-lg'} font-semibold mb-1 high-contrast-text`}>
-              Plants Checked
-            </h3>
-            <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-              This month
-            </p>
+          </button>
+
+          {/* Stats Card */}
+          <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/30 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="w-14 h-14 bg-emerald-500/30 rounded-xl flex items-center justify-center mb-4">
+              <BarChart3 className="w-7 h-7 text-emerald-400" />
+            </div>
+            <div className="text-4xl font-bold text-emerald-400 mb-2">12</div>
+            <h3 className="text-xl font-bold text-white mb-1">Plants Analyzed</h3>
+            <p className="text-slate-400">This month</p>
+            <div className="mt-4 flex items-center">
+              <div className="flex-1 bg-slate-700 rounded-full h-2">
+                <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full w-3/4"></div>
+              </div>
+              <span className="text-emerald-400 text-sm font-medium ml-3">75%</span>
+            </div>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="card p-6">
-          <h3 className={`${isFieldOptimized ? 'text-2xl' : 'text-xl'} font-semibold mb-4 high-contrast-text`}>
-            Recent Plant Checks
-          </h3>
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-white">Recent Plant Analysis</h3>
+            <button 
+              onClick={() => navigate('/analytics')}
+              className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
+            >
+              View All →
+            </button>
+          </div>
+          
           <div className="space-y-4">
-            <div className={`flex items-center justify-between ${isFieldOptimized ? 'p-5' : 'p-4'} card rounded-lg`}>
-              <div className="flex items-center space-x-3">
-                <div className={`${isFieldOptimized ? 'w-12 h-12' : 'w-10 h-10'} bg-[#10B981]/20 rounded-lg flex items-center justify-center`}>
-                  <Camera className={`${isFieldOptimized ? 'w-6 h-6' : 'w-5 h-5'} text-[#10B981]`} />
+            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <p className={`${isFieldOptimized ? 'text-lg' : 'text-base'} font-medium high-contrast-text`}>
-                    Tomato plant examined
-                  </p>
-                  <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-                    2 hours ago
-                  </p>
+                  <p className="text-lg font-medium text-white">Tomato plant examined</p>
+                  <p className="text-sm text-slate-400">Field A, Row 12 • 2 hours ago</p>
                 </div>
               </div>
-              <span className={`text-[#10B981] ${isFieldOptimized ? 'text-base' : 'text-sm'} font-medium px-3 py-1 bg-green-100 dark:bg-green-900/20 rounded-full`}>
-                Healthy
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">
+                  Healthy
+                </span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              </div>
             </div>
 
-            <div className={`flex items-center justify-between ${isFieldOptimized ? 'p-5' : 'p-4'} card rounded-lg`}>
-              <div className="flex items-center space-x-3">
-                <div className={`${isFieldOptimized ? 'w-12 h-12' : 'w-10 h-10'} bg-[#F59E0B]/20 rounded-lg flex items-center justify-center`}>
-                  <Camera className={`${isFieldOptimized ? 'w-6 h-6' : 'w-5 h-5'} text-[#F59E0B]`} />
+            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-amber-400" />
                 </div>
                 <div>
-                  <p className={`${isFieldOptimized ? 'text-lg' : 'text-base'} font-medium high-contrast-text`}>
-                    Corn plant examined
-                  </p>
-                  <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-                    1 day ago
-                  </p>
+                  <p className="text-lg font-medium text-white">Corn plant examined</p>
+                  <p className="text-sm text-slate-400">Field B, Row 8 • 1 day ago</p>
                 </div>
               </div>
-              <span className={`text-[#F59E0B] ${isFieldOptimized ? 'text-base' : 'text-sm'} font-medium px-3 py-1 bg-yellow-100 dark:bg-yellow-900/20 rounded-full`}>
-                Needs Care
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-amber-500/20 text-amber-300 text-sm font-medium rounded-full border border-amber-500/30">
+                  Needs Care
+                </span>
+                <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+              </div>
             </div>
 
-            <div className={`flex items-center justify-between ${isFieldOptimized ? 'p-5' : 'p-4'} card rounded-lg`}>
-              <div className="flex items-center space-x-3">
-                <div className={`${isFieldOptimized ? 'w-12 h-12' : 'w-10 h-10'} bg-[#10B981]/20 rounded-lg flex items-center justify-center`}>
-                  <Camera className={`${isFieldOptimized ? 'w-6 h-6' : 'w-5 h-5'} text-[#10B981]`} />
+            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <p className={`${isFieldOptimized ? 'text-lg' : 'text-base'} font-medium high-contrast-text`}>
-                    Wheat plant examined
-                  </p>
-                  <p className={`${isFieldOptimized ? 'text-base' : 'text-sm'} text-gray-500 dark:text-gray-400`}>
-                    3 days ago
-                  </p>
+                  <p className="text-lg font-medium text-white">Wheat plant examined</p>
+                  <p className="text-sm text-slate-400">Field C, Row 5 • 3 days ago</p>
                 </div>
               </div>
-              <span className={`text-[#10B981] ${isFieldOptimized ? 'text-base' : 'text-sm'} font-medium px-3 py-1 bg-green-100 dark:bg-green-900/20 rounded-full`}>
-                Healthy
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">
+                  Healthy
+                </span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              </div>
             </div>
+          </div>
+          
+          {/* Quick Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-slate-700/50">
+            <button
+              onClick={() => navigate('/analysis')}
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+            >
+              <Camera className="w-5 h-5" />
+              Analyze New Plant
+            </button>
+            <button
+              onClick={() => navigate('/analytics')}
+              className="flex-1 bg-slate-700/50 text-slate-300 px-4 py-3 rounded-xl font-semibold hover:bg-slate-700/70 hover:text-white transition-all flex items-center justify-center gap-2 border border-slate-600/50"
+            >
+              <BarChart3 className="w-5 h-5" />
+              View Analytics
+            </button>
           </div>
         </div>
       </main>

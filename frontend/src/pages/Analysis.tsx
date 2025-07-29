@@ -46,7 +46,7 @@ export function Analysis() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1F2A44] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       {/* Header */}
       <header className="border-b border-gray-600">
         <div className="container mx-auto px-4 py-4">

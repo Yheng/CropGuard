@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { Login, Signup } from './pages/auth'
 import { Dashboard } from './pages/Dashboard'
 import { LandingPage } from './pages/LandingPage'
@@ -9,6 +10,45 @@ import { FieldSettings } from './pages/FieldSettings'
 import { authService } from './services/auth'
 import ThemeProvider from './contexts/ThemeContext'
 import FieldModeProvider from './contexts/FieldModeContext'
+
+// Protected Route component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const authenticated = authService.isAuthenticated()
+      setIsAuthenticated(authenticated)
+    }
+    
+    checkAuth()
+    
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      checkAuth()
+    }
+    
+    window.addEventListener('authStateChange', handleAuthChange)
+    window.addEventListener('storage', handleAuthChange)
+    
+    return () => {
+      window.removeEventListener('authStateChange', handleAuthChange)
+      window.removeEventListener('storage', handleAuthChange)
+    }
+  }, [])
+
+  // Show loading state while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-[#1F2A44] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    )
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+}
 
 function App() {
   return (
@@ -22,31 +62,41 @@ function App() {
             <Route 
               path="/dashboard" 
               element={
-                authService.isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/analysis" 
               element={
-                authService.isAuthenticated() ? <Analysis /> : <Navigate to="/login" />
+                <ProtectedRoute>
+                  <Analysis />
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/treatments" 
               element={
-                authService.isAuthenticated() ? <Treatments /> : <Navigate to="/login" />
+                <ProtectedRoute>
+                  <Treatments />
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/analytics" 
               element={
-                authService.isAuthenticated() ? <Analytics /> : <Navigate to="/login" />
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/settings" 
               element={
-                authService.isAuthenticated() ? <FieldSettings /> : <Navigate to="/login" />
+                <ProtectedRoute>
+                  <FieldSettings />
+                </ProtectedRoute>
               } 
             />
             <Route path="*" element={<Navigate to="/" />} />
