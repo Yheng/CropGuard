@@ -1,5 +1,296 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom CSS for premium professional landing page */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer components {
+  /* Glassmorphism effects */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Premium gradient text */
+  .gradient-text-primary {
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #14b8a6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .gradient-text-white {
+    background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Advanced shadow effects */
+  .shadow-glow-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-glow-green:hover {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .shadow-depth {
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      0 4px 8px rgba(0, 0, 0, 0.05),
+      0 8px 16px rgba(0, 0, 0, 0.03);
+  }
+  
+  .shadow-depth-lg {
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.1),
+      0 8px 16px rgba(0, 0, 0, 0.08),
+      0 16px 32px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Modern button effects */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-premium:hover::before {
+    left: 100%;
+  }
+  
+  /* Card hover effects */
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0) scale(1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+  
+  /* Animated background elements */
+  .bg-animated {
+    background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #1e293b);
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+  }
+  
+  @keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Floating animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  /* Pulse glow effect */
+  .pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulseGlow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 0 40px rgba(34, 197, 94, 0.5);
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Advanced typography */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .text-shadow-md {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Mobile touch optimizations */
+  .touch-none {
+    touch-action: none;
+  }
+  
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  
+  /* Scroll animations */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .fade-in-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .fade-in-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .fade-in-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .fade-in-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .fade-in-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  /* Professional grid patterns */
+  .grid-pattern {
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .dot-pattern {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities for the landing page */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  /* Improved focus states */
+  .focus-visible-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(34 197 94), 0 0 0 4px rgb(15 23 42);
+  }
+  
+  /* Custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(34, 197, 94, 0.3) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(34, 197, 94, 0.3);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(34, 197, 94, 0.5);
+  }
+}
+
+/* Performance optimizations */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  button, 
+  [role="button"] {
+    cursor: pointer;
+  }
+  
+  [disabled] {
+    cursor: not-allowed;
+  }
+}
+
+/* Dark mode specific enhancements */
+@media (prefers-color-scheme: dark) {
+  .dark-auto {
+    color-scheme: dark;
+  }
+}

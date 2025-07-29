@@ -2,6 +2,9 @@ import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
+// Demo mode when backend is not available
+// const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true' || false
+
 export interface LoginResponse {
   token: string
   user: {
@@ -27,6 +30,9 @@ export const authService = {
       return { token, user }
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+          throw new Error('Backend server is not available. Please try again later.')
+        }
         throw new Error(error.response?.data?.message || 'Login failed')
       }
       throw error
@@ -49,6 +55,9 @@ export const authService = {
       return { token, user }
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+          throw new Error('Backend server is not available. Please try again later.')
+        }
         throw new Error(error.response?.data?.message || 'Signup failed')
       }
       throw error

@@ -518,7 +518,9 @@ export function withActivityTracking<T extends object>(
     trackProps?: string[]
     componentName?: string
   }
-) {
+): React.ComponentType<T & { 
+  user?: { id: string; name: string; role: 'farmer' | 'agronomist' | 'admin' } 
+}> {
   return function TrackedComponent(props: T & { 
     user?: { id: string; name: string; role: 'farmer' | 'agronomist' | 'admin' } 
   }) {
@@ -545,7 +547,7 @@ export function withActivityTracking<T extends object>(
       }
     }, [track, componentName])
 
-    return <Component {...props} />
+    return React.createElement(Component, props as T)
   }
 }
 
