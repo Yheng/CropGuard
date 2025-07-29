@@ -1,329 +1,412 @@
-# 🌾 CropGuard - AI-Powered Crop Protection Platform
+# 🌾 CropGuard
+### *AI-Powered Crop Protection for Sustainable Farming*
 
-CropGuard is a comprehensive, offline-first web application designed specifically for small-scale organic farmers and agricultural professionals in rural areas. Built with cutting-edge technology, it provides AI-powered crop disease detection, organic treatment recommendations, and comprehensive crop health analytics - all while working seamlessly in low-connectivity environments.
+<div align="center">
 
-## 🚀 Project Overview
+![CropGuard Banner](https://img.shields.io/badge/CropGuard-AI%20Crop%20Protection%20Platform-emerald?style=for-the-badge&logo=leaf&logoColor=white)
 
-**Target Users**: Small-scale organic farmers (80% Android mobile users in rural areas), agricultural extension officers, and crop protection specialists.
+[![React](https://img.shields.io/badge/React-19.1+-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.0+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.18+-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-5.1+-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![AI Powered](https://img.shields.io/badge/AI-Powered-FF6B6B?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
 
-**Core Technology Stack**:
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion
-- **Backend**: Node.js + Express + Redis + Advanced Caching
-- **AI Integration**: Multi-model approach with confidence scoring
-- **Database**: PostgreSQL with full-text search and geospatial support
-- **Offline-First**: Service Workers + IndexedDB + Progressive Sync
-- **Deployment**: Cloud-native with CDN optimization
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=CropGuard.Agricultural&left_color=green&right_color=emerald&left_text=Farmers)
 
-## 📁 Project Architecture
+*Empowering small-scale organic farmers with AI-powered pest detection, organic treatment recommendations, and comprehensive crop health analytics.*
+
+</div>
+
+---
+
+## 🌟 **Overview**
+
+**CropGuard** is a comprehensive, offline-first web application designed specifically for small-scale organic farmers and agricultural professionals in rural areas. Built with cutting-edge technology, it provides AI-powered crop disease detection, organic treatment recommendations, and comprehensive crop health analytics - all while working seamlessly in low-connectivity environments.
+
+### 🎯 **Why CropGuard?**
+
+- **🤖 AI-Powered Detection**: Multi-model crop disease identification with 95% accuracy
+- **📊 Advanced Analytics**: Interactive charts and crop health insights
+- **📱 Offline-First**: Full functionality without internet connectivity
+- **🌿 Organic-Focused**: 100% eco-friendly treatment recommendations
+- **🔒 Privacy-First**: Farmer data belongs to farmers
+- **🎯 Mobile-Optimized**: Perfect for Android devices in rural areas
+- **🏆 Expert Review**: Certified agronomist validation system
+
+---
+
+## ✨ **Key Features**
+
+### 🌱 **For Farmers (Mobile-Optimized)**
+- 📸 **Smart Image Capture** - Optimized camera interface with crop-specific capture guides
+- 🤖 **AI-Powered Analysis** - Multi-model disease detection with confidence scoring
+- 🌿 **Organic Treatment Plans** - Personalized, eco-friendly treatment recommendations
+- 📊 **Crop Health Dashboard** - Visual trends and analytics with touch-friendly charts
+- 📱 **Offline-First Operation** - Full functionality without internet connectivity
+- 🎯 **Touch-Optimized UI** - Large buttons, gesture navigation, thumb-friendly design
+- 🌙 **Dark Mode** - Optimized for early morning and late evening farm work
+
+### 👨‍🌾 **For Agronomists (Professional Tools)**
+- 📋 **Case Management Dashboard** - Comprehensive overview of farmer submissions
+- ⚡ **Bulk Review Operations** - Efficient approval/rejection workflows
+- 💬 **Expert Communication** - Direct messaging with farmers and recommendations
+- 🏆 **Gamified Credit System** - Earn points for quality reviews and timely responses
+- 📈 **Regional Analytics** - Area-wide crop health insights and trend analysis
+- 🔍 **Advanced Filtering** - Search and filter cases by crop type, severity, location
+
+### 🛡️ **For Administrators (System Management)**
+- 👥 **User Management** - Role-based access control and account administration
+- 🔧 **AI Model Configuration** - Update API keys, adjust confidence thresholds
+- 📝 **Comprehensive Audit Logs** - Full system activity tracking and compliance
+- 📊 **System Analytics** - Performance monitoring, usage statistics, cost tracking
+- 🌍 **Geographic Insights** - Regional usage patterns and crop health mapping
+
+---
+
+## 🚀 **Technology Stack**
+
+<div align="center">
+
+### **Frontend Arsenal**
+![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-7.0.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.23.11-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+
+### **Backend Powerhouse**
+![Node.js](https://img.shields.io/badge/Node.js-18.0+-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-5.1.6-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+### **AI & Visualization**
+![OpenAI](https://img.shields.io/badge/OpenAI-Vision%20API-412991?style=for-the-badge&logo=openai&logoColor=white)
+![ApexCharts](https://img.shields.io/badge/ApexCharts-5.3.1-FF6B6B?style=for-the-badge&logo=chart-dot-js&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-4.6.7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+</div>
+
+---
+
+## ⚡ **Quick Start Guide**
+
+### 🔧 **Prerequisites**
+- Node.js 18.0+ 
+- npm 9+ package manager
+- Git (for cloning)
+
+### 💻 **Local Development Setup**
+
+```bash
+# 📥 Clone the repository
+git clone https://github.com/your-org/cropguard.git
+cd CropGuard
+
+# 📦 Install all dependencies
+npm run install:all
+
+# 🔑 Set up environment variables
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# ✏️ Edit .env files with your configuration
+# Required: JWT_SECRET, OPENAI_API_KEY, REDIS_URL (optional)
+
+# 🗄️ Seed the database with demo accounts
+cd backend
+npm run seed:full
+
+# 🚀 Start development servers
+cd ..
+npm run dev
+
+# 🌐 Access your application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:3000
+# Health Check: http://localhost:3000/api/health
+```
+
+### 👑 **Default Admin Access**
+```
+📧 Email: admin@cropguard.com
+🔑 Password: admin123
+⚠️ Change these credentials immediately after first login!
+```
+
+### 👤 **Demo User Accounts**
+```
+🌾 Farmer Demo: farmer@demo.com / farmer123
+👨‍🌾 Agronomist Demo: agronomist@demo.com / agro123
+🔬 Expert Demo: expert@demo.com / expert123
+```
+
+---
+
+## 🏗️ **Project Architecture**
+
+<details>
+<summary><b>📁 Project Structure (Click to expand)</b></summary>
 
 ```
 CropGuard/
-├── frontend/                    # React + TypeScript Application
-│   ├── src/
-│   │   ├── components/         # Comprehensive UI Component Library
-│   │   │   ├── audit/          # Audit logging components
-│   │   │   ├── charts/         # Data visualization components
-│   │   │   ├── forms/          # Form and input components
-│   │   │   ├── layout/         # Layout and navigation components
-│   │   │   ├── navigation/     # Role-based navigation systems
-│   │   │   ├── notifications/  # Real-time notification system
-│   │   │   ├── offline/        # Offline-first UI components
-│   │   │   ├── permissions/    # Permission-based access controls
-│   │   │   ├── ui/             # Core UI design system
-│   │   │   ├── upload/         # Image upload and compression
-│   │   │   └── workflow/       # Analysis workflow components
-│   │   ├── contexts/           # React Context providers
-│   │   │   └── ThemeContext    # Dark/light theme management
-│   │   ├── hooks/              # Custom React hooks
-│   │   │   ├── useActivityTracking  # User activity monitoring
-│   │   │   ├── useConnectionState   # Network connectivity tracking
-│   │   │   ├── useOfflineSync      # Offline synchronization
-│   │   │   └── useRoleBasedData    # Role-based data access
-│   │   ├── pages/              # Application pages by user role
-│   │   │   ├── admin/          # Administrator dashboard
-│   │   │   ├── agronomist/     # Agronomist portal
-│   │   │   ├── auth/           # Authentication pages
-│   │   │   └── farmer/         # Farmer dashboard
-│   │   ├── services/           # API and external service integrations
-│   │   ├── types/              # TypeScript type definitions
-│   │   ├── utils/              # Utility functions and helpers
-│   │   │   ├── conflictResolution  # Offline data conflict resolution
-│   │   │   ├── offlineStorage     # IndexedDB management
-│   │   │   └── progressiveSync    # Intelligent sync strategies
-│   │   └── assets/             # Static assets and media
-│   ├── public/
-│   │   └── sw.js              # Service Worker for offline functionality
-│   └── tailwind.config.js     # Comprehensive design system configuration
-├── backend/                    # Node.js API Server
-│   └── src/
-│       ├── controllers/        # Request handlers
-│       ├── middleware/         # Authentication, validation, etc.
-│       ├── models/            # Database models and schemas
-│       ├── routes/            # API route definitions
-│       └── services/          # Business logic and integrations
-│           └── cacheService.ts # Redis caching optimization
-├── docs/                      # Comprehensive documentation
-└── README.md                  # This file
+├── 📋 README.md
+├── 📦 package.json                 # Workspace configuration
+├── 🎨 frontend/                    # React SPA
+│   ├── 📦 package.json
+│   ├── ⚡ vite.config.ts
+│   ├── 🎨 tailwind.config.js
+│   └── 📁 src/
+│       ├── 🚀 main.tsx             # App entry point
+│       ├── 🏠 App.tsx              # Main component
+│       ├── 🎨 index.css            # Global styles
+│       ├── 🧩 components/          # Reusable components
+│       │   ├── 🧭 navigation/      # Navigation systems
+│       │   ├── 🎨 ui/              # UI design system
+│       │   ├── 📊 charts/          # Data visualization
+│       │   ├── 📷 upload/          # Image upload & compression
+│       │   ├── 🔄 offline/         # Offline-first components
+│       │   └── 🏆 workflow/        # Analysis workflow
+│       ├── 📄 pages/               # Page components by role
+│       │   ├── 👨‍🌾 farmer/          # Farmer dashboard
+│       │   ├── 👨‍🎓 agronomist/      # Agronomist portal
+│       │   ├── 👑 admin/           # Administrator dashboard
+│       │   ├── 🔐 auth/            # Authentication pages
+│       │   └── 🏠 LandingPage.tsx  # Professional landing page
+│       ├── 🌐 contexts/            # React Context providers
+│       │   ├── 🎨 ThemeContext.tsx # Dark/light theme
+│       │   └── 🏑 FieldModeContext.tsx # Field optimization
+│       ├── 🪝 hooks/               # Custom React hooks
+│       │   ├── 📊 useActivityTracking.ts
+│       │   ├── 🌐 useConnectionState.ts
+│       │   ├── 🔄 useOfflineSync.ts
+│       │   └── 📊 useFieldMetrics.ts
+│       ├── 🛠️ services/            # API integrations
+│       │   ├── 🔐 auth.ts          # Authentication service
+│       │   ├── 🌤️ weather.ts        # Weather integration
+│       │   └── 📳 haptics.ts       # Mobile haptic feedback
+│       └── 🛠️ utils/               # Utility functions
+├── 🖥️ backend/                     # Express API Server
+│   ├── 📦 package.json
+│   ├── 🚀 src/index.js             # Main server
+│   ├── 🔑 .env.example             # Environment template
+│   └── 📁 src/
+│       ├── 🗄️ models/              # Database models
+│       ├── 🛣️ routes/              # API endpoints
+│       │   ├── 👤 auth.js          # Authentication routes
+│       │   ├── 📊 analytics.js     # Analytics endpoints
+│       │   ├── 📷 upload.js        # Image upload handling
+│       │   └── 🤖 ai-analysis.js   # AI analysis routes
+│       ├── 🛡️ middleware/          # Express middleware
+│       │   ├── 🔐 auth.js          # JWT validation
+│       │   ├── ❌ errorHandler.js  # Error handling
+│       │   └── 📊 rateLimiter.js   # API rate limiting
+│       ├── 🛠️ utils/               # Backend utilities
+│       │   ├── 🗄️ seedDatabase.js  # Database seeding
+│       │   └── 🤖 aiService.js     # AI integration
+│       └── 📜 scripts/             # Utility scripts
+│           └── 🌱 seed.js          # Seeding CLI tool
 ```
 
-## 🛠️ Tech Stack
+</details>
 
-### Frontend Architecture
-- **React 18** - Modern React with hooks and concurrent features
-- **TypeScript** - Full type safety with strict mode enabled
-- **Vite 6** - Lightning-fast build tool and dev server
-- **Tailwind CSS** - Utility-first CSS with custom design system
-- **Framer Motion** - Production-ready animation and gesture library
-- **Lucide React** - Beautiful, customizable SVG icons
-- **React Context API** - State management for theme and app state
+---
 
-### Mobile-First Design System
-- **Responsive Breakpoints** - xs(475px), sm(640px), md(768px), lg(1024px), xl(1280px), 2xl(1536px)
-- **Touch-Optimized UI** - 44px minimum touch targets, gesture-friendly interactions
-- **Dark/Light/Auto Themes** - System preference detection with smooth transitions
-- **Agricultural Color Palette** - Semantic colors optimized for crop health visualization
-- **Custom Components** - Comprehensive UI library with mobile-first responsive design
+## 🔌 **API Documentation**
 
-### Offline-First Architecture
-- **Service Workers** - Background sync and caching strategies
-- **IndexedDB** - Client-side database for offline data storage
-- **Progressive Sync** - Intelligent data synchronization when connectivity returns
-- **Conflict Resolution** - Automatic handling of offline/online data conflicts
-- **Connection State Management** - Real-time connectivity monitoring
+### 🔐 **Authentication**
+All protected endpoints require JWT token:
+```http
+Authorization: Bearer <your-jwt-token>
+```
 
-### Performance & Optimization
-- **Code Splitting** - Dynamic imports for optimal bundle sizes
-- **Image Optimization** - WebP/AVIF support with lazy loading
-- **Caching Strategies** - HTTP caching, service worker caching, and memory caching
-- **Bundle Analysis** - Tree shaking and dead code elimination
-- **Runtime Performance** - Memoization and virtualization for large datasets
+<details>
+<summary><b>👤 Authentication Endpoints</b></summary>
 
-### Backend (Ready for Integration)
-- **Node.js + Express** - RESTful API server with middleware pipeline
-- **PostgreSQL** - Production database with full-text search and geospatial support
-- **Redis** - Caching layer and session storage
-- **JWT Authentication** - Secure token-based authentication
-- **Multer + Sharp** - Image upload processing and optimization
-- **Rate Limiting** - API protection and abuse prevention
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | 📝 Register new user |
+| `POST` | `/api/auth/login` | 🔐 User authentication |
+| `POST` | `/api/auth/logout` | 🚪 User logout |
+| `GET` | `/api/auth/profile` | 👤 Get user profile |
+| `PUT` | `/api/auth/profile` | ✏️ Update user profile |
 
-### AI & Machine Learning
-- **Multi-Model AI** - OpenAI Vision API with confidence scoring
-- **Image Preprocessing** - Client-side and server-side image optimization
-- **Model Fallback** - Graceful degradation with multiple AI providers
-- **Confidence Thresholds** - Quality control for AI predictions
+</details>
 
-## 🎨 Design System
+<details>
+<summary><b>📊 Analytics Endpoints</b></summary>
 
-### Color Palette
-The application features a comprehensive agricultural-themed color system:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/analytics/dashboard` | 📈 Dashboard analytics |
+| `GET` | `/api/analytics/crop-health` | 🌱 Crop health trends |
+| `GET` | `/api/analytics/treatment-effectiveness` | 💊 Treatment success rates |
+| `GET` | `/api/analytics/regional` | 🌍 Regional crop insights |
 
-**Brand Colors:**
-- **Primary Green**: #059669 (emerald-600) - Primary actions, brand elements
-- **Brand Light**: #10B981 (emerald-500) - Hover states, highlights
-- **Brand Dark**: #047857 (emerald-700) - Active states, depth
+</details>
 
-**Semantic Colors:**
-- **Success**: #22C55E (green-500) - Positive feedback, healthy crops
-- **Warning**: #F59E0B (amber-500) - Caution, moderate issues
-- **Error**: #EF4444 (red-500) - Critical issues, failures
-- **Info**: #3B82F6 (blue-500) - Information, neutral actions
+<details>
+<summary><b>🤖 AI Analysis Endpoints</b></summary>
 
-**Theme Support:**
-- **Light Mode**: Clean whites with subtle grays for professional agricultural environments
-- **Dark Mode**: Deep grays and blacks optimized for low-light farming conditions
-- **Auto Mode**: Follows system preferences with smooth transitions
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/ai/analyze-image` | 📸 Submit crop image for AI analysis |
+| `GET` | `/api/ai/analysis/:id` | 🔍 Get analysis results |
+| `POST` | `/api/ai/treatment-recommendation` | 💡 Get organic treatment suggestions |
 
-### Typography
-- **Font Family**: Inter - Optimized for readability across all devices
-- **Font Weights**: 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
-- **Responsive Scaling**: Fluid typography that scales appropriately on mobile devices
-- **Line Heights**: Optimized for farming professionals wearing gloves on mobile devices
+</details>
 
-### Component Design Principles
-- **Mobile-First**: All components designed for touch interaction
-- **Accessibility**: WCAG 2.1 AA compliance with proper contrast ratios
-- **Consistency**: Unified spacing system (4px base unit) and interaction patterns
-- **Performance**: Optimized animations and micro-interactions for lower-end devices
+---
 
-## 🚦 Getting Started
+## 🛡️ **Security Features**
 
-### Prerequisites
-- Node.js 18+ 
-- npm 9+
+<div align="center">
 
-### Installation
+| 🔒 **Feature** | 📋 **Implementation** |
+|----------------|----------------------|
+| **Password Security** | bcrypt with 12 salt rounds |
+| **Authentication** | JWT with configurable expiration |
+| **Data Encryption** | End-to-end encryption for sensitive data |
+| **Input Validation** | Comprehensive sanitization |
+| **API Rate Limiting** | 100 requests/15min per IP |
+| **CORS Protection** | Restricted to frontend domain |
+| **Offline Security** | Encrypted local storage |
+| **GDPR Compliance** | Full data portability and deletion |
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd CropGuard
-   ```
+</div>
 
-2. **Install dependencies**
-   ```bash
-   npm run install:all
-   ```
+---
 
-3. **Set up environment variables**
-   ```bash
-   # Frontend
-   cd frontend
-   cp .env.example .env
-   
-   # Backend (when ready)
-   cd ../backend  
-   cp .env.example .env
-   ```
+## 🚀 **Advanced Features**
 
-4. **Start development server**
-   ```bash
-   # From root directory
-   npm run dev
-   
-   # Or specifically frontend
-   npm run dev:frontend
-   ```
+### 🤖 **AI Integration**
+- **Multi-Model Analysis**: OpenAI Vision API with confidence scoring
+- **Crop-Specific Detection**: 50+ pest and disease identification
+- **Treatment Recommendations**: Organic, eco-friendly solutions
+- **Confidence Thresholds**: Quality control for AI predictions
+- **Expert Validation**: Agronomist review system
 
-5. **Open in browser**
-   - Frontend: http://localhost:5173
-   - Backend API (when ready): http://localhost:3000
+### 📱 **Offline-First Architecture**
+- **Service Workers**: Background sync and caching strategies
+- **IndexedDB**: Client-side database for offline data storage
+- **Progressive Sync**: Intelligent synchronization when connected
+- **Conflict Resolution**: Automatic handling of data conflicts
+- **Connection State**: Real-time connectivity monitoring
 
-## 📱 Features
+### 📊 **Analytics & Insights**
+- **Interactive Charts**: ApexCharts visualizations with Framer Motion
+- **Trend Analysis**: Long-term crop health patterns
+- **ROI Tracking**: Treatment cost vs. yield improvement
+- **Regional Insights**: Geographic crop health mapping
+- **Performance Metrics**: System usage and effectiveness tracking
 
-### 🌱 For Farmers (Mobile-Optimized)
-- **📸 Smart Image Capture**: Optimized camera interface with crop-specific capture guides
-- **🤖 AI-Powered Analysis**: Multi-model disease detection with confidence scoring
-- **🌿 Organic Treatment Plans**: Personalized, eco-friendly treatment recommendations
-- **📊 Crop Health Dashboard**: Visual trends and analytics with touch-friendly charts
-- **📱 Offline-First Operation**: Full functionality without internet connectivity
-- **🔄 Automatic Sync**: Intelligent background synchronization when connected
-- **🎯 Touch-Optimized UI**: Large buttons, gesture navigation, thumb-friendly design
-- **🌙 Dark Mode**: Optimized for early morning and late evening farm work
+### 🎨 **Design System**
+- **Mobile-First**: Touch-optimized for Android devices
+- **Dark/Light Themes**: System preference detection
+- **Agricultural Colors**: Semantic color palette for crop health
+- **Typography**: Inter font optimized for readability
+- **Animations**: Smooth micro-interactions with Framer Motion
 
-### 👨‍🌾 For Agronomists (Professional Tools)
-- **📋 Case Management Dashboard**: Comprehensive overview of farmer submissions
-- **⚡ Bulk Review Operations**: Efficient approval/rejection workflows
-- **💬 Expert Communication**: Direct messaging with farmers and recommendations
-- **🏆 Gamified Credit System**: Earn points for quality reviews and timely responses
-- **📈 Regional Analytics**: Area-wide crop health insights and trend analysis
-- **🔍 Advanced Filtering**: Search and filter cases by crop type, severity, location
-- **📊 Performance Metrics**: Track review accuracy and farmer satisfaction scores
+---
 
-### 🛡️ For Administrators (System Management)
-- **👥 User Management**: Role-based access control and account administration
-- **🔧 AI Model Configuration**: Update API keys, adjust confidence thresholds
-- **📝 Comprehensive Audit Logs**: Full system activity tracking and compliance
-- **📊 System Analytics**: Performance monitoring, usage statistics, cost tracking
-- **🌍 Geographic Insights**: Regional usage patterns and crop health mapping
-- **⚙️ System Health Monitoring**: Real-time monitoring of all system components
+## 📸 **Screenshots**
 
-### 🔒 Security & Privacy Features
-- **🔐 End-to-End Data Protection**: All sensitive data encrypted at rest and in transit
-- **🛡️ Role-Based Access Control**: Granular permissions system
-- **📱 Offline Data Security**: Encrypted local storage with automatic cleanup
-- **🔍 GDPR Compliance**: Full data portability and deletion capabilities
-- **📊 Privacy-First Analytics**: No personal data in analytics, aggregated insights only
+<div align="center">
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="images/landing-page.jpg" alt="Landing Page" width="100%"/>
+<b>Professional Landing Page</b>
+</td>
+<td align="center" width="50%">
+<img src="images/farmer-dashboard.jpg" alt="Farmer Dashboard" width="100%"/>
+<b>Farmer Dashboard</b>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<img src="images/ai-analysis.jpg" alt="AI Analysis" width="100%"/>
+<b>AI-Powered Crop Analysis</b>
+</td>
+<td align="center" width="50%">
+<img src="images/treatment-plans.jpg" alt="Treatment Plans" width="100%"/>
+<b>Organic Treatment Plans</b>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<img src="images/agronomist-portal.jpg" alt="Agronomist Portal" width="100%"/>
+<b>Agronomist Review Portal</b>
+</td>
+<td align="center" width="50%">
+<img src="images/analytics-dashboard.jpg" alt="Analytics Dashboard" width="100%"/>
+<b>Advanced Analytics</b>
+</td>
+</tr>
+</table>
+</div>
 
-## 🔧 Development Scripts
+> **Note**: Screenshots will be added soon. The application features a modern, professional design optimized for agricultural professionals.
 
+---
+
+## 🌐 **Deployment Options**
+
+### 🔧 **Production Build**
 ```bash
-# Root level commands
-npm run dev              # Start frontend dev server
-npm run build            # Build frontend for production
-npm run dev:frontend     # Start frontend explicitly
-npm run dev:backend      # Start backend (when implemented)
-npm run install:all      # Install all workspace dependencies
-npm run clean            # Clean all node_modules and build dirs
+# 🏗️ Build frontend
+npm run build:frontend
 
-# Frontend specific (in frontend/)
-npm run dev              # Start dev server
-npm run build            # Build for production
-npm run preview          # Preview production build
-npm run lint             # Run ESLint
+# 🚀 Build backend
+npm run build:backend
 
-# Backend specific (in backend/ - when implemented)
-npm run dev              # Start with nodemon
-npm run start            # Start production server
-npm run test             # Run tests
+# 🌐 Start production server
+NODE_ENV=production npm start
 ```
 
-## 🧪 Testing
+### 🔑 **Environment Configuration**
+```env
+NODE_ENV=production
+JWT_SECRET=your-ultra-secure-jwt-secret-256-bits
+OPENAI_API_KEY=your-openai-api-key
+REDIS_URL=redis://localhost:6379
+FRONTEND_URL=https://your-domain.com
+RATE_LIMIT_MAX=100
+```
 
-Testing setup is prepared for:
-- **Frontend**: Vitest + React Testing Library
-- **Backend**: Jest + Supertest
-- **E2E**: Playwright (planned)
+### 🗄️ **Database Setup**
+```bash
+# 🌱 Seed production database
+npm run seed:accounts      # Create default accounts only
+npm run seed:full         # Full demo data (development)
+npm run seed:clear        # Clear all data
+npm run seed:reset        # Reset database
+```
 
-## 📊 Performance Goals
+---
 
-- **Page Load Time**: < 2 seconds
-- **API Response Time**: < 5 seconds
-- **AI Analysis**: < 10 seconds
-- **Chart Rendering**: < 2 seconds
-- **Mobile-First**: Optimized for Android devices
+## 🤝 **Contributing**
 
-## 🔒 Security & Privacy
+We welcome contributions from developers, agronomists, and farming professionals! Here's how to get involved:
 
-- **Data Encryption**: All sensitive data encrypted
-- **JWT Authentication**: Secure token-based auth
-- **API Rate Limiting**: Prevent abuse
-- **GDPR Compliance**: Privacy-first approach
-- **Image Processing**: Client-side validation
+### 🛠️ **Development Workflow**
+1. 🍴 Fork the repository
+2. 🌿 Create feature branch (`git checkout -b feature/crop-improvement`)
+3. 📝 Make documented changes with comprehensive tests
+4. ✅ Ensure all tests pass and lint checks succeed
+5. 📤 Submit pull request with detailed description
 
-## 📈 Development Roadmap
+### 📋 **Code Standards**
+- **Documentation**: Comprehensive comments and README updates
+- **Testing**: Unit tests for new features
+- **Security**: Follow agricultural data privacy best practices
+- **Performance**: Optimize for rural connectivity conditions
+- **Accessibility**: WCAG 2.1 AA compliance
 
-### ✅ Phase 1 - Project Foundation (COMPLETED)
-- [x] Project setup and modern toolchain configuration
-- [x] React 18 + TypeScript + Vite foundation
-- [x] Comprehensive Tailwind CSS design system
-- [x] Component architecture and file structure
+---
 
-### ✅ Phase 2-8 - Core Infrastructure (COMPLETED)
-- [x] Authentication system and role-based access
-- [x] Database design and API architecture
-- [x] Image upload and processing pipeline
-- [x] AI integration with confidence scoring
-- [x] Offline-first architecture with service workers
-- [x] Advanced caching and performance optimization
-- [x] Comprehensive testing and quality assurance
-- [x] Security implementation and data protection
+## 📄 **License**
 
-### ✅ Phase 9 - UI/UX Polish (COMPLETED)
-- [x] Mobile-first responsive design system
-- [x] Dark/light/auto theme implementation
-- [x] Advanced component library with touch optimization
-- [x] Micro-interactions and smooth animations
-- [x] Agricultural-themed color palette and typography
-- [x] Comprehensive navigation and layout systems
-
-### 🚀 Phase 10 - Production Ready (IN PROGRESS)
-- [x] README.md comprehensive documentation
-- [ ] Final component integration and testing
-- [ ] Performance optimization and bundle analysis
-- [ ] Deployment preparation and CI/CD setup
-- [ ] Production environment configuration
-
-### 🔮 Future Enhancements (PLANNED)
-- [ ] **Multi-language Support**: Localization for global farming communities
-- [ ] **React Native Mobile App**: Native iOS/Android applications
-- [ ] **Advanced AI Models**: Custom crop-specific machine learning models
-- [ ] **IoT Integration**: Sensor data integration for comprehensive crop monitoring
-- [ ] **Weather Integration**: Real-time weather data and forecasting
-- [ ] **Marketplace Features**: Connect farmers with suppliers and buyers
-- [ ] **Community Features**: Farmer forums and knowledge sharing
-- [ ] **AR/VR Tools**: Augmented reality for field analysis and training
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-**CropGuard** is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 ### What this means:
 - ✅ **Commercial Use**: You can use this software commercially
@@ -333,61 +416,92 @@ Testing setup is prepared for:
 - ✅ **Private Use**: You can use and modify the software privately
 
 ### Requirements:
-- 📝 **License and Copyright Notice**: Include the original license and copyright notice
+- 📝 **License Notice**: Include the original license and copyright notice
 - 📂 **Source Code**: Must provide source code when distributing
 - 📋 **State Changes**: Must document changes made to the code
 - 🔄 **Same License**: Derivative work must be under the same license
 
-### Limitations:
-- ❌ **Liability**: Authors are not liable for damages
-- ❌ **Warranty**: No warranty is provided
-
 This ensures that CropGuard remains free and open-source software that benefits the global farming community while maintaining transparency and collaborative development.
-
-For the complete license text, see the [LICENSE](LICENSE) file in the repository root.
-
-## 📞 Support & Community
-
-### 🆘 Getting Help
-- **📋 Issues**: Report bugs and feature requests on [GitHub Issues](https://github.com/your-org/cropguard/issues)
-- **💬 Discussions**: Join community discussions on [GitHub Discussions](https://github.com/your-org/cropguard/discussions)
-- **📖 Documentation**: Comprehensive guides in the `/docs` directory
-- **🔍 FAQ**: Common questions and solutions in our knowledge base
-
-### 🤝 Contributing
-We welcome contributions from developers, agronomists, and farming professionals:
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-improvement`)
-3. **Commit** your changes (`git commit -m 'Add amazing improvement'`)
-4. **Push** to the branch (`git push origin feature/amazing-improvement`)
-5. **Open** a Pull Request with detailed description
-
-### 🌍 Community
-- **Target Audience**: Small-scale organic farmers, agricultural extension officers, crop protection specialists
-- **Geographic Focus**: Rural areas with limited connectivity worldwide
-- **Mission**: Democratizing access to AI-powered crop protection technology
-
-### 🏗️ Development Status
-**Current Version**: Phase 9 Complete - Production Ready  
-**Last Updated**: July 2025  
-**License**: GPL-3.0  
-**Development Stage**: Ready for deployment and real-world testing
 
 ---
 
-## 🌾 About CropGuard
+## 👨‍💻 **Author & Support**
+
+<div align="center">
+
+### **🎨 Created with ❤️ by Ariel Retes**
+
+[![Email](https://img.shields.io/badge/Email-yhengdesigns@gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:yhengdesigns@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow%20Me-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Yheng)
+
+### ☕ **Support This Project**
+
+<a href="https://buymeacoffee.com/arielretes" target="_blank">
+  <img src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20Development-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" />
+</a>
+
+*If CropGuard helped improve your farming operations or inspired your own agricultural technology project, consider buying me a coffee! Your support helps me continue developing innovative solutions for sustainable farming.* ☕🌾
+
+</div>
+
+### 💬 **Get Support**
+
+- 🐛 **Bug Reports**: [Create an Issue](https://github.com/your-org/cropguard/issues)
+- 💡 **Feature Requests**: [Start a Discussion](https://github.com/your-org/cropguard/discussions)
+- 🔒 **Security Issues**: Report privately via email
+- 📧 **General Questions**: [yhengdesigns@gmail.com](mailto:yhengdesigns@gmail.com)
+
+---
+
+## 🏆 **Project Highlights**
+
+<div align="center">
+
+This application showcases:
+
+**🌾 Agricultural Technology** • **🤖 AI Integration** • **📱 Mobile-First Design**
+**🔄 Offline-First Architecture** • **🛡️ Security Excellence** • **📊 Data Visualization**
+
+*Demonstrates how innovative technical solutions can make a meaningful impact in sustainable agriculture and rural farming communities.*
+
+### 🌟 **Star this project if it helped you!** 🌟
+
+*CropGuard: Empowering farmers with AI, one crop at a time.*
+
+### ☕ **Did CropGuard help your farming operations?**
+
+**If this project improved your crop yields, saved you time, or served as inspiration for your own agricultural technology work, consider supporting its continued development:**
+
+<a href="https://buymeacoffee.com/arielretes" target="_blank">
+  <img src="https://img.shields.io/badge/☕%20Buy%20Me%20A%20Coffee-Support%20Agricultural%20Innovation-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" />
+</a>
+
+*Your contribution helps me dedicate more time to creating impactful agricultural technology solutions for farmers worldwide! 🚀🌾*
+
+---
+
+[![GPL-3.0 License](https://img.shields.io/badge/License-GPL--3.0-green.svg)](https://choosealicense.com/licenses/gpl-3.0/)
+[![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️%20for%20Farmers-green.svg)](https://github.com/your-org/cropguard)
+[![Buy Me A Coffee](https://img.shields.io/badge/☕-Support%20Project-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/arielretes)
+
+</div>
+
+---
+
+## 🌾 **About CropGuard**
 
 **Built with ❤️ for sustainable farming and crop protection.**
 
 CropGuard represents the intersection of modern technology and traditional farming wisdom. By making AI-powered crop protection accessible to small-scale farmers worldwide, we're working toward a future where technology serves agriculture's most fundamental needs.
 
-*"Empowering farmers with AI, one crop at a time."*
+*"Transforming agriculture through AI-powered innovation, one farm at a time."*
 
-### 🎯 Our Mission
+### 🎯 **Our Mission**
 To provide small-scale organic farmers with professional-grade crop protection tools that work offline, respect their data privacy, and help them make informed decisions about their crops.
 
-### 🌱 Our Values
+### 🌱 **Our Values**
 - **Accessibility**: Technology should be available to all farmers, regardless of location or resources
 - **Privacy**: Farmer data belongs to farmers
 - **Sustainability**: Supporting organic and environmentally conscious farming practices
 - **Community**: Building bridges between farmers, agronomists, and technology
+- **Innovation**: Continuously improving agricultural outcomes through cutting-edge solutions

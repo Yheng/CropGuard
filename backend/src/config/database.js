@@ -228,15 +228,8 @@ async function seedDatabase() {
     const adminExists = await getQuery('SELECT id FROM users WHERE role = ? LIMIT 1', ['admin']);
     
     if (!adminExists) {
-      const bcrypt = require('bcryptjs');
-      const adminPassword = await bcrypt.hash('admin123', 12);
-      
-      await runQuery(`
-        INSERT INTO users (email, password_hash, name, role, email_verified, is_active)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `, ['admin@cropguard.com', adminPassword, 'System Admin', 'admin', 1, 1]);
-      
-      console.log('👤 Admin user created: admin@cropguard.com / admin123');
+      const { seedAccountsOnly } = require('../utils/seedDatabase');
+      await seedAccountsOnly();
     }
 
     // Check if treatments exist

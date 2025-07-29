@@ -10,7 +10,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .js,.ts",
-    "format": "prettier --write src/**/*.{js,ts}"
+    "format": "prettier --write src/**/*.{js,ts}",
+    "seed": "node src/scripts/seed.js",
+    "seed:accounts": "node src/scripts/seed.js accounts",
+    "seed:full": "node src/scripts/seed.js full",
+    "seed:clear": "node src/scripts/seed.js clear",
+    "seed:reset": "node src/scripts/seed.js reset"
   },
   "keywords": [
     "api",

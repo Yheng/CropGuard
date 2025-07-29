@@ -4,6 +4,7 @@ import {
   Award, Smartphone, Users, Zap, Globe
 } from 'lucide-react'
 import { useState } from 'react'
+import { LoginDemo } from '../components/demo/LoginDemo'
 
 export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -334,6 +335,17 @@ export function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Demo Login Section */}
+      <section className="py-20 px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <h2 className="text-4xl sm:text-5xl font-black mb-6 text-white">Try CropGuard Now</h2>
+          <p className="text-xl text-slate-300 mb-8">
+            Test the platform with pre-configured demo accounts - no signup required!
+          </p>
+        </div>
+        <LoginDemo />
       </section>
 
       {/* Final CTA Section */}

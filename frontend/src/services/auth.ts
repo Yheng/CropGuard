@@ -1,9 +1,10 @@
 import axios from 'axios'
+import { demoAuthService } from './demoAuth'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 // Demo mode when backend is not available
-// const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true' || false
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true' || false
 
 export interface LoginResponse {
   token: string
@@ -17,6 +18,11 @@ export interface LoginResponse {
 
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
+    // Use demo mode if enabled or if backend is not available
+    if (DEMO_MODE) {
+      return demoAuthService.login(email, password)
+    }
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
@@ -31,7 +37,8 @@ export const authService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
-          throw new Error('Backend server is not available. Please try again later.')
+          console.warn('Backend not available, falling back to demo mode')
+          return demoAuthService.login(email, password)
         }
         throw new Error(error.response?.data?.message || 'Login failed')
       }
@@ -40,6 +47,11 @@ export const authService = {
   },
   
   signup: async (email: string, password: string): Promise<LoginResponse> => {
+    // Use demo mode if enabled or if backend is not available
+    if (DEMO_MODE) {
+      return demoAuthService.signup(email, password)
+    }
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         email,
@@ -56,7 +68,8 @@ export const authService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
-          throw new Error('Backend server is not available. Please try again later.')
+          console.warn('Backend not available, falling back to demo mode')
+          return demoAuthService.signup(email, password)
         }
         throw new Error(error.response?.data?.message || 'Signup failed')
       }
