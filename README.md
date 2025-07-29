@@ -11,7 +11,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-5.1+-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![AI Powered](https://img.shields.io/badge/AI-Powered-FF6B6B?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
 
-![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=CropGuard.Agricultural&left_color=green&right_color=emerald&left_text=Farmers)
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=CropGuard.Agricultural&left_color=green&right_color=emerald&left_text=Visitors)
 
 *Empowering small-scale organic farmers with AI-powered pest detection, organic treatment recommendations, and comprehensive crop health analytics.*
 
@@ -135,9 +135,11 @@ npm run dev
 
 ### 👤 **Demo User Accounts**
 ```
-🌾 Farmer Demo: farmer@demo.com / farmer123
-👨‍🌾 Agronomist Demo: agronomist@demo.com / agro123
-🔬 Expert Demo: expert@demo.com / expert123
+🌾 Farmer: farmer@cropguard.com / farmer123
+👨‍🌾 Agronomist: agronomist@cropguard.com / agro123
+🌾 Maria Garcia: maria.garcia@farmland.com / demo123
+🌾 David Kim: david.kim@organicfarms.com / demo123
+🔬 Dr. Lisa Brown: lisa.brown@soilexperts.com / demo123
 ```
 
 ---

@@ -88,7 +88,7 @@ export function LoginDemo() {
           <p><strong>Admin:</strong> admin@cropguard.com / admin123</p>
           <p><strong>Agronomist:</strong> agronomist@cropguard.com / agro123</p>
           <p><strong>Farmer:</strong> farmer@cropguard.com / farmer123</p>
-          <p><strong>Demo Users:</strong> All demo accounts use password "demo123"</p>
+          <p><strong>Demo Users:</strong> maria.garcia@farmland.com, david.kim@organicfarms.com, lisa.brown@soilexperts.com (all use "demo123")</p>
         </div>
       </div>
     </div>

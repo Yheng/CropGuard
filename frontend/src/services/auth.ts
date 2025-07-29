@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { demoAuthService } from './demoAuth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
 
 // Demo mode when backend is not available
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true' || false
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 export interface LoginResponse {
   token: string
