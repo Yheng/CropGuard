@@ -10,7 +10,10 @@ const {
   sanitizeInput,
   createEndpointRateLimit 
 } = require('../middleware/validation');
+const { createRateLimitMiddleware } = require('../middleware/security');
 const { createImageUpload, defaultUploadHandler } = require('../middleware/upload');
+const aiService = require('../services/ai');
+const FeedbackCollector = require('../services/ai/FeedbackCollector');
 
 const router = express.Router();
 
@@ -27,6 +30,9 @@ const uploadMiddleware = createImageUpload({
   enableProgress: true,
   imageProcessing: true
 });
+
+// Initialize feedback collector
+const feedbackCollector = new FeedbackCollector();
 
 // Mock AI analysis function (replace with actual AI service)
 async function performAIAnalysis(imagePath) {
@@ -147,8 +153,14 @@ router.post('/analyze',
     const processedImage = req.processedImages?.large || req.processedImages?.original;
     const imageUrl = processedImage?.url || `/uploads/images/${req.file.filename}`;
 
-    // Perform AI analysis on the processed image
-    const analysisResult = await performAIAnalysis(processedImage?.path || req.file.path);
+    // Perform AI analysis using the AI service
+    const analysisResult = await aiService.analyzeImage(processedImage?.path || req.file.path, {
+      cropType: cropType,
+      notes: notes,
+      location: location,
+      userId: req.user.id,
+      uploadSession: req.uploadSessionId
+    });
 
     // Save analysis to database with enhanced metadata
     const enhancedMetadata = {
@@ -175,8 +187,8 @@ router.post('/analyze',
       analysisResult.confidence,
       analysisResult.severity,
       JSON.stringify(analysisResult.recommendations),
-      analysisResult.aiModelVersion,
-      analysisResult.metadata.processingTime,
+      analysisResult.metadata?.provider || 'ai-service',
+      analysisResult.metadata?.processing_time_ms || 0,
       JSON.stringify(enhancedMetadata)
     ]);
 
@@ -370,6 +382,76 @@ router.get('/upload-progress/:sessionId',
   defaultUploadHandler.getProgressHandler()
 );
 
+// Get AI service health and capabilities
+router.get('/ai-status', 
+  authenticateToken,
+  requireRole(['admin', 'agronomist']),
+  asyncHandler(async (req, res) => {
+    const healthStatus = await aiService.getHealthStatus();
+    
+    res.json({
+      success: true,
+      data: healthStatus
+    });
+  })
+);
+
+// Get AI service metrics
+router.get('/ai-metrics',
+  authenticateToken,
+  requireRole(['admin']),
+  asyncHandler(async (req, res) => {
+    const metrics = aiService.getMetrics();
+    
+    res.json({
+      success: true,
+      data: metrics
+    });
+  })
+);
+
+// Clear AI service cache
+router.post('/ai-cache/clear',
+  authenticateToken,
+  requireRole(['admin']),
+  asyncHandler(async (req, res) => {
+    aiService.clearCache();
+    
+    res.json({
+      success: true,
+      message: 'AI service cache cleared successfully'
+    });
+  })
+);
+
+// Batch analysis endpoint
+router.post('/batch-analyze',
+  authenticateToken,
+  createRateLimitMiddleware('upload'),
+  validate(validationSchemas.analyzeImage),
+  asyncHandler(async (req, res) => {
+    const { imageUrls, metadata = {} } = req.body;
+    
+    if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+      throw new AppError('imageUrls array is required', 400);
+    }
+    
+    if (imageUrls.length > 10) {
+      throw new AppError('Maximum 10 images allowed per batch', 400);
+    }
+    
+    const batchResults = await aiService.analyzeImageBatch(imageUrls, {
+      ...metadata,
+      userId: req.user.id
+    });
+    
+    res.json({
+      success: true,
+      data: batchResults
+    });
+  })
+);
+
 // Get analyses pending review (for agronomists)
 router.get('/admin/pending-reviews', authenticateToken, requireRole(['agronomist', 'admin']), asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -403,5 +485,113 @@ router.get('/admin/pending-reviews', authenticateToken, requireRole(['agronomist
     }
   });
 }));
+
+// Submit feedback on AI analysis
+router.post('/:id/feedback',
+  authenticateToken,
+  validate(validationSchemas.idParam, 'params'),
+  asyncHandler(async (req, res) => {
+    const { feedbackType, correctCondition, correctTitle, correctDescription, correctSeverity, confidenceRating, notes } = req.body;
+    
+    // Validate feedback type
+    const validFeedbackTypes = ['correct', 'incorrect', 'partial', 'uncertain'];
+    if (!validFeedbackTypes.includes(feedbackType)) {
+      throw new AppError('Invalid feedback type', 400);
+    }
+    
+    // Verify analysis exists and user has access
+    const analysis = await getQuery('SELECT user_id FROM analyses WHERE id = ?', [req.params.id]);
+    if (!analysis) {
+      throw new AppError('Analysis not found', 404);
+    }
+    
+    if (analysis.user_id !== req.user.id && !['agronomist', 'admin'].includes(req.user.role)) {
+      throw new AppError('Access denied', 403);
+    }
+    
+    const feedbackId = await feedbackCollector.collectFeedback(req.params.id, req.user.id, {
+      feedbackType,
+      correctCondition,
+      correctTitle,
+      correctDescription,
+      correctSeverity,
+      confidenceRating,
+      notes
+    });
+    
+    res.json({
+      success: true,
+      message: 'Feedback submitted successfully',
+      data: { feedbackId }
+    });
+  })
+);
+
+// Get feedback statistics for analysis
+router.get('/:id/feedback/stats',
+  authenticateToken,
+  validate(validationSchemas.idParam, 'params'),
+  requireRole(['agronomist', 'admin']),
+  asyncHandler(async (req, res) => {
+    const stats = await feedbackCollector.getFeedbackStats(req.params.id);
+    
+    res.json({
+      success: true,
+      data: stats
+    });
+  })
+);
+
+// Get AI model performance report
+router.get('/ai-performance/report',
+  authenticateToken,
+  requireRole(['admin']),
+  asyncHandler(async (req, res) => {
+    const { modelProvider } = req.query;
+    const report = await feedbackCollector.getPerformanceReport(modelProvider);
+    
+    res.json({
+      success: true,
+      data: report
+    });
+  })
+);
+
+// Export training data
+router.get('/training-data/export',
+  authenticateToken,
+  requireRole(['admin']),
+  asyncHandler(async (req, res) => {
+    const filters = {
+      conditionType: req.query.conditionType,
+      cropType: req.query.cropType,
+      validationLevel: req.query.validationLevel,
+      fromDate: req.query.fromDate,
+      limit: parseInt(req.query.limit) || 1000
+    };
+    
+    const trainingData = await feedbackCollector.exportTrainingData(filters);
+    
+    res.json({
+      success: true,
+      data: trainingData
+    });
+  })
+);
+
+// Get feedback trends
+router.get('/feedback/trends',
+  authenticateToken,
+  requireRole(['admin', 'agronomist']),
+  asyncHandler(async (req, res) => {
+    const days = parseInt(req.query.days) || 30;
+    const trends = await feedbackCollector.getFeedbackTrends(days);
+    
+    res.json({
+      success: true,
+      data: trends
+    });
+  })
+);
 
 module.exports = router;

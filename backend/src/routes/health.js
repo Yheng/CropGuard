@@ -2,6 +2,7 @@ const express = require('express');
 const { getQuery } = require('../config/database');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
 const { healthCheck: loggerHealthCheck } = require('../middleware/logger');
+const aiService = require('../services/ai');
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
@@ -20,7 +21,8 @@ router.get('/', asyncHandler(async (req, res) => {
       database: await checkDatabase(),
       filesystem: await checkFilesystem(),
       memory: checkMemory(),
-      logging: loggerHealthCheck()
+      logging: loggerHealthCheck(),
+      aiService: await checkAIService()
     }
   };
 
@@ -204,6 +206,31 @@ async function getDatabaseMetrics() {
   }
 }
 
+// Check AI service health
+async function checkAIService() {
+  try {
+    const healthStatus = await aiService.getHealthStatus();
+    
+    return {
+      status: healthStatus.status === 'healthy' ? 'healthy' : 'degraded',
+      initialized: healthStatus.initialized,
+      providersCount: healthStatus.providersCount,
+      defaultProvider: healthStatus.defaultProvider,
+      message: healthStatus.status === 'healthy' ? 'AI service operational' : 'AI service degraded',
+      metrics: {
+        totalRequests: healthStatus.metrics?.totalRequests || 0,
+        successRate: healthStatus.metrics?.successRate || 'N/A'
+      }
+    };
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      error: error.message,
+      message: 'AI service unavailable'
+    };
+  }
+}
+
 // Get API metrics (basic implementation)
 async function getApiMetrics() {
   return {
@@ -219,7 +246,8 @@ async function getApiMetrics() {
       fileUpload: 'enabled',
       imageProcessing: 'enabled',
       validation: 'enabled',
-      rateLimit: 'enabled'
+      rateLimit: 'enabled',
+      aiIntegration: 'enabled'
     }
   };
 }
