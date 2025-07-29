@@ -1,21 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Download, RefreshCw, BarChart3 } from 'lucide-react'
-import { HealthTrendChart } from '../components/charts/HealthTrendChart'
-import { AnalysisHistoryChart } from '../components/charts/AnalysisHistoryChart'
-import { CropTypeDistribution } from '../components/charts/CropTypeDistribution'
-import { analyticsService, type AnalyticsData } from '../services/analytics'
+import { ArrowLeft, Download, RefreshCw, BarChart3, Camera, PieChart, TrendingUp } from 'lucide-react'
+import { userDataService } from '../services/userDataService'
 
 export function Analytics() {
   const navigate = useNavigate()
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [error, setError] = useState('')
-  const [timeRanges, setTimeRanges] = useState({
-    health: '30d' as '7d' | '30d' | '90d' | '1y',
-    history: '6m' as '6m' | '1y' | '2y'
-  })
+  const [userStats, setUserStats] = useState<any>(null)
 
   useEffect(() => {
     loadAnalyticsData()
@@ -24,11 +17,15 @@ export function Analytics() {
   const loadAnalyticsData = async () => {
     try {
       setLoading(true)
-      setError('')
-      const data = await analyticsService.getAnalyticsDashboard()
+      const stats = userDataService.getUserStats()
+      const data = userDataService.getAnalyticsData()
+      setUserStats(stats)
       setAnalyticsData(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics data')
+      console.warn('Failed to load analytics data:', err)
+      // Set empty state for new users
+      setUserStats({ totalAnalyses: 0, healthyPlants: 0, plantsNeedingCare: 0, diseasedPlants: 0 })
+      setAnalyticsData({ monthlyAnalyses: [], statusDistribution: [], fieldActivity: [] })
     } finally {
       setLoading(false)
     }
@@ -40,75 +37,58 @@ export function Analytics() {
     setRefreshing(false)
   }
 
-  const handleExport = async (format: 'csv' | 'pdf' | 'xlsx') => {
-    try {
-      const blob = await analyticsService.exportData(format)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `crop-analytics-${new Date().toISOString().split('T')[0]}.${format}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error('Export failed:', err)
-    }
-  }
-
-  const updateHealthTimeRange = async (range: '7d' | '30d' | '90d' | '1y') => {
-    setTimeRanges(prev => ({ ...prev, health: range }))
-    try {
-      const healthData = await analyticsService.getHealthTrend(range)
-      if (analyticsData) {
-        setAnalyticsData({
-          ...analyticsData,
-          healthTrend: healthData
-        })
-      }
-    } catch (err) {
-      console.error('Failed to update health trend:', err)
-    }
-  }
-
-  const updateHistoryTimeRange = async (range: '6m' | '1y' | '2y') => {
-    setTimeRanges(prev => ({ ...prev, history: range }))
-    try {
-      const historyData = await analyticsService.getAnalysisHistory(range)
-      if (analyticsData) {
-        setAnalyticsData({
-          ...analyticsData,
-          analysisHistory: historyData
-        })
-      }
-    } catch (err) {
-      console.error('Failed to update analysis history:', err)
-    }
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#10B981] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
           <p className="text-gray-300">Loading analytics dashboard...</p>
         </div>
       </div>
     )
   }
 
-  if (error) {
+  // Empty state for new users
+  if (!loading && userStats && userStats.totalAnalyses === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <BarChart3 className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={loadAnalyticsData}
-            className="bg-[#10B981] hover:bg-[#10B981]/80 text-white px-6 py-2 rounded-lg"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+        {/* Header */}
+        <header className="border-b border-gray-600">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Dashboard</span>
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold">Analytics</h1>
+                <p className="text-sm text-gray-300">View your crop analysis insights</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Empty State */}
+        <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+          <div className="text-center max-w-md">
+            <div className="w-24 h-24 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <BarChart3 className="w-12 h-12 text-slate-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-300 mb-4">No Analytics Data Yet</h2>
+            <p className="text-slate-400 mb-8 leading-relaxed">
+              Start analyzing your plants to see detailed insights, trends, and statistics about your crop health.
+            </p>
+            <button
+              onClick={() => navigate('/analysis')}
+              className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-3 mx-auto"
+            >
+              <Camera className="w-6 h-6" />
+              Analyze Your First Plant
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -128,169 +108,159 @@ export function Analytics() {
                 <ArrowLeft className="w-5 h-5" />
                 <span>Back to Dashboard</span>
               </button>
+              <div>
+                <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+                <p className="text-sm text-gray-300">Crop health insights and trends</p>
+              </div>
             </div>
-            
-            <h1 className="text-2xl font-bold flex items-center space-x-2">
-              <BarChart3 className="w-6 h-6" />
-              <span>Analytics Dashboard</span>
-            </h1>
             
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
               >
-                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
-              
-              <div className="relative group">
-                <button className="flex items-center space-x-2 bg-[#10B981] hover:bg-[#10B981]/80 text-white px-4 py-2 rounded-lg transition-colors">
-                  <Download className="w-4 h-4" />
-                  <span>Export</span>
-                </button>
-                
-                <div className="absolute right-0 mt-2 w-32 bg-[#4A5B7C] border border-gray-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                  <button
-                    onClick={() => handleExport('csv')}
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 transition-colors"
-                  >
-                    Export CSV
-                  </button>
-                  <button
-                    onClick={() => handleExport('xlsx')}
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 transition-colors"
-                  >
-                    Export Excel
-                  </button>
-                  <button
-                    onClick={() => handleExport('pdf')}
-                    className="block w-full text-left px-4 py-2 text-white hover:bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 transition-colors"
-                  >
-                    Export PDF
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {analyticsData && (
-          <div className="space-y-8">
-            {/* Health Trend Chart */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Crop Health Trends</h2>
-                <div className="flex bg-[#4A5B7C] rounded-lg p-1">
-                  {(['7d', '30d', '90d', '1y'] as const).map((range) => (
-                    <button
-                      key={range}
-                      onClick={() => updateHealthTimeRange(range)}
-                      className={`px-3 py-1 text-sm rounded transition-colors ${
-                        timeRanges.health === range 
-                          ? 'bg-[#10B981] text-white' 
-                          : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      {range === '7d' ? '7 Days' : 
-                       range === '30d' ? '30 Days' : 
-                       range === '90d' ? '90 Days' : '1 Year'}
-                    </button>
-                  ))}
-                </div>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-emerald-400" />
               </div>
-              <HealthTrendChart
-                data={analyticsData.healthTrend}
-                timeRange={timeRanges.health}
-              />
+              <span className="text-2xl font-bold text-emerald-400">{userStats?.totalAnalyses || 0}</span>
             </div>
+            <h3 className="text-lg font-semibold text-white mb-1">Total Analyses</h3>
+            <p className="text-sm text-gray-400">Plant health checks</p>
+          </div>
 
-            {/* Analysis History and Crop Distribution */}
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">Analysis History</h2>
-                  <div className="flex bg-[#4A5B7C] rounded-lg p-1">
-                    {(['6m', '1y', '2y'] as const).map((range) => (
-                      <button
-                        key={range}
-                        onClick={() => updateHistoryTimeRange(range)}
-                        className={`px-3 py-1 text-sm rounded transition-colors ${
-                          timeRanges.history === range 
-                            ? 'bg-[#10B981] text-white' 
-                            : 'text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        {range === '6m' ? '6 Months' : 
-                         range === '1y' ? '1 Year' : '2 Years'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <AnalysisHistoryChart
-                  data={analyticsData.analysisHistory}
-                  timeRange={timeRanges.history}
-                />
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-green-400" />
               </div>
-
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Crop Type Distribution</h2>
-                <CropTypeDistribution data={analyticsData.cropDistribution} />
-              </div>
+              <span className="text-2xl font-bold text-green-400">{userStats?.healthyPlants || 0}</span>
             </div>
+            <h3 className="text-lg font-semibold text-white mb-1">Healthy Plants</h3>
+            <p className="text-sm text-gray-400">No issues detected</p>
+          </div>
 
-            {/* Summary Statistics */}
-            <div className="bg-[#4A5B7C] rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-6">Summary Statistics</h2>
-              <div className="grid md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#10B981] mb-2">
-                    {analyticsData.analysisHistory.reduce((sum, month) => sum + month.total, 0)}
-                  </div>
-                  <div className="text-gray-300">Total Analyses</div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    Last {timeRanges.history === '6m' ? '6 months' : timeRanges.history === '1y' ? 'year' : '2 years'}
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#10B981] mb-2">
-                    {Math.round(
-                      analyticsData.healthTrend.reduce((sum, point) => sum + point.healthScore, 0) / 
-                      analyticsData.healthTrend.length
-                    )}%
-                  </div>
-                  <div className="text-gray-300">Average Health Score</div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    Last {timeRanges.health === '7d' ? '7 days' : 
-                          timeRanges.health === '30d' ? '30 days' : 
-                          timeRanges.health === '90d' ? '90 days' : 'year'}
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#2DD4BF] mb-2">
-                    {analyticsData.cropDistribution.length}
-                  </div>
-                  <div className="text-gray-300">Crop Types Monitored</div>
-                  <div className="text-sm text-gray-400 mt-1">Active varieties</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#F59E0B] mb-2">
-                    {Math.round(
-                      (analyticsData.analysisHistory.reduce((sum, month) => sum + month.healthy, 0) /
-                       analyticsData.analysisHistory.reduce((sum, month) => sum + month.total, 0)) * 100
-                    )}%
-                  </div>
-                  <div className="text-gray-300">Healthy Rate</div>
-                  <div className="text-sm text-gray-400 mt-1">Overall performance</div>
-                </div>
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                <PieChart className="w-6 h-6 text-amber-400" />
               </div>
+              <span className="text-2xl font-bold text-amber-400">{userStats?.plantsNeedingCare || 0}</span>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-1">Need Care</h3>
+            <p className="text-sm text-gray-400">Require attention</p>
+          </div>
+
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-red-400" />
+              </div>
+              <span className="text-2xl font-bold text-red-400">{userStats?.diseasedPlants || 0}</span>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-1">Diseased</h3>
+            <p className="text-sm text-gray-400">Disease detected</p>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Monthly Analysis Chart */}
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <h3 className="text-xl font-semibold text-white mb-6">Monthly Analysis Trend</h3>
+            {analyticsData?.monthlyAnalyses?.length > 0 ? (
+              <div className="space-y-4">
+                {analyticsData.monthlyAnalyses.map((item: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-gray-300">{item.month}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-32 bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full" 
+                          style={{ width: `${Math.min(100, (item.count / Math.max(...analyticsData.monthlyAnalyses.map((m: any) => m.count))) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-emerald-400 font-medium w-8 text-right">{item.count}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No monthly data available yet</p>
+              </div>
+            )}
+          </div>
+
+          {/* Status Distribution */}
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <h3 className="text-xl font-semibold text-white mb-6">Health Status Distribution</h3>
+            {analyticsData?.statusDistribution?.length > 0 ? (
+              <div className="space-y-4">
+                {analyticsData.statusDistribution.map((item: any, index: number) => {
+                  const getStatusColor = (status: string) => {
+                    switch (status.toLowerCase()) {
+                      case 'healthy': return 'from-emerald-500 to-green-500'
+                      case 'needs care': return 'from-amber-500 to-orange-500'
+                      case 'disease detected': return 'from-red-500 to-pink-500'
+                      default: return 'from-slate-500 to-gray-500'
+                    }
+                  }
+
+                  return (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-gray-300 capitalize">{item.status}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div 
+                            className={`bg-gradient-to-r ${getStatusColor(item.status)} h-2 rounded-full`}
+                            style={{ width: `${item.percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-medium w-12 text-right">{item.percentage}%</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <PieChart className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No status data available yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Field Activity */}
+        {analyticsData?.fieldActivity?.length > 0 && (
+          <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
+            <h3 className="text-xl font-semibold text-white mb-6">Top Active Fields</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {analyticsData.fieldActivity.map((field: any, index: number) => (
+                <div key={index} className="bg-slate-700/50 rounded-lg p-4 border border-gray-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-white">{field.field}</h4>
+                    <span className="text-emerald-400 font-bold">{field.count}</span>
+                  </div>
+                  <p className="text-sm text-gray-400">analyses conducted</p>
+                </div>
+              ))}
             </div>
           </div>
         )}

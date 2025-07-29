@@ -89,6 +89,25 @@ export const authService = {
   },
   
   logout: () => {
+    // Clear user-specific data on logout
+    const userData = localStorage.getItem('user_data')
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        // Clear user-specific localStorage keys
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith(`cropguard_user_${user.id}_`)) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key))
+      } catch (error) {
+        console.warn('Failed to clear user-specific data:', error)
+      }
+    }
+    
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
     dispatchAuthChange()

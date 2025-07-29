@@ -4,11 +4,14 @@ import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu,
 import { authService } from '../services/auth'
 import { useFieldMode } from '../contexts/FieldModeContext'
 import { useFieldMetrics } from '../hooks/useFieldMetrics'
+import { userDataService, type UserStats, type PlantAnalysis } from '../services/userDataService'
 import OneHandedNavigation from '../components/navigation/OneHandedNavigation'
 
 export function Dashboard() {
   const [user] = useState(() => authService.getCurrentUser() || { name: 'Demo User', role: 'farmer' })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [recentAnalyses, setRecentAnalyses] = useState<PlantAnalysis[]>([])
   const navigate = useNavigate()
   // Restored FieldModeContext (should be safe now)
   const { fieldMode, settings, weatherData, isFieldOptimized, setFieldMode } = useFieldMode()
@@ -17,17 +20,20 @@ export function Dashboard() {
   const getFieldUsabilityScore = () => 85
   // const { metrics, getFieldUsabilityScore } = useFieldMetrics()
 
-  // Temporarily disabled auth check to debug console errors
-  // useEffect(() => {
-  //   if (!authService.isAuthenticated()) {
-  //     navigate('/login')
-  //   } else {
-  //     const currentUser = authService.getCurrentUser()
-  //     if (currentUser) {
-  //       setUser(currentUser)
-  //     }
-  //   }
-  // }, [navigate])
+  // Load user-specific data
+  useEffect(() => {
+    try {
+      const stats = userDataService.getUserStats()
+      const analyses = userDataService.getRecentAnalyses(3)
+      setUserStats(stats)
+      setRecentAnalyses(analyses)
+    } catch (error) {
+      console.warn('Failed to load user data:', error)
+      // Set empty state for new users
+      setUserStats({ totalAnalyses: 0, healthyPlants: 0, plantsNeedingCare: 0, diseasedPlants: 0 })
+      setRecentAnalyses([])
+    }
+  }, [user])
 
   const handleLogout = () => {
     authService.logout()
@@ -311,15 +317,30 @@ export function Dashboard() {
             <div className="w-14 h-14 bg-emerald-500/30 rounded-xl flex items-center justify-center mb-4">
               <BarChart3 className="w-7 h-7 text-emerald-400" />
             </div>
-            <div className="text-4xl font-bold text-emerald-400 mb-2">12</div>
-            <h3 className="text-xl font-bold text-white mb-1">Plants Analyzed</h3>
-            <p className="text-slate-400">This month</p>
-            <div className="mt-4 flex items-center">
-              <div className="flex-1 bg-slate-700 rounded-full h-2">
-                <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full w-3/4"></div>
-              </div>
-              <span className="text-emerald-400 text-sm font-medium ml-3">75%</span>
+            <div className="text-4xl font-bold text-emerald-400 mb-2">
+              {userStats?.totalAnalyses || 0}
             </div>
+            <h3 className="text-xl font-bold text-white mb-1">Plants Analyzed</h3>
+            <p className="text-slate-400">Total</p>
+            {userStats && userStats.totalAnalyses > 0 ? (
+              <div className="mt-4 flex items-center">
+                <div className="flex-1 bg-slate-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full" 
+                    style={{ 
+                      width: `${Math.min(100, (userStats.healthyPlants / userStats.totalAnalyses) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                <span className="text-emerald-400 text-sm font-medium ml-3">
+                  {Math.round((userStats.healthyPlants / userStats.totalAnalyses) * 100)}%
+                </span>
+              </div>
+            ) : (
+              <div className="mt-4 text-slate-500 text-sm">
+                No analyses yet
+              </div>
+            )}
           </div>
         </div>
 
@@ -335,61 +356,73 @@ export function Dashboard() {
             </button>
           </div>
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                  <Camera className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-white">Tomato plant examined</p>
-                  <p className="text-sm text-slate-400">Field A, Row 12 • 2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">
-                  Healthy
-                </span>
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-              </div>
-            </div>
+          {recentAnalyses.length > 0 ? (
+            <div className="space-y-4">
+              {recentAnalyses.map((analysis) => {
+                const getStatusColor = (status: string) => {
+                  switch (status) {
+                    case 'healthy': return { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30', dot: 'bg-emerald-400' }
+                    case 'needs-care': return { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', dot: 'bg-amber-400' }
+                    case 'disease-detected': return { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/30', dot: 'bg-red-400' }
+                    default: return { bg: 'bg-slate-500/20', text: 'text-slate-300', border: 'border-slate-500/30', dot: 'bg-slate-400' }
+                  }
+                }
 
-            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                  <Camera className="w-6 h-6 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-white">Corn plant examined</p>
-                  <p className="text-sm text-slate-400">Field B, Row 8 • 1 day ago</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-amber-500/20 text-amber-300 text-sm font-medium rounded-full border border-amber-500/30">
-                  Needs Care
-                </span>
-                <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
-              </div>
-            </div>
+                const formatTimeAgo = (timestamp: string) => {
+                  const now = new Date()
+                  const analysisTime = new Date(timestamp)
+                  const diffMs = now.getTime() - analysisTime.getTime()
+                  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+                  const diffDays = Math.floor(diffHours / 24)
 
-            <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                  <Camera className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-white">Wheat plant examined</p>
-                  <p className="text-sm text-slate-400">Field C, Row 5 • 3 days ago</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">
-                  Healthy
-                </span>
-                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-              </div>
+                  if (diffDays > 0) {
+                    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+                  } else if (diffHours > 0) {
+                    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+                  } else {
+                    return 'Just now'
+                  }
+                }
+
+                const colors = getStatusColor(analysis.status)
+
+                return (
+                  <div key={analysis.id} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-xl border border-slate-600/50 hover:bg-slate-700/70 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-12 h-12 ${colors.bg} rounded-lg flex items-center justify-center`}>
+                        <Camera className={`w-6 h-6 ${colors.text}`} />
+                      </div>
+                      <div>
+                        <p className="text-lg font-medium text-white">{analysis.plantType} plant examined</p>
+                        <p className="text-sm text-slate-400">{analysis.location} • {formatTimeAgo(analysis.timestamp)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`px-3 py-1 ${colors.bg} ${colors.text} text-sm font-medium rounded-full border ${colors.border}`}>
+                        {analysis.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </span>
+                      <div className={`w-2 h-2 ${colors.dot} rounded-full ${analysis.status === 'healthy' ? 'animate-pulse' : ''}`}></div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-8 h-8 text-slate-500" />
+              </div>
+              <h4 className="text-lg font-medium text-slate-400 mb-2">No plant analyses yet</h4>
+              <p className="text-slate-500 mb-6">Start by taking photos of your plants to get AI-powered health insights</p>
+              <button
+                onClick={() => navigate('/analysis')}
+                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2 mx-auto"
+              >
+                <Camera className="w-5 h-5" />
+                Analyze Your First Plant
+              </button>
+            </div>
+          )}
           
           {/* Quick Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-slate-700/50">
