@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -11,10 +12,24 @@ const analysisRoutes = require('./routes/analysis');
 const treatmentRoutes = require('./routes/treatments');
 const analyticsRoutes = require('./routes/analytics');
 const userRoutes = require('./routes/users');
+const healthRoutes = require('./routes/health');
 
 const { initializeDatabase } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
-const { requestLogger } = require('./middleware/requestLogger');
+const { 
+  requestLogger, 
+  performanceLogger, 
+  logger, 
+  appLogger 
+} = require('./middleware/logger');
+const {
+  createRateLimitMiddleware,
+  suspiciousActivityDetector,
+  requestSizeValidator,
+  advancedSanitization,
+  securityHeaders,
+  requestIdMiddleware
+} = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +52,9 @@ const rateLimitMiddleware = async (req, res, next) => {
   }
 };
 
-// Middleware
+// Security middleware (order is important)
+app.use(requestIdMiddleware);
+app.use(securityHeaders);
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
@@ -46,14 +63,26 @@ app.use(cors({
   credentials: true
 }));
 app.use(compression());
+
+// Request validation and rate limiting
+app.use(requestSizeValidator());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan('combined'));
-app.use(requestLogger);
-app.use(rateLimitMiddleware);
+app.use(suspiciousActivityDetector);
+app.use(advancedSanitization);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Logging and monitoring
+app.use(requestLogger);
+app.use(performanceLogger);
+
+// Global rate limiting
+app.use(createRateLimitMiddleware('global'));
+
+// Health check and monitoring routes
+app.use('/health', healthRoutes);
+
+// Legacy health endpoint for backward compatibility
+app.get('/health-simple', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -72,6 +101,9 @@ app.use('/api/users', userRoutes);
 // Static file serving for uploaded images
 app.use('/uploads', express.static('uploads'));
 
+// Serve processed images
+app.use('/uploads/processed', express.static(path.join(__dirname, '../uploads/processed')));
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -87,14 +119,25 @@ app.use(errorHandler);
 async function startServer() {
   try {
     await initializeDatabase();
-    console.log('✅ Database initialized successfully');
+    logger.info('Database initialized successfully');
+    appLogger.systemEvent('server_startup', { port: PORT });
     
     app.listen(PORT, () => {
-      console.log(`🚀 CropGuard API server running on port ${PORT}`);
-      console.log(`📋 Health check: http://localhost:${PORT}/health`);
-      console.log(`🌱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`CropGuard API server running on port ${PORT}`, {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        healthCheck: `http://localhost:${PORT}/health`
+      });
+      
+      // Legacy console logs for development
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`🚀 CropGuard API server running on port ${PORT}`);
+        console.log(`📋 Health check: http://localhost:${PORT}/health`);
+        console.log(`🌱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      }
     });
   } catch (error) {
+    logger.error('Failed to start server', { error: error.message, stack: error.stack });
     console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
@@ -102,11 +145,15 @@ async function startServer() {
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  appLogger.systemEvent('server_shutdown', { signal: 'SIGTERM' });
   console.log('🛑 SIGTERM received, shutting down gracefully');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  appLogger.systemEvent('server_shutdown', { signal: 'SIGINT' });
   console.log('🛑 SIGINT received, shutting down gracefully');
   process.exit(0);
 });

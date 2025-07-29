@@ -1,43 +1,31 @@
 const express = require('express');
-const multer = require('multer');
-const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
-const Joi = require('joi');
 const { runQuery, getQuery, allQuery } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
+const { 
+  validationSchemas, 
+  validate, 
+  sanitizeInput,
+  createEndpointRateLimit 
+} = require('../middleware/validation');
+const { createImageUpload, defaultUploadHandler } = require('../middleware/upload');
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/images');
-    await fs.mkdir(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `crop-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new AppError('Only JPEG, PNG, and WebP images are allowed', 400), false);
-  }
-};
+// Rate limiting for analysis endpoints
+const analysisRateLimit = createEndpointRateLimit(10, 600); // 10 uploads per 10 minutes
+const historyRateLimit = createEndpointRateLimit(30, 60); // 30 requests per minute
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  }
+// Configure advanced image upload
+const uploadMiddleware = createImageUpload({
+  maxFileSize: 10 * 1024 * 1024, // 10MB
+  enableProgress: true,
+  imageProcessing: true
 });
 
 // Mock AI analysis function (replace with actual AI service)
@@ -146,24 +134,30 @@ async function processImage(inputPath, outputPath) {
 }
 
 // Upload and analyze image
-router.post('/analyze', authenticateToken, upload.single('image'), asyncHandler(async (req, res) => {
-  if (!req.file) {
-    throw new AppError('No image file provided', 400);
-  }
-
-  const { cropType, notes } = req.body;
+router.post('/analyze', 
+  authenticateToken,
+  analysisRateLimit,
+  ...uploadMiddleware,
+  validate(validationSchemas.analyzeImage),
+  asyncHandler(async (req, res) => {
+    const { cropType, notes, location } = req.body;
 
   try {
-    const originalPath = req.file.path;
-    const processedPath = originalPath.replace(/\.[^/.]+$/, '_processed.jpg');
+    // Use processed images from upload middleware
+    const processedImage = req.processedImages?.large || req.processedImages?.original;
+    const imageUrl = processedImage?.url || `/uploads/images/${req.file.filename}`;
 
-    // Process image
-    await processImage(originalPath, processedPath);
+    // Perform AI analysis on the processed image
+    const analysisResult = await performAIAnalysis(processedImage?.path || req.file.path);
 
-    // Perform AI analysis
-    const analysisResult = await performAIAnalysis(processedPath);
+    // Save analysis to database with enhanced metadata
+    const enhancedMetadata = {
+      ...analysisResult.metadata,
+      imageMetadata: req.imageMetadata,
+      processedImages: req.processedImages,
+      uploadSession: req.uploadSessionId
+    };
 
-    // Save analysis to database
     const result = await runQuery(`
       INSERT INTO analyses (
         user_id, image_path, image_url, crop_type, condition, title, description,
@@ -172,8 +166,8 @@ router.post('/analyze', authenticateToken, upload.single('image'), asyncHandler(
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `, [
       req.user.id,
-      processedPath,
-      `/uploads/images/${path.basename(processedPath)}`,
+      processedImage?.path || req.file.path,
+      imageUrl,
       cropType || analysisResult.cropType,
       analysisResult.condition,
       analysisResult.title,
@@ -183,11 +177,10 @@ router.post('/analyze', authenticateToken, upload.single('image'), asyncHandler(
       JSON.stringify(analysisResult.recommendations),
       analysisResult.aiModelVersion,
       analysisResult.metadata.processingTime,
-      JSON.stringify(analysisResult.metadata)
+      JSON.stringify(enhancedMetadata)
     ]);
 
-    // Clean up original file
-    await fs.unlink(originalPath);
+    // Original file cleanup is handled by the upload middleware
 
     // Get complete analysis record
     const analysis = await getQuery(`
@@ -215,12 +208,13 @@ router.post('/analyze', authenticateToken, upload.single('image'), asyncHandler(
 }));
 
 // Get user's analysis history
-router.get('/history', authenticateToken, asyncHandler(async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
-  const offset = (page - 1) * limit;
-
-  const { condition, cropType, startDate, endDate } = req.query;
+router.get('/history', 
+  authenticateToken,
+  historyRateLimit,
+  validate(validationSchemas.analysisQuery, 'query'),
+  asyncHandler(async (req, res) => {
+    const { page, limit, condition, cropType, startDate, endDate, severity } = req.query;
+    const offset = (page - 1) * limit;
 
   let whereConditions = ['user_id = ?'];
   let queryParams = [req.user.id];
@@ -276,7 +270,10 @@ router.get('/history', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Get specific analysis
-router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/:id', 
+  authenticateToken,
+  validate(validationSchemas.idParam, 'params'),
+  asyncHandler(async (req, res) => {
   const analysis = await getQuery(`
     SELECT a.*, u.name as user_name, r.name as reviewer_name
     FROM analyses a
@@ -309,7 +306,10 @@ router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Request agronomist review
-router.post('/:id/request-review', authenticateToken, asyncHandler(async (req, res) => {
+router.post('/:id/request-review', 
+  authenticateToken,
+  validate(validationSchemas.idParam, 'params'),
+  asyncHandler(async (req, res) => {
   const analysis = await getQuery('SELECT user_id, review_status FROM analyses WHERE id = ?', [req.params.id]);
 
   if (!analysis) {
@@ -338,18 +338,13 @@ router.post('/:id/request-review', authenticateToken, asyncHandler(async (req, r
 }));
 
 // Agronomist review analysis
-router.post('/:id/review', authenticateToken, requireRole(['agronomist', 'admin']), asyncHandler(async (req, res) => {
-  const reviewSchema = Joi.object({
-    status: Joi.string().valid('approved', 'rejected').required(),
-    notes: Joi.string().max(1000).optional()
-  });
-
-  const { error, value } = reviewSchema.validate(req.body);
-  if (error) {
-    throw new AppError(error.details[0].message, 400);
-  }
-
-  const { status, notes } = value;
+router.post('/:id/review', 
+  authenticateToken, 
+  requireRole(['agronomist', 'admin']),
+  validate(validationSchemas.idParam, 'params'),
+  validate(validationSchemas.reviewAnalysis),
+  asyncHandler(async (req, res) => {
+    const { status, notes } = req.body;
 
   const analysis = await getQuery('SELECT id FROM analyses WHERE id = ?', [req.params.id]);
   if (!analysis) {
@@ -368,6 +363,12 @@ router.post('/:id/review', authenticateToken, requireRole(['agronomist', 'admin'
     message: `Analysis ${status} successfully`
   });
 }));
+
+// Get upload progress
+router.get('/upload-progress/:sessionId', 
+  authenticateToken,
+  defaultUploadHandler.getProgressHandler()
+);
 
 // Get analyses pending review (for agronomists)
 router.get('/admin/pending-reviews', authenticateToken, requireRole(['agronomist', 'admin']), asyncHandler(async (req, res) => {

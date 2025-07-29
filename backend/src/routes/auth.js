@@ -1,36 +1,35 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const Joi = require('joi');
 const { runQuery, getQuery } = require('../config/database');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
+const { 
+  validationSchemas, 
+  validate, 
+  sanitizeInput,
+  createEndpointRateLimit 
+} = require('../middleware/validation');
+const {
+  createRateLimitMiddleware,
+  bruteForceProtection,
+  resetBruteForceCounter
+} = require('../middleware/security');
 
 const router = express.Router();
 
-// Validation schemas
-const registerSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(8).required(),
-  name: Joi.string().min(2).max(100).required(),
-  role: Joi.string().valid('farmer', 'agronomist').default('farmer'),
-  phone: Joi.string().optional(),
-  location: Joi.string().optional()
-});
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
-const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().required()
-});
+// Enhanced rate limiting for auth endpoints
+const authRateLimit = createRateLimitMiddleware('auth');
+const passwordChangeRateLimit = createRateLimitMiddleware('passwordChange');
 
 // Register new user
-router.post('/register', asyncHandler(async (req, res) => {
-  // Validate input
-  const { error, value } = registerSchema.validate(req.body);
-  if (error) {
-    throw new AppError(error.details[0].message, 400);
-  }
-
-  const { email, password, name, role, phone, location } = value;
+router.post('/register', 
+  authRateLimit,
+  validate(validationSchemas.register),
+  asyncHandler(async (req, res) => {
+    const { email, password, name, role, phone, location } = req.body;
 
   // Check if user already exists
   const existingUser = await getQuery('SELECT id FROM users WHERE email = ?', [email]);
@@ -79,14 +78,12 @@ router.post('/register', asyncHandler(async (req, res) => {
 }));
 
 // Login user
-router.post('/login', asyncHandler(async (req, res) => {
-  // Validate input
-  const { error, value } = loginSchema.validate(req.body);
-  if (error) {
-    throw new AppError(error.details[0].message, 400);
-  }
-
-  const { email, password } = value;
+router.post('/login',
+  authRateLimit,
+  bruteForceProtection,
+  validate(validationSchemas.login),
+  asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
   // Get user by email
   const user = await getQuery(`
@@ -129,7 +126,7 @@ router.post('/login', asyncHandler(async (req, res) => {
       token
     }
   });
-}));
+}), resetBruteForceCounter);
 
 // Get current user profile
 router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
@@ -163,26 +160,17 @@ router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Update user profile
-router.put('/profile', authenticateToken, asyncHandler(async (req, res) => {
-  const updateSchema = Joi.object({
-    name: Joi.string().min(2).max(100).optional(),
-    phone: Joi.string().optional(),
-    location: Joi.string().optional(),
-    avatar_url: Joi.string().uri().optional()
-  });
+router.put('/profile', 
+  authenticateToken,
+  validate(validationSchemas.updateProfile),
+  asyncHandler(async (req, res) => {
+    const updates = [];
+    const values = [];
 
-  const { error, value } = updateSchema.validate(req.body);
-  if (error) {
-    throw new AppError(error.details[0].message, 400);
-  }
-
-  const updates = [];
-  const values = [];
-
-  Object.keys(value).forEach(key => {
-    updates.push(`${key} = ?`);
-    values.push(value[key]);
-  });
+    Object.keys(req.body).forEach(key => {
+      updates.push(`${key} = ?`);
+      values.push(req.body[key]);
+    });
 
   if (updates.length === 0) {
     throw new AppError('No valid fields to update', 400);
@@ -209,18 +197,12 @@ router.put('/profile', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Change password
-router.post('/change-password', authenticateToken, asyncHandler(async (req, res) => {
-  const schema = Joi.object({
-    currentPassword: Joi.string().required(),
-    newPassword: Joi.string().min(8).required()
-  });
-
-  const { error, value } = schema.validate(req.body);
-  if (error) {
-    throw new AppError(error.details[0].message, 400);
-  }
-
-  const { currentPassword, newPassword } = value;
+router.post('/change-password', 
+  authenticateToken,
+  passwordChangeRateLimit,
+  validate(validationSchemas.changePassword),
+  asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
 
   // Get current password hash
   const user = await getQuery('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);

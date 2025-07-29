@@ -1,13 +1,28 @@
 const express = require('express');
-const Joi = require('joi');
 const { runQuery, getQuery, allQuery } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
+const { 
+  validationSchemas, 
+  validate, 
+  sanitizeInput,
+  createEndpointRateLimit 
+} = require('../middleware/validation');
 
 const router = express.Router();
 
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
+
+// Rate limiting for treatment endpoints
+const treatmentRateLimit = createEndpointRateLimit(20, 60); // 20 requests per minute
+
 // Get treatment plan for analysis
-router.get('/plan/:analysisId', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/plan/:analysisId', 
+  authenticateToken,
+  treatmentRateLimit,
+  validate(validationSchemas.idParam, 'params'),
+  asyncHandler(async (req, res) => {
   const analysis = await getQuery(`
     SELECT id, user_id, condition, title, severity
     FROM analyses WHERE id = ?
@@ -132,7 +147,11 @@ async function generateTreatmentPlan(analysis) {
 }
 
 // Get all treatments
-router.get('/', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/', 
+  authenticateToken,
+  treatmentRateLimit,
+  validate(validationSchemas.treatmentQuery, 'query'),
+  asyncHandler(async (req, res) => {
   const { type, condition } = req.query;
   
   let whereConditions = ['is_active = 1'];
@@ -169,7 +188,11 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Get specific treatment details
-router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/:id', 
+  authenticateToken,
+  treatmentRateLimit,
+  validate(validationSchemas.idParam, 'params'),
+  asyncHandler(async (req, res) => {
   const treatment = await getQuery(`
     SELECT * FROM treatments WHERE id = ? AND is_active = 1
   `, [req.params.id]);
@@ -194,7 +217,12 @@ router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
 }));
 
 // Save treatment to user's list
-router.post('/:id/save', authenticateToken, asyncHandler(async (req, res) => {
+router.post('/:id/save', 
+  authenticateToken,
+  treatmentRateLimit,
+  validate(validationSchemas.idParam, 'params'),
+  validate(validationSchemas.saveTreatment),
+  asyncHandler(async (req, res) => {
   const { notes } = req.body;
 
   // Check if treatment exists
