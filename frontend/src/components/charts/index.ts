@@ -1,9 +1,13 @@
-// Chart component exports
+// Original Chart Components
 export { HealthTrendChart } from './HealthTrendChart'
 export { AnalysisHistoryChart } from './AnalysisHistoryChart'
 export { CropTypeDistribution } from './CropTypeDistribution'
 
-// Future chart components
-// export { CropHealthChart } from './CropHealthChart';
-// export { TrendChart } from './TrendChart';
-// export { PieChart } from './PieChart';
+// Phase 6: Crop Health Visualization Components
+export { CropHealthDashboard } from './CropHealthDashboard'
+export { PestDiseaseAnalysis } from './PestDiseaseAnalysis'
+export { TreatmentEffectiveness } from './TreatmentEffectiveness'
+export { GeographicalHeatmap } from './GeographicalHeatmap'
+export { SeverityTimeline } from './SeverityTimeline'
+export { MobileOptimizedChart } from './MobileOptimizedChart'
+export { AIConfidenceVisualization } from './AIConfidenceVisualization'
