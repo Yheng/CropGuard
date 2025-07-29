@@ -1,6 +1,27 @@
 # 🚀 CropGuard Deployment Guide
 
-Complete deployment instructions for the CropGuard AI-powered crop protection application.
+## 📋 Table of Contents
+
+- [🚀 CropGuard Deployment Guide](#-cropguard-deployment-guide)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [🎯 Overview](#-overview)
+  - [🔧 Prerequisites](#-prerequisites)
+  - [⚙️ Environment Setup](#️-environment-setup)
+  - [🏗️ Build Process](#️-build-process)
+  - [🌐 Deployment Options](#-deployment-options)
+    - [Option 1: Vercel + Railway (Recommended)](#option-1-vercel--railway-recommended)
+    - [Option 2: Docker + Cloud Provider](#option-2-docker--cloud-provider)
+    - [Option 3: Traditional VPS](#option-3-traditional-vps)
+  - [🔒 Security Configuration](#-security-configuration)
+  - [📊 Monitoring & Analytics](#-monitoring--analytics)
+  - [🔄 CI/CD Pipeline](#-cicd-pipeline)
+  - [🚨 Troubleshooting](#-troubleshooting)
+  - [📈 Performance Optimization](#-performance-optimization)
+  - [🛠️ Maintenance](#️-maintenance)
+
+## 🎯 Overview
+
+CropGuard is a comprehensive AI-powered crop protection application designed for modern agricultural practices. This deployment guide covers everything from local development to production deployment across multiple cloud platforms.
 
 ## 📋 Prerequisites
 

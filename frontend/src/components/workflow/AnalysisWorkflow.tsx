@@ -467,7 +467,6 @@ function WorkflowSummary({
               <>
                 <currentStep.icon 
                   className="w-6 h-6" 
-                  style={{ color: currentStep.color }} 
                 />
                 <div>
                   <h4 className="font-medium text-white">{currentStep.title}</h4>
@@ -598,7 +597,6 @@ export function AnalysisWorkflow({
                 <>
                   <currentStep.icon 
                     className="w-5 h-5" 
-                    style={{ color: currentStep.color }} 
                   />
                   <div>
                     <h4 className="font-medium text-white text-sm">{currentStep.title}</h4>

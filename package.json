@@ -17,8 +17,15 @@
     "dev:backend": "npm run dev --workspace=backend",
     "build:frontend": "npm run build --workspace=frontend",
     "build:backend": "npm run build --workspace=backend",
+    "test": "jest",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "lint:all": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
     "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
-    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules frontend/dist backend/dist"
+    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules frontend/dist backend/dist coverage"
   },
   "keywords": [
     "agriculture",
@@ -41,6 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.45.0",
+    "jest": "^29.7.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.2"
   }

@@ -165,7 +165,7 @@ export function ResponsiveNavigation({
     })
   }
 
-  const handleNavigate = (href: string, requiresConnection?: boolean) => {
+  const handleNavigate = (href: string, requiresConnection: boolean = false) => {
     // Could add offline handling here
     onNavigate?.(href)
   }

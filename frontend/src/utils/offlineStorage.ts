@@ -73,6 +73,7 @@ export interface SyncStatus {
   pendingActions: number
   failedUploads: number
   failedActions: number
+  uploadedCount: number
   isOnline: boolean
   isSyncing: boolean
 }
@@ -86,7 +87,7 @@ class OfflineStorageManager {
   // Storage quotas for mobile devices
   private readonly MAX_STORAGE_SIZE = 200 * 1024 * 1024 // 200MB
   private readonly MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB per image
-  private readonly MAX_QUEUE_SIZE = 100 // Maximum queued items
+  private readonly _MAX_QUEUE_SIZE = 100 // Maximum queued items
   private readonly COMPRESSION_QUALITY = 0.8 // JPEG compression quality
 
   async initialize(): Promise<void> {
@@ -126,7 +127,7 @@ class OfflineStorageManager {
     })
   }
 
-  private setupObjectStores(db: IDBDatabase, oldVersion: number) {
+  private setupObjectStores(db: IDBDatabase, _oldVersion: number) {
     // Upload queue for analysis images
     if (!db.objectStoreNames.contains('uploadQueue')) {
       const uploadStore = db.createObjectStore('uploadQueue', { 
@@ -444,6 +445,7 @@ class OfflineStorageManager {
       pendingActions,
       failedUploads,
       failedActions,
+      uploadedCount: stored.uploadedCount || 0,
       isOnline: navigator.onLine,
       isSyncing: stored.isSyncing || false
     }
@@ -720,7 +722,7 @@ class OfflineStorageManager {
   private requestBackgroundSync(tag: string): void {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then(registration => {
-        return registration.sync.register(tag)
+        return (registration as any).sync?.register(tag)
       }).catch(error => {
         console.warn('[OfflineStorage] Background sync not available:', error)
       })

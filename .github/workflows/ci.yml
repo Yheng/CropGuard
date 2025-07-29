@@ -1,0 +1,338 @@
+name: 🌾 CropGuard CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18.x'
+  CACHE_KEY: node-modules
+
+jobs:
+  # Job 1: Code Quality & Security
+  quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🔍 Lint code
+        run: npm run lint:all
+
+      - name: 🔒 Security audit
+        run: npm audit --audit-level moderate
+
+      - name: 📊 Type check (Frontend)
+        run: npm run build --workspace=frontend -- --noEmit
+
+  # Job 2: Frontend Tests
+  test-frontend:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    strategy:
+      matrix:
+        test-type: [unit, integration]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🧪 Run frontend tests
+        run: npm run test:coverage --workspace=frontend
+        env:
+          CI: true
+
+      - name: 📊 Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+  # Job 3: Backend Tests
+  test-backend:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🧪 Run backend tests
+        run: npm run test --workspace=backend
+        env:
+          CI: true
+          NODE_ENV: test
+          JWT_SECRET: test-secret-key
+          REDIS_URL: redis://localhost:6379
+
+      - name: 📊 Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+
+  # Job 4: E2E Tests
+  test-e2e:
+    name: 🎭 End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🏗️ Build application
+        run: |
+          npm run build:frontend
+          npm run build:backend
+
+      - name: 🎭 Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: 🚀 Start application
+        run: |
+          npm run dev:backend &
+          npm run preview --workspace=frontend &
+          sleep 30
+
+      - name: 🎭 Run E2E tests
+        run: npx playwright test
+
+      - name: 📊 Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+
+  # Job 5: Build & Security Scan
+  build-scan:
+    name: 🏗️ Build & Security Scan
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🏗️ Build frontend
+        run: npm run build:frontend
+
+      - name: 🏗️ Build backend
+        run: npm run build:backend
+
+      - name: 📊 Bundle size analysis
+        run: |
+          cd frontend
+          npx bundlesize
+
+      - name: 🔒 SAST Security Scan
+        uses: github/super-linter/slim@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_TYPESCRIPT_ES: true
+          VALIDATE_JSON: true
+          VALIDATE_YAML: true
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            frontend/dist/
+            backend/dist/
+
+  # Job 6: Performance Testing
+  performance:
+    name: ⚡ Performance Testing
+    runs-on: ubuntu-latest
+    needs: build-scan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm run install:all
+
+      - name: 🏗️ Build application
+        run: |
+          npm run build:frontend
+          npm run build:backend
+
+      - name: 🚀 Start application
+        run: |
+          npm run dev:backend &
+          npm run preview --workspace=frontend &
+          sleep 30
+
+      - name: ⚡ Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # Job 7: Deploy to Staging
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend, test-e2e, build-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.cropguard.app
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: 🚀 Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./frontend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          alias-domains: staging.cropguard.app
+
+      - name: 🚀 Deploy API to Railway (Staging)
+        uses: bervProject/railway-deploy@v1.4.0
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: cropguard-api-staging
+          detach: false
+
+  # Job 8: Deploy to Production
+  deploy-production:
+    name: 🌍 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend, test-e2e, build-scan, performance]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://cropguard.app
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: 🚀 Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./frontend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: 🚀 Deploy API to Railway (Production)
+        uses: bervProject/railway-deploy@v1.4.0
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: cropguard-api-production
+          detach: false
+
+      - name: 📊 Post-deployment health check
+        run: |
+          curl -f https://api.cropguard.app/api/health || exit 1
+          curl -f https://cropguard.app || exit 1
+
+      - name: 🔔 Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: 🎉 CropGuard successfully deployed to production!
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Job 9: Notification on Failure
+  notify-failure:
+    name: 🚨 Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [quality, test-frontend, test-backend, test-e2e, build-scan]
+    if: failure()
+    steps:
+      - name: 🚨 Notify failure
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: ❌ CropGuard CI/CD pipeline failed. Please check the logs.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

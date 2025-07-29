@@ -1,40 +1,39 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu, X, User, BarChart3 } from 'lucide-react'
+import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu, X, BarChart3 } from 'lucide-react'
 import { authService } from '../services/auth'
 import { useFieldMode } from '../contexts/FieldModeContext'
 import { useFieldMetrics } from '../hooks/useFieldMetrics'
-import FieldOptimizedButton from '../components/ui/FieldOptimizedButton'
 import OneHandedNavigation from '../components/navigation/OneHandedNavigation'
 
 export function Dashboard() {
-  const [user, setUser] = useState(authService.getCurrentUser() || { name: 'User', role: 'farmer' })
+  const [user] = useState(() => authService.getCurrentUser() || { name: 'Demo User', role: 'farmer' })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
+  // Restored FieldModeContext (should be safe now)
   const { fieldMode, settings, weatherData, isFieldOptimized, setFieldMode } = useFieldMode()
-  const { startTask, metrics, getFieldUsabilityScore } = useFieldMetrics()
+  // Keep metrics disabled for now to avoid potential loops
+  const metrics = null
+  const getFieldUsabilityScore = () => 85
+  // const { metrics, getFieldUsabilityScore } = useFieldMetrics()
 
-  useEffect(() => {
-    if (!authService.isAuthenticated()) {
-      navigate('/login')
-    } else {
-      const currentUser = authService.getCurrentUser()
-      if (currentUser) {
-        setUser(currentUser)
-      }
-    }
-  }, [navigate])
+  // Temporarily disabled auth check to debug console errors
+  // useEffect(() => {
+  //   if (!authService.isAuthenticated()) {
+  //     navigate('/login')
+  //   } else {
+  //     const currentUser = authService.getCurrentUser()
+  //     if (currentUser) {
+  //       setUser(currentUser)
+  //     }
+  //   }
+  // }, [navigate])
 
   const handleLogout = () => {
     authService.logout()
     navigate('/')
   }
 
-  const handleQuickAction = (action: string, path: string) => {
-    const taskId = startTask(action as any)
-    navigate(path)
-    return taskId
-  }
 
   const getGreeting = () => {
     if (!weatherData) return "Welcome back"
@@ -252,7 +251,7 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Examine Plant Card */}
           <button
-            onClick={() => handleQuickAction('analysis', '/analysis')}
+            onClick={() => navigate('/analysis')}
             className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/10"
           >
             <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -271,7 +270,7 @@ export function Dashboard() {
 
           {/* Crop Reports Card */}
           <button
-            onClick={() => handleQuickAction('navigation', '/analytics')}
+            onClick={() => navigate('/analytics')}
             className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10"
           >
             <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">

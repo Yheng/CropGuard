@@ -77,7 +77,7 @@ export function useFieldMetrics() {
   
   const sessionStartTime = useRef<number>(Date.now())
   const actionsCount = useRef<number>(0)
-  const metricsUpdateTimer = useRef<NodeJS.Timeout>()
+  const metricsUpdateTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Initialize session tracking
   useEffect(() => {

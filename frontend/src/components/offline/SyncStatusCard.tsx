@@ -22,7 +22,8 @@ import { ProgressChart } from '../ui/Chart'
 import { cn } from '../../utils/cn'
 import { useOfflineSync } from '../../hooks/useOfflineSync'
 import { useConnectionState } from '../../hooks/useConnectionState'
-import { offlineStorage, OfflineAnalysis } from '../../utils/offlineStorage'
+import type { OfflineAnalysis } from '../../utils/offlineStorage'
+import { offlineStorage } from '../../utils/offlineStorage'
 
 interface SyncStatusCardProps {
   className?: string
@@ -150,16 +151,7 @@ export function SyncStatusCard({
     <Card className={cn('', className)}>
       <CardHeader
         title="Sync Status"
-        description={
-          <div className="flex items-center gap-2">
-            {isOnline ? (
-              <Wifi className="w-4 h-4 text-green-400" />
-            ) : (
-              <WifiOff className="w-4 h-4 text-red-400" />
-            )}
-            <span>{connectionDescription}</span>
-          </div>
-        }
+        description={connectionDescription}
         action={
           <div className="flex items-center gap-2">
             {autoRefresh && (

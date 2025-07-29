@@ -24,7 +24,7 @@ export function Login() {
     setError('')
 
     try {
-      const result = await authService.login(email, password)
+      const _result = await authService.login(email, password)
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')

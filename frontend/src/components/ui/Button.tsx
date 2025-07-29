@@ -262,9 +262,10 @@ export function ButtonGroup({
     >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.type === Button) {
-          return React.cloneElement(child as React.ReactElement<ButtonProps>, {
-            size: child.props.size || size,
-            variant: child.props.variant || variant
+          const buttonChild = child as React.ReactElement<ButtonProps>
+          return React.cloneElement(buttonChild, {
+            size: buttonChild.props.size || size,
+            variant: buttonChild.props.variant || variant
           })
         }
         return child

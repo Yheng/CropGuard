@@ -2,8 +2,6 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { 
   Menu, 
-  X, 
-  Bell, 
   Search, 
   Settings, 
   HelpCircle,
@@ -15,8 +13,8 @@ import {
   Tablet,
   Monitor
 } from 'lucide-react'
-import { RoleBasedNavigation, User as UserType } from '../navigation/RoleBasedNavigation'
-import { NotificationSystem, Notification } from '../notifications/NotificationSystem'
+import { RoleBasedNavigation, type User as UserType } from '../navigation/RoleBasedNavigation'
+import { NotificationSystem, type Notification } from '../notifications/NotificationSystem'
 import { cn } from '../../utils/cn'
 
 interface RoleBasedLayoutProps {
@@ -392,7 +390,7 @@ export function RoleBasedLayout({
   currentPath,
   onNavigate,
   onLogout,
-  onNotificationAction,
+  onNotificationAction: _onNotificationAction,
   className
 }: RoleBasedLayoutProps) {
   const layout = useResponsiveLayout(user)

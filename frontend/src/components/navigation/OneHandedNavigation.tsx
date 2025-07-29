@@ -138,7 +138,7 @@ export function OneHandedNavigation({
   const getNavigationButtonProps = (item: NavigationItem) => {
     const isCurrentlyActive = isActive(item.path)
     return {
-      variant: isCurrentlyActive ? 'primary' : 'secondary',
+      variant: (isCurrentlyActive ? 'primary' : 'secondary') as 'primary' | 'secondary',
       className: `
         w-full justify-start gap-3 transition-all duration-200
         ${isCurrentlyActive ? 'shadow-lg transform scale-[1.02]' : 'hover:scale-[1.01]'}

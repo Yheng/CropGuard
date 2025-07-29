@@ -122,7 +122,7 @@ class ConflictResolver {
         resolution: null,
         resolvedData: null,
         conflicts: [],
-        warnings: [`Resolution failed: ${error.message}`]
+        warnings: [`Resolution failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
       }
     }
   }
@@ -309,8 +309,8 @@ class ConflictResolver {
   // Resource-specific conflict resolution
   private resolveAnalysisConflict(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    _localData: any,
+    _serverData: any
   ): ConflictResolution | null {
     // For analysis data, prioritize server data for AI results but keep local metadata
     if (conflict.conflictType === 'field') {
@@ -579,7 +579,7 @@ class ConflictResolver {
 
   private calculateConflictSeverity(
     field: string,
-    resourceType: string
+    _resourceType: string
   ): DataConflict['severity'] {
     // Critical fields that should never be auto-resolved
     const criticalFields = ['id', 'userId', 'farmerId', 'analysisId']
@@ -624,8 +624,8 @@ class ConflictResolver {
 
   private attemptMerge(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    _localData: any,
+    _serverData: any
   ): any | null {
     if (conflict.conflictType !== 'field') return null
 
@@ -684,9 +684,9 @@ class ConflictResolver {
   }
 
   private async handleManualResolution(
-    conflict: DataConflict,
-    resolution: ConflictResolution,
-    localData: any,
+    _conflict: DataConflict,
+    _resolution: ConflictResolution,
+    _localData: any,
     serverData: any
   ): Promise<any> {
     // Custom manual resolution handler would be implemented here

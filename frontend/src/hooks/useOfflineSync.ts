@@ -1,5 +1,6 @@
 import React from 'react'
-import { offlineStorage, OfflineAnalysis, OfflineAction, SyncStatus } from '../utils/offlineStorage'
+import type { OfflineAnalysis, OfflineAction, SyncStatus } from '../utils/offlineStorage'
+import { offlineStorage } from '../utils/offlineStorage'
 
 export interface SyncOptions {
   retryDelay: number // Base delay in ms

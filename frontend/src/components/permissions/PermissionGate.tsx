@@ -1,7 +1,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react'
-import { User, usePermissions } from '../routing/ProtectedRoute'
+import type { User } from '../routing/ProtectedRoute'
+import { usePermissions } from '../routing/ProtectedRoute'
 import { cn } from '../../utils/cn'
 
 interface PermissionGateProps {

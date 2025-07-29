@@ -92,62 +92,7 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
 
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
 
-  // Initialize weather data
-  useEffect(() => {
-    initializeWeatherData()
-  }, [])
-
-  // Auto-adapt based on weather conditions
-  useEffect(() => {
-    if (settings.autoWeatherAdaptation && weatherData) {
-      adaptToWeatherConditions(weatherData)
-    }
-  }, [weatherData, settings.autoWeatherAdaptation])
-
-  // Save preferences
-  useEffect(() => {
-    localStorage.setItem('cropguard-field-mode', fieldMode)
-  }, [fieldMode])
-
-  useEffect(() => {
-    localStorage.setItem('cropguard-field-settings', JSON.stringify(settings))
-  }, [settings])
-
-  // Apply CSS custom properties for field mode
-  useEffect(() => {
-    const root = document.documentElement
-    const colors = getAdaptiveColors()
-    
-    // Apply touch target sizes
-    const touchSize = getTouchTargetSize()
-    root.style.setProperty('--touch-target-min', `${touchSize}px`)
-    root.style.setProperty('--touch-target-preferred', `${touchSize + 8}px`)
-    
-    // Apply font size multiplier
-    root.style.setProperty('--font-size-multiplier', settings.fontSizeMultiplier.toString())
-    
-    // Apply adaptive colors
-    root.style.setProperty('--field-bg', colors.background)
-    root.style.setProperty('--field-fg', colors.foreground)
-    root.style.setProperty('--field-accent', colors.accent)
-    root.style.setProperty('--field-contrast', colors.contrast)
-    
-    // Apply mode classes
-    root.classList.remove('field-mode', 'high-contrast-mode', 'glove-mode', 'one-handed-mode')
-    if (fieldMode === 'field' || fieldMode === 'high-contrast') {
-      root.classList.add('field-mode')
-    }
-    if (fieldMode === 'high-contrast' || settings.highContrastMode) {
-      root.classList.add('high-contrast-mode')
-    }
-    if (settings.gloveMode) {
-      root.classList.add('glove-mode')
-    }
-    if (settings.oneHandedMode) {
-      root.classList.add('one-handed-mode')
-    }
-  }, [fieldMode, settings, weatherData, resolvedTheme])
-
+  // Function definitions
   const initializeWeatherData = async () => {
     // Check if we have recent weather data in localStorage
     const cached = localStorage.getItem('cropguard-weather-data')
@@ -308,6 +253,63 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
 
     return colors
   }
+
+  // Temporarily disabled weather initialization to debug console errors
+  // useEffect(() => {
+  //   initializeWeatherData()
+  // }, [])
+
+  // Temporarily disabled weather adaptation to debug console errors
+  // useEffect(() => {
+  //   if (settings.autoWeatherAdaptation && weatherData) {
+  //     adaptToWeatherConditions(weatherData)
+  //   }
+  // }, [weatherData])
+
+  // Save preferences (restored with safer implementation)
+  useEffect(() => {
+    localStorage.setItem('cropguard-field-mode', fieldMode)
+  }, [fieldMode])
+
+  useEffect(() => {
+    localStorage.setItem('cropguard-field-settings', JSON.stringify(settings))
+  }, [settings])
+
+  // Temporarily disabled CSS effects to debug console errors
+  // TODO: Re-enable after fixing console flood
+  // useEffect(() => {
+  //   const root = document.documentElement
+  //   const colors = getAdaptiveColors()
+  //   
+  //   // Apply touch target sizes
+  //   const touchSize = getTouchTargetSize()
+  //   root.style.setProperty('--touch-target-min', `${touchSize}px`)
+  //   root.style.setProperty('--touch-target-preferred', `${touchSize + 8}px`)
+  //   
+  //   // Apply font size multiplier
+  //   root.style.setProperty('--font-size-multiplier', settings.fontSizeMultiplier.toString())
+  //   
+  //   // Apply adaptive colors
+  //   root.style.setProperty('--field-bg', colors.background)
+  //   root.style.setProperty('--field-fg', colors.foreground)
+  //   root.style.setProperty('--field-accent', colors.accent)
+  //   root.style.setProperty('--field-contrast', colors.contrast)
+  //   
+  //   // Apply mode classes
+  //   root.classList.remove('field-mode', 'high-contrast-mode', 'glove-mode', 'one-handed-mode')
+  //   if (fieldMode === 'field' || fieldMode === 'high-contrast') {
+  //     root.classList.add('field-mode')
+  //   }
+  //   if (fieldMode === 'high-contrast' || settings.highContrastMode) {
+  //     root.classList.add('high-contrast-mode')
+  //   }
+  //   if (settings.gloveMode) {
+  //     root.classList.add('glove-mode')
+  //   }
+  //   if (settings.oneHandedMode) {
+  //     root.classList.add('one-handed-mode')
+  //   }
+  // }, [fieldMode, settings, weatherData, resolvedTheme])
 
   const isFieldOptimized = fieldMode === 'field' || fieldMode === 'high-contrast' || 
                           settings.gloveMode || settings.oneHandedMode

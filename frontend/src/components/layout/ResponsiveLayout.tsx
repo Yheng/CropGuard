@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sun, Moon, Monitor, Bell, Settings, User } from 'lucide-react'
+import { Menu, X, Sun, Moon, Monitor, Bell, User } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useTheme } from '../../contexts/ThemeContext'
 
@@ -41,9 +41,9 @@ export function ResponsiveLayout({
   navigation,
   header,
   footer,
-  sidebar,
+  sidebar: _sidebar,
   className,
-  showMobileMenu = false,
+  showMobileMenu: _showMobileMenu = false,
   onMobileMenuToggle
 }: ResponsiveLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)

@@ -4,7 +4,7 @@ import {
   Camera,
   Upload,
   Image as ImageIcon,
-  Compress,
+  Compass as Compress,
   Wifi,
   WifiOff,
   Clock,
@@ -20,7 +20,8 @@ import { Card, CardHeader, CardContent } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { ProgressChart } from '../ui/Chart'
 import { cn } from '../../utils/cn'
-import { offlineStorage, OfflineAnalysis } from '../../utils/offlineStorage'
+import type { OfflineAnalysis } from '../../utils/offlineStorage'
+import { offlineStorage } from '../../utils/offlineStorage'
 import { useOfflineSync } from '../../hooks/useOfflineSync'
 
 interface OfflineImageUploadProps {

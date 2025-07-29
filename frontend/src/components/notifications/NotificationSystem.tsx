@@ -7,19 +7,14 @@ import {
   AlertTriangle,
   Info,
   CheckCircle,
-  Clock,
   User,
   Leaf,
-  Bug,
   Settings,
   Award,
-  TrendingUp,
-  Calendar,
-  MessageSquare,
   FileText,
-  Eye,
   Filter,
-  MoreHorizontal
+  MoreHorizontal,
+  Cloud
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '../ui/Card'
 import { Button } from '../ui/Button'

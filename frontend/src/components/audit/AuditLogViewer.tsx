@@ -3,32 +3,26 @@ import { motion } from 'framer-motion'
 import {
   Shield,
   Search,
-  Filter,
   Download,
   RefreshCw,
-  Calendar,
   User,
   Activity,
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Clock,
-  Eye,
-  Info,
   Settings,
   Database,
   Lock,
   Unlock,
   FileText,
-  ExternalLink,
-  MoreHorizontal,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { cn } from '../../utils/cn'
-import { ActivityEvent, ActivityFilter } from '../hooks/useActivityTracking'
+import type { ActivityEvent, ActivityFilter } from '../hooks/useActivityTracking'
 
 interface AuditLogViewerProps {
   activities: ActivityEvent[]
@@ -120,18 +114,18 @@ function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
               <span className="text-sm text-gray-400">Severity:</span>
               <span className={cn(
                 'px-2 py-1 rounded text-xs font-medium capitalize',
-                getSeverityColor(activity.severity)
+getSeverityColor(activity.severity || 'medium')
               )}>
-                {activity.severity}
+{activity.severity || 'medium'}
               </span>
             </div>
             <div>
               <span className="text-sm text-gray-400">Outcome:</span>
               <span className={cn(
                 'px-2 py-1 rounded text-xs font-medium capitalize',
-                getOutcomeColor(activity.outcome)
+getOutcomeColor(activity.outcome || 'success')
               )}>
-                {activity.outcome}
+{activity.outcome || 'success'}
               </span>
             </div>
           </div>
@@ -206,17 +200,17 @@ function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-sm text-gray-400">Type:</span>
-              <p className="text-white capitalize">{activity.targetResource.type}</p>
+              <p className="text-white capitalize">{activity.targetResource?.type || 'Unknown'}</p>
             </div>
             <div>
               <span className="text-sm text-gray-400">ID:</span>
-              <p className="text-white font-mono text-sm">{activity.targetResource.id}</p>
+              <p className="text-white font-mono text-sm">{activity.targetResource?.id || 'N/A'}</p>
             </div>
           </div>
-          {activity.targetResource.name && (
+          {activity.targetResource?.name && (
             <div>
               <span className="text-sm text-gray-400">Name:</span>
-              <p className="text-white">{activity.targetResource.name}</p>
+              <p className="text-white">{activity.targetResource?.name}</p>
             </div>
           )}
         </div>
@@ -266,7 +260,7 @@ function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <ActivityIcon category={activity.category} severity={activity.severity} />
+              <ActivityIcon category={activity.category} severity={activity.severity || 'medium'} />
               <h2 className="text-xl font-bold text-white">Activity Details</h2>
             </div>
             <button
@@ -325,10 +319,10 @@ function ActivityRow({
     >
       <td className="p-4">
         <div className="flex items-center gap-3">
-          <ActivityIcon category={activity.category} severity={activity.severity} />
+          <ActivityIcon category={activity.category} severity={activity.severity || 'medium'} />
           <div>
             <p className="text-white font-medium text-sm">{activity.action}</p>
-            <p className="text-gray-400 text-xs">{activity.description}</p>
+            <p className="text-gray-400 text-xs">{activity.description || activity.details}</p>
           </div>
         </div>
       </td>
@@ -336,25 +330,25 @@ function ActivityRow({
       <td className="p-4">
         <div>
           <p className="text-white text-sm">{activity.userName}</p>
-          <p className="text-gray-400 text-xs capitalize">{activity.userRole}</p>
+          <p className="text-gray-400 text-xs capitalize">{activity.userRole || 'user'}</p>
         </div>
       </td>
       
       <td className="p-4">
         <span className={cn(
           'px-2 py-1 rounded text-xs font-medium capitalize',
-          getSeverityColor(activity.severity)
+getSeverityColor(activity.severity || 'medium')
         )}>
-          {activity.severity}
+{activity.severity || 'medium'}
         </span>
       </td>
       
       <td className="p-4">
         <span className={cn(
           'px-2 py-1 rounded text-xs font-medium capitalize',
-          getOutcomeColor(activity.outcome)
+getOutcomeColor(activity.outcome || 'success')
         )}>
-          {activity.outcome}
+{activity.outcome || 'success'}
         </span>
       </td>
       
@@ -496,7 +490,7 @@ export function AuditLogViewer({
                     type="text"
                     placeholder="Search activities..."
                     value={filters.searchQuery || ''}
-                    onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+                    onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, searchQuery: e.target.value }))}
                     className="w-full pl-10 pr-4 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
@@ -506,7 +500,7 @@ export function AuditLogViewer({
                 <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
                 <select
                   value={filters.category || ''}
-                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value || undefined }))}
+                  onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, category: e.target.value || undefined }))}
                   className="w-full px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Categories</option>
@@ -522,7 +516,7 @@ export function AuditLogViewer({
                 <label className="block text-sm font-medium text-gray-300 mb-1">Severity</label>
                 <select
                   value={filters.severity || ''}
-                  onChange={(e) => setFilters(prev => ({ ...prev, severity: e.target.value || undefined }))}
+                  onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, severity: e.target.value || undefined }))}
                   className="w-full px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Severities</option>
@@ -538,7 +532,7 @@ export function AuditLogViewer({
                 <label className="block text-sm font-medium text-gray-300 mb-1">User Role</label>
                 <select
                   value={filters.userRole || ''}
-                  onChange={(e) => setFilters(prev => ({ ...prev, userRole: e.target.value as any || undefined }))}
+                  onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, userRole: e.target.value as any || undefined }))}
                   className="w-full px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Roles</option>

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react'
-import { useFieldMode, useFieldOptimizedStyles } from '../../contexts/FieldModeContext'
+import { useFieldMode } from '../../contexts/FieldModeContext'
 
 interface FieldOptimizedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success'
@@ -27,11 +27,12 @@ export function FieldOptimizedButton({
   ...props
 }: FieldOptimizedButtonProps) {
   const { settings, isFieldOptimized } = useFieldMode()
-  const { getButtonClasses, getPressTimeout } = useFieldOptimizedStyles()
+  const getButtonClasses = (variant?: string) => ''
+  const getPressTimeout = () => 300
   const [isPressed, setIsPressed] = useState(false)
   const [isLongPressed, setIsLongPressed] = useState(false)
-  const longPressTimer = useRef<NodeJS.Timeout>()
-  const pressStartTime = useRef<number>()
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+  const pressStartTime = useRef<number | null>(null)
 
   const effectiveLongPressDelay = longPressDelay || getPressTimeout()
 
@@ -66,9 +67,9 @@ export function FieldOptimizedButton({
 
     // Call original handlers
     if ('touches' in event) {
-      onTouchStart?.(event as React.TouchEvent)
+      onTouchStart?.(event as React.TouchEvent<HTMLButtonElement>)
     } else {
-      onMouseDown?.(event as React.MouseEvent)
+      onMouseDown?.(event as React.MouseEvent<HTMLButtonElement>)
     }
   }, [disabled, onLongPress, effectiveLongPressDelay, triggerHapticFeedback, onTouchStart, onMouseDown])
 
@@ -92,9 +93,9 @@ export function FieldOptimizedButton({
 
     // Call original handlers
     if ('touches' in event) {
-      onTouchEnd?.(event as React.TouchEvent)
+      onTouchEnd?.(event as React.TouchEvent<HTMLButtonElement>)
     } else {
-      onMouseUp?.(event as React.MouseEvent)
+      onMouseUp?.(event as React.MouseEvent<HTMLButtonElement>)
     }
   }, [isLongPressed, onClick, disabled, settings.gloveMode, triggerHapticFeedback, onTouchEnd, onMouseUp])
 

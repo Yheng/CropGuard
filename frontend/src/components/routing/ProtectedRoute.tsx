@@ -12,6 +12,7 @@ export interface User {
   permissions?: string[]
   subscriptionPlan?: string
   isActive?: boolean
+  assignedRegions?: string[]
 }
 
 interface ProtectedRouteProps {
