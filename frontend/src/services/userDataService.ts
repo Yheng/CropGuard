@@ -173,15 +173,18 @@ class UserDataService {
       throw new Error('No authenticated user found')
     }
 
+    console.log('UserDataService: Adding new analysis for user:', userId)
     const userData = this.getCurrentUserData()
     const newAnalysis: PlantAnalysis = {
       ...analysis,
       id: `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     }
 
+    console.log('UserDataService: New analysis created:', newAnalysis)
     userData.analyses.unshift(newAnalysis) // Add to beginning
     
     // Update stats
+    const oldStats = { ...userData.stats }
     userData.stats.totalAnalyses += 1
     userData.stats.lastAnalysisDate = newAnalysis.timestamp
     
@@ -197,7 +200,14 @@ class UserDataService {
         break
     }
 
+    console.log('UserDataService: Stats updated:', {
+      old: oldStats,
+      new: userData.stats,
+      totalAnalyses: userData.analyses.length
+    })
+
     this.saveUserData(userId, userData)
+    console.log('UserDataService: Analysis saved successfully')
     return newAnalysis
   }
 

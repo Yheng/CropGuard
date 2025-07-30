@@ -39,6 +39,11 @@ export function Analysis() {
     navigate('/treatments', { state: { analysisResult } })
   }
 
+  const handleAnalysisSaved = () => {
+    console.log('Analysis saved successfully')
+    // Could show a toast notification here
+  }
+
   const startNewAnalysis = () => {
     setSelectedFile(null)
     setAnalysisResult(null)
@@ -64,7 +69,7 @@ export function Analysis() {
             <h1 className="text-2xl font-bold">Crop Analysis</h1>
             
             <button
-              onClick={() => navigate('/history')}
+              onClick={() => navigate('/analytics')}
               className="flex items-center space-x-2 text-[#10B981] hover:text-[#10B981]/80 transition-colors"
             >
               <History className="w-5 h-5" />
@@ -150,6 +155,7 @@ export function Analysis() {
                 <AnalysisResults
                   result={analysisResult}
                   onViewTreatments={handleViewTreatments}
+                  onAnalysisSaved={handleAnalysisSaved}
                 />
               </div>
             </div>

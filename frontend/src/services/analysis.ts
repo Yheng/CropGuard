@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { aiService } from './aiService'
 
 export interface AnalysisResult {
   id: string
@@ -24,33 +25,48 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 export const analysisService = {
   analyzeImage: async (imageFile: File): Promise<AnalysisResult> => {
     try {
-      const formData = new FormData()
-      formData.append('image', imageFile)
-      formData.append('cropType', 'tomato') // Default crop type
+      // Check if AI service is configured
+      if (!aiService.isConfigured()) {
+        throw new Error('AI service not configured. Please configure OpenAI API key in admin settings.')
+      }
+
+      // Use the configured AI service for analysis
+      const aiResult = await aiService.analyzeImage(imageFile, 'Analyze this plant image for diseases, pests, or health issues.')
       
-      const response = await axios.post(`${API_BASE_URL}/analysis/analyze`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      // Transform AI service response to frontend format
+      const condition = aiResult.disease ? 
+        (aiResult.severity === 'high' ? 'disease' : 'pest') : 
+        'healthy'
+        
+      const title = aiResult.disease || 'Healthy Plant'
       
-      const analysis = response.data.data.analysis
+      const description = aiResult.disease 
+        ? `${aiResult.disease} detected with ${Math.round(aiResult.confidence * 100)}% confidence.`
+        : 'No issues detected. Plant appears healthy.'
+        
+      // Create image URL from the file
+      const imageUrl = URL.createObjectURL(imageFile)
       
-      // Transform backend response to frontend format
       return {
-        id: analysis.id.toString(),
-        confidence: analysis.confidence,
-        condition: analysis.condition,
-        title: analysis.title,
-        description: analysis.description,
-        severity: analysis.severity,
-        recommendations: analysis.recommendations,
-        timestamp: new Date(analysis.created_at),
-        imageUrl: `http://localhost:3000${analysis.image_url}`
+        id: aiResult.id,
+        confidence: aiResult.confidence,
+        condition: condition as 'healthy' | 'pest' | 'disease' | 'unknown',
+        title: title,
+        description: description,
+        severity: aiResult.severity || 'low',
+        recommendations: aiResult.recommendations,
+        timestamp: new Date(aiResult.timestamp),
+        imageUrl: imageUrl,
+        detectedIssues: aiResult.disease ? [{
+          name: aiResult.disease,
+          confidence: aiResult.confidence,
+          description: description
+        }] : undefined
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Analysis failed')
+      console.error('Analysis error:', error)
+      if (error instanceof Error) {
+        throw new Error(error.message)
       }
       throw new Error('Failed to analyze image. Please try again.')
     }
@@ -58,58 +74,61 @@ export const analysisService = {
 
   getAnalysisHistory: async (): Promise<AnalysisResult[]> => {
     try {
-      // Simulate API call with mock data
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const { userDataService } = await import('./userDataService')
       
-      // Return mock historical data
-      const mockHistory: AnalysisResult[] = [
-        {
-          id: 'analysis_001',
-          confidence: 0.89,
-          condition: 'disease',
-          title: 'Leaf Spot Disease',
-          description: 'Bacterial leaf spot detected on tomato plant.',
-          severity: 'medium',
-          recommendations: ['Apply copper spray', 'Improve drainage'],
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
-        },
-        {
-          id: 'analysis_002',
-          confidence: 0.94,
-          condition: 'healthy',
-          title: 'Healthy Plant',
-          description: 'No issues detected. Plant appears healthy.',
-          severity: 'low',
-          recommendations: ['Continue current care'],
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
-        }
-      ]
+      // Get all analyses from user data service
+      const userData = userDataService.getCurrentUserData()
+      const analyses = userData.analyses
       
-      return mockHistory
+      // Transform PlantAnalysis to AnalysisResult format
+      const analysisResults: AnalysisResult[] = analyses.map(analysis => ({
+        id: analysis.id,
+        confidence: analysis.confidence / 100, // Convert back to decimal
+        condition: analysis.status === 'healthy' ? 'healthy' :
+                  analysis.status === 'disease-detected' ? 'disease' :
+                  'pest' as 'healthy' | 'pest' | 'disease' | 'unknown',
+        title: analysis.plantType,
+        description: analysis.notes || `${analysis.plantType} analysis from ${analysis.location}`,
+        severity: analysis.status === 'healthy' ? 'low' :
+                 analysis.status === 'disease-detected' ? 'high' :
+                 'medium' as 'low' | 'medium' | 'high',
+        recommendations: analysis.notes ? [analysis.notes] : ['Monitor plant condition'],
+        timestamp: new Date(analysis.timestamp),
+        imageUrl: analysis.imageUrl
+      }))
       
-      // TODO: Replace with actual API call
-      // const response = await axios.get(`${API_BASE_URL}/analysis/history`)
-      // return response.data
+      return analysisResults
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to fetch analysis history')
-      }
-      throw error
+      console.warn('Failed to load analysis history:', error)
+      // Return empty array for new users or on error
+      return []
     }
   },
 
-  saveAnalysis: async (_analysisId: string): Promise<void> => {
+  saveAnalysis: async (analysisResult: AnalysisResult): Promise<void> => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const { userDataService } = await import('./userDataService')
       
-      // TODO: Replace with actual API call
-      // await axios.post(`${API_BASE_URL}/analysis/${analysisId}/save`)
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Failed to save analysis')
+      // Transform AnalysisResult to PlantAnalysis format
+      const plantAnalysis = {
+        plantType: analysisResult.title === 'Healthy Plant' ? 'Unknown Plant' : analysisResult.title,
+        location: 'Field Analysis', // Default location, could be enhanced with GPS
+        timestamp: analysisResult.timestamp.toISOString(),
+        status: analysisResult.condition === 'healthy' ? 'healthy' as const :
+                analysisResult.condition === 'disease' ? 'disease-detected' as const :
+                'needs-care' as const,
+        confidence: Math.round(analysisResult.confidence * 100),
+        imageUrl: analysisResult.imageUrl,
+        notes: analysisResult.description
       }
-      throw error
+      
+      // Save to user data service
+      const savedAnalysis = userDataService.addAnalysis(plantAnalysis)
+      
+      console.log('Analysis saved successfully:', savedAnalysis)
+    } catch (error) {
+      console.error('Failed to save analysis:', error)
+      throw new Error(error instanceof Error ? error.message : 'Failed to save analysis')
     }
   }
 }

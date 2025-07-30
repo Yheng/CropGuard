@@ -12,7 +12,7 @@ export interface LoginResponse {
 }
 
 // Demo users matching the backend seeded data
-const DEMO_USERS = [
+const DEFAULT_DEMO_USERS = [
   {
     id: '1',
     name: 'System Administrator',
@@ -57,14 +57,54 @@ const DEMO_USERS = [
   }
 ]
 
+// Get all users (default + registered)
+const getAllUsers = () => {
+  try {
+    const savedUsers = localStorage.getItem('cropguard_demo_users')
+    const registeredUsers = savedUsers ? JSON.parse(savedUsers) : []
+    return [...DEFAULT_DEMO_USERS, ...registeredUsers]
+  } catch (error) {
+    console.warn('Failed to load registered users:', error)
+    return DEFAULT_DEMO_USERS
+  }
+}
+
+// Save a new registered user
+const saveRegisteredUser = (user: any) => {
+  try {
+    const savedUsers = localStorage.getItem('cropguard_demo_users')
+    const registeredUsers = savedUsers ? JSON.parse(savedUsers) : []
+    
+    // Check if user already exists in registered users
+    const existingIndex = registeredUsers.findIndex((u: any) => u.email === user.email)
+    if (existingIndex >= 0) {
+      registeredUsers[existingIndex] = user // Update existing
+    } else {
+      registeredUsers.push(user) // Add new
+    }
+    
+    localStorage.setItem('cropguard_demo_users', JSON.stringify(registeredUsers))
+    console.log('DemoAuth: Saved registered user:', user.email)
+  } catch (error) {
+    console.error('DemoAuth: Failed to save registered user:', error)
+  }
+}
+
 export const demoAuthService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
+    console.log('DemoAuth: login called with', { email, password }) // Debug log
+    
+    const allUsers = getAllUsers()
+    console.log('DemoAuth: Available users:', allUsers.map(u => ({ email: u.email, role: u.role }))) // Debug log
+    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    const user = DEMO_USERS.find(u => u.email === email && u.password === password)
+    const user = allUsers.find(u => u.email === email && u.password === password)
+    console.log('DemoAuth: Found user:', user) // Debug log
     
     if (!user) {
+      console.log('DemoAuth: Login failed - user not found') // Debug log
       throw new Error('Invalid email or password')
     }
     
@@ -83,29 +123,46 @@ export const demoAuthService = {
   },
   
   signup: async (email: string, password: string): Promise<LoginResponse> => {
+    console.log('DemoAuth: signup called with', { email }) // Debug log
+    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    // Check if user already exists
-    const existingUser = DEMO_USERS.find(u => u.email === email)
+    // Check if user already exists in all users
+    const allUsers = getAllUsers()
+    const existingUser = allUsers.find(u => u.email === email)
     if (existingUser) {
+      console.log('DemoAuth: Signup failed - user already exists') // Debug log
       throw new Error('User with this email already exists')
     }
     
-    // Create new demo user
+    // Create new demo user with password
     const newUser = {
       id: `demo_${Date.now()}`,
       name: email.split('@')[0],
       email,
+      password, // Store password for future logins
       role: 'farmer' as const
     }
     
+    console.log('DemoAuth: Creating new user:', { email: newUser.email, id: newUser.id }) // Debug log
+    
+    // Save the new user to persistent storage
+    saveRegisteredUser(newUser)
+    
     const token = `demo_token_${newUser.id}_${Date.now()}`
+    const userData = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role
+    }
     
     localStorage.setItem('auth_token', token)
-    localStorage.setItem('user_data', JSON.stringify(newUser))
+    localStorage.setItem('user_data', JSON.stringify(userData))
     
-    return { token, user: newUser }
+    console.log('DemoAuth: Signup successful for:', email) // Debug log
+    return { token, user: userData }
   },
   
   logout: () => {
@@ -128,5 +185,20 @@ export const demoAuthService = {
   }
 }
 
+// Helper function to restore a lost user (for debugging)
+export const restoreUser = (email: string, password: string, name?: string) => {
+  const newUser = {
+    id: `demo_${Date.now()}`,
+    name: name || email.split('@')[0],
+    email,
+    password,
+    role: 'farmer' as const
+  }
+  
+  console.log('DemoAuth: Manually restoring user:', email)
+  saveRegisteredUser(newUser)
+  return newUser
+}
+
 // Export demo users for reference
-export { DEMO_USERS }
+export { DEFAULT_DEMO_USERS as DEMO_USERS }

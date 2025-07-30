@@ -152,9 +152,29 @@ async function optionalAuth(req, res, next) {
   }
 }
 
+// Admin-only middleware
+function requireAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      error: 'Access Denied',
+      message: 'Authentication required'
+    });
+  }
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      error: 'Access Denied',
+      message: 'Administrator access required'
+    });
+  }
+
+  next();
+}
+
 module.exports = {
   generateToken,
   authenticateToken,
   requireRole,
+  requireAdmin,
   optionalAuth
 };

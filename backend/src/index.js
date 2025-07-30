@@ -15,6 +15,7 @@ const analyticsRoutes = require('./routes/analytics');
 const userRoutes = require('./routes/users');
 const healthRoutes = require('./routes/health');
 const agronomistRoutes = require('./routes/agronomist');
+const adminRoutes = require('./routes/admin');
 
 const { initializeDatabase } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -101,6 +102,7 @@ app.use('/api/treatments', treatmentRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/agronomist', agronomistRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Static file serving for uploaded images
 app.use('/uploads', express.static('uploads'));

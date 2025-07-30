@@ -1,13 +1,34 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   Leaf, Shield, Camera, BarChart3, Menu, X, Star, CheckCircle, 
-  Award, Smartphone, Users, Zap, Globe
+  Award, Smartphone, Users, Zap, Globe, LogOut
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LoginDemo } from '../components/demo/LoginDemo'
+import { authService } from '../services/auth'
 
 export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    setIsAuthenticated(authService.isAuthenticated())
+  }, [])
+
+  const handleLogout = () => {
+    console.log('LandingPage: Logout button clicked')
+    try {
+      authService.logout()
+      setIsAuthenticated(false)
+      // Force reload to clear any cached data
+      window.location.reload()
+    } catch (error) {
+      console.error('LandingPage: Logout error:', error)
+      // Fallback - just reload the page
+      window.location.reload()
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-x-hidden">
@@ -31,13 +52,29 @@ export function LandingPage() {
               <a href="#features" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Features</a>
               <a href="#benefits" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Benefits</a>
               <a href="#testimonials" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Success Stories</a>
-              <Link to="/login" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Sign In</Link>
-              <Link 
-                to="/signup" 
-                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transform hover:scale-105 transition-all shadow-lg"
-              >
-                Start Free Trial
-              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  <Link to="/dashboard" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Dashboard</Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 text-slate-300 hover:text-red-400 transition-colors font-medium"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-slate-300 hover:text-emerald-400 transition-colors font-medium">Sign In</Link>
+                  <Link 
+                    to="/signup" 
+                    className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transform hover:scale-105 transition-all shadow-lg"
+                  >
+                    Start Free Trial
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -56,13 +93,29 @@ export function LandingPage() {
                 <a href="#features" className="block text-slate-300 hover:text-emerald-400 py-2">Features</a>
                 <a href="#benefits" className="block text-slate-300 hover:text-emerald-400 py-2">Benefits</a>
                 <a href="#testimonials" className="block text-slate-300 hover:text-emerald-400 py-2">Success Stories</a>
-                <Link to="/login" className="block text-slate-300 hover:text-emerald-400 py-2">Sign In</Link>
-                <Link 
-                  to="/signup" 
-                  className="block w-full text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold mt-4"
-                >
-                  Start Free Trial
-                </Link>
+                
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/dashboard" className="block text-slate-300 hover:text-emerald-400 py-2">Dashboard</Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 text-slate-300 hover:text-red-400 py-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="block text-slate-300 hover:text-emerald-400 py-2">Sign In</Link>
+                    <Link 
+                      to="/signup" 
+                      className="block w-full text-center bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold mt-4"
+                    >
+                      Start Free Trial
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}

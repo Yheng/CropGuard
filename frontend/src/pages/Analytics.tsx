@@ -12,6 +12,19 @@ export function Analytics() {
 
   useEffect(() => {
     loadAnalyticsData()
+    
+    // Add focus event listener to refresh data when user returns to tab
+    const handleFocus = () => {
+      console.log('Analytics: Page focused, refreshing data')
+      loadAnalyticsData()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
   const loadAnalyticsData = async () => {
@@ -32,6 +45,7 @@ export function Analytics() {
   }
 
   const handleRefresh = async () => {
+    console.log('Analytics: Manual refresh requested')
     setRefreshing(true)
     await loadAnalyticsData()
     setRefreshing(false)

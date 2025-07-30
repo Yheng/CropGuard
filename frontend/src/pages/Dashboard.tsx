@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu, X, BarChart3 } from 'lucide-react'
+import { Leaf, Camera, TrendingUp, Settings, LogOut, Bell, Sun, CloudRain, Menu, X, BarChart3, Shield } from 'lucide-react'
 import { authService } from '../services/auth'
 import { useFieldMode } from '../contexts/FieldModeContext'
 import { useFieldMetrics } from '../hooks/useFieldMetrics'
 import { userDataService, type UserStats, type PlantAnalysis } from '../services/userDataService'
+import { useAsyncAction } from '../contexts/LoadingContext'
 import OneHandedNavigation from '../components/navigation/OneHandedNavigation'
 
 export function Dashboard() {
@@ -13,6 +14,7 @@ export function Dashboard() {
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [recentAnalyses, setRecentAnalyses] = useState<PlantAnalysis[]>([])
   const navigate = useNavigate()
+  const { executeWithNavigation, executeQuick } = useAsyncAction()
   // Restored FieldModeContext (should be safe now)
   const { fieldMode, settings, weatherData, isFieldOptimized, setFieldMode } = useFieldMode()
   // Keep metrics disabled for now to avoid potential loops
@@ -21,23 +23,84 @@ export function Dashboard() {
   // const { metrics, getFieldUsabilityScore } = useFieldMetrics()
 
   // Load user-specific data
-  useEffect(() => {
+  const loadUserData = () => {
     try {
+      console.log('Dashboard: Loading user data')
       const stats = userDataService.getUserStats()
       const analyses = userDataService.getRecentAnalyses(3)
       setUserStats(stats)
       setRecentAnalyses(analyses)
+      console.log('Dashboard: User data loaded', { stats, analyses: analyses.length })
     } catch (error) {
       console.warn('Failed to load user data:', error)
       // Set empty state for new users
       setUserStats({ totalAnalyses: 0, healthyPlants: 0, plantsNeedingCare: 0, diseasedPlants: 0 })
       setRecentAnalyses([])
     }
+  }
+
+  useEffect(() => {
+    loadUserData()
+    
+    // Add focus event listener to refresh data when user returns to tab/page
+    const handleFocus = () => {
+      console.log('Dashboard: Page focused, refreshing user data')
+      loadUserData()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [user])
 
   const handleLogout = () => {
-    authService.logout()
-    navigate('/')
+    console.log('Logout: User clicked logout button')
+    
+    try {
+      // Immediately clear authentication data
+      console.log('Logout: Clearing authentication data')
+      authService.logout()
+      
+      // Force immediate page redirect to avoid any React state conflicts
+      console.log('Logout: Redirecting to landing page')
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Emergency fallback - clear only auth data and redirect
+      try {
+        localStorage.removeItem('user_data')
+        localStorage.removeItem('auth_token')
+      } catch (storageError) {
+        console.error('Failed to clear auth storage:', storageError)
+      }
+      window.location.href = '/'
+    }
+  }
+
+  const navigateWithLoading = (path: string, message: string) => {
+    try {
+      executeWithNavigation(async () => {
+        navigate(path)
+      }, message)
+    } catch (error) {
+      console.error('Navigation error, using direct navigation:', error)
+      // Fallback to direct navigation
+      navigate(path)
+    }
+  }
+
+  // Simple navigation without loading context (backup)
+  const navigateSimple = (path: string) => {
+    try {
+      navigate(path)
+    } catch (error) {
+      console.error('Simple navigation failed:', error)
+      // Last resort: use window.location
+      window.location.href = path
+    }
   }
 
 
@@ -89,26 +152,37 @@ export function Dashboard() {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-6">
               <button
-                onClick={() => navigate('/analysis')}
+                onClick={() => navigateSimple('/analysis')}
                 className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
               >
                 <Camera className="w-4 h-4" />
                 Analyze
               </button>
               <button
-                onClick={() => navigate('/analytics')}
+                onClick={() => navigateSimple('/analytics')}
                 className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
               >
                 <BarChart3 className="w-4 h-4" />
                 Reports
               </button>
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigateSimple('/settings')}
                 className="text-slate-300 hover:text-emerald-400 transition-colors font-medium flex items-center gap-2"
               >
                 <Settings className="w-4 h-4" />
                 Settings
               </button>
+              
+              {/* Admin Dashboard - Only show for admin users */}
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => navigateSimple('/admin')}
+                  className="text-slate-300 hover:text-red-400 transition-colors font-medium flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </button>
+              )}
               
               {/* Field mode toggle */}
               <button
@@ -132,7 +206,11 @@ export function Dashboard() {
                   <span className="text-xs text-emerald-400 capitalize">{user.role}</span>
                 </div>
                 <button
-                  onClick={handleLogout}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleLogout()
+                  }}
                   className="text-slate-400 hover:text-red-400 transition-colors p-2"
                   title="Sign Out"
                 >
@@ -170,8 +248,8 @@ export function Dashboard() {
                 {/* Navigation Links */}
                 <button
                   onClick={() => {
-                    navigate('/analysis')
                     setMobileMenuOpen(false)
+                    navigateSimple('/analysis')
                   }}
                   className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
                 >
@@ -180,8 +258,8 @@ export function Dashboard() {
                 </button>
                 <button
                   onClick={() => {
-                    navigate('/analytics')
                     setMobileMenuOpen(false)
+                    navigateSimple('/analytics')
                   }}
                   className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
                 >
@@ -190,14 +268,28 @@ export function Dashboard() {
                 </button>
                 <button
                   onClick={() => {
-                    navigate('/settings')
                     setMobileMenuOpen(false)
+                    navigateSimple('/settings')
                   }}
                   className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-emerald-400 py-2 px-4 rounded-lg hover:bg-slate-800/50 transition-all"
                 >
                   <Settings className="w-5 h-5" />
                   <span>Farm Settings</span>
                 </button>
+                
+                {/* Admin Dashboard - Only show for admin users */}
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      navigateSimple('/admin')
+                    }}
+                    className="flex items-center gap-3 w-full text-left text-slate-300 hover:text-red-400 py-2 px-4 rounded-lg hover:bg-red-500/10 transition-all"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Admin Dashboard</span>
+                  </button>
+                )}
                 
                 {/* Field Mode Toggle */}
                 <button
@@ -210,7 +302,12 @@ export function Dashboard() {
                 
                 {/* Sign Out */}
                 <button
-                  onClick={handleLogout}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setMobileMenuOpen(false) // Close mobile menu first
+                    handleLogout()
+                  }}
                   className="flex items-center gap-3 w-full text-left text-red-400 hover:text-red-300 py-2 px-4 rounded-lg hover:bg-red-500/10 transition-all"
                 >
                   <LogOut className="w-5 h-5" />
@@ -257,7 +354,7 @@ export function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Examine Plant Card */}
           <button
-            onClick={() => navigate('/analysis')}
+            onClick={() => navigateSimple('/analysis')}
             className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/10"
           >
             <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -276,7 +373,7 @@ export function Dashboard() {
 
           {/* Crop Reports Card */}
           <button
-            onClick={() => navigate('/analytics')}
+            onClick={() => navigateSimple('/analytics')}
             className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-blue-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10"
           >
             <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -295,7 +392,7 @@ export function Dashboard() {
 
           {/* Farm Settings Card */}
           <button
-            onClick={() => navigate('/settings')}
+            onClick={() => navigateSimple('/settings')}
             className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-left hover:bg-slate-800/70 hover:border-amber-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/10"
           >
             <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -349,7 +446,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-white">Recent Plant Analysis</h3>
             <button 
-              onClick={() => navigate('/analytics')}
+              onClick={() => navigateSimple('/analytics')}
               className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
             >
               View All →
@@ -415,7 +512,7 @@ export function Dashboard() {
               <h4 className="text-lg font-medium text-slate-400 mb-2">No plant analyses yet</h4>
               <p className="text-slate-500 mb-6">Start by taking photos of your plants to get AI-powered health insights</p>
               <button
-                onClick={() => navigate('/analysis')}
+                onClick={() => navigateSimple('/analysis')}
                 className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2 mx-auto"
               >
                 <Camera className="w-5 h-5" />
@@ -427,14 +524,14 @@ export function Dashboard() {
           {/* Quick Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-slate-700/50">
             <button
-              onClick={() => navigate('/analysis')}
+              onClick={() => navigateSimple('/analysis')}
               className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
             >
               <Camera className="w-5 h-5" />
               Analyze New Plant
             </button>
             <button
-              onClick={() => navigate('/analytics')}
+              onClick={() => navigateSimple('/analytics')}
               className="flex-1 bg-slate-700/50 text-slate-300 px-4 py-3 rounded-xl font-semibold hover:bg-slate-700/70 hover:text-white transition-all flex items-center justify-center gap-2 border border-slate-600/50"
             >
               <BarChart3 className="w-5 h-5" />

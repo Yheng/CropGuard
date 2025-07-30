@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, Clock, AlertCircle, Target, Calendar, BookOpen } from 'lucide-react'
+import { ArrowLeft, Clock, AlertCircle, Target, Calendar, BookOpen, Save } from 'lucide-react'
 import { TreatmentCard } from '../components/ui/TreatmentCard'
 import { TreatmentInstructions } from '../components/ui/TreatmentInstructions'
 import { treatmentService, type TreatmentPlan, type Treatment } from '../services/treatments'
-import type { AnalysisResult } from '../services/analysis'
+import { analysisService, type AnalysisResult } from '../services/analysis'
 
 export function Treatments() {
   const navigate = useNavigate()
@@ -12,6 +12,7 @@ export function Treatments() {
   const [treatmentPlan, setTreatmentPlan] = useState<TreatmentPlan | null>(null)
   const [selectedTreatment, setSelectedTreatment] = useState<Treatment | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   // Get analysis result from navigation state
@@ -41,6 +42,30 @@ export function Treatments() {
 
     loadTreatmentPlan()
   }, [analysisResult, navigate])
+
+  const handleSaveTreatmentPlan = async () => {
+    if (!analysisResult || saving) return
+
+    setSaving(true)
+    try {
+      console.log('Treatments: Saving analysis and treatment plan', analysisResult.id)
+      
+      // First, ensure the analysis is saved to user data
+      await analysisService.saveAnalysis(analysisResult)
+      
+      // TODO: In the future, we could also save the specific treatment plan selections
+      // For now, the analysis contains the recommendations, which is the main data
+      
+      console.log('Treatments: Analysis and treatment plan saved successfully')
+      
+      // Navigate back to dashboard after successful save
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Treatments: Failed to save treatment plan:', error)
+      setError('Failed to save treatment plan. Please try again.')
+      setSaving(false)
+    }
+  }
 
   const getUrgencyColor = () => {
     if (!treatmentPlan) return 'text-gray-400'
@@ -250,10 +275,25 @@ export function Treatments() {
         {/* Action Buttons */}
         <div className="mt-8 text-center space-x-4">
           <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-[#10B981] hover:bg-[#10B981]/80 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+            onClick={handleSaveTreatmentPlan}
+            disabled={saving}
+            className={`font-medium py-3 px-8 rounded-lg transition-colors flex items-center justify-center gap-2 mx-auto ${
+              saving
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-[#10B981] hover:bg-[#10B981]/80 text-white'
+            }`}
           >
-            Save Treatment Plan
+            {saving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Treatment Plan
+              </>
+            )}
           </button>
           <button
             onClick={() => navigate('/analysis')}

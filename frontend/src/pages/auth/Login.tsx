@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Leaf, Eye, EyeOff } from 'lucide-react'
 import { authService } from '../../services/auth'
+import { clearAllAuthData } from '../../utils/authDebug'
+// import { useAsyncAction } from '../../contexts/LoadingContext' // Temporarily disabled
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -10,6 +12,7 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  // const { executeWithNavigation } = useAsyncAction() // Temporarily disabled
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -24,11 +27,17 @@ export function Login() {
     setError('')
 
     try {
-      const _result = await authService.login(email, password)
-      navigate('/dashboard', { replace: true })
+      console.log('Attempting login with:', email, password) // Debug log
+      const result = await authService.login(email, password)
+      console.log('Login successful:', result) // Debug log
+      
+      // Small delay to show loading animation
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true })
+      }, 500)
     } catch (err) {
+      console.error('Login error:', err) // Debug log
       setError(err instanceof Error ? err.message : 'Login failed')
-    } finally {
       setLoading(false)
     }
   }
@@ -54,7 +63,10 @@ export function Login() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={(e) => {
+          console.log('Form submitted!') // Debug log
+          handleSubmit(e)
+        }}>
           {error && (
             <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
               <p className="text-red-400 text-sm">{error}</p>
@@ -134,12 +146,53 @@ export function Login() {
             <button
               type="submit"
               disabled={loading}
+              onClick={(e) => {
+                console.log('Button clicked!', { loading, email, password }) // Debug log
+                if (!loading && email && password) {
+                  handleSubmit(e)
+                }
+              }}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#10B981] hover:bg-[#10B981]/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#10B981] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
+
+        {/* Demo Credentials */}
+        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <h3 className="text-sm font-medium text-blue-400 mb-2">Demo Credentials</h3>
+          <div className="space-y-2 text-xs text-blue-300">
+            <div>
+              <strong>Farmer:</strong> farmer@cropguard.com / farmer123
+            </div>
+            <div>
+              <strong>Agronomist:</strong> agronomist@cropguard.com / agro123
+            </div>
+            <div>
+              <strong>Admin:</strong> admin@cropguard.com / admin123
+            </div>
+          </div>
+        </div>
+
+        {/* Development Debug Section */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <h3 className="text-sm font-medium text-red-400 mb-2">Debug (Development Only)</h3>
+            <p className="text-xs text-red-300 mb-3">
+              If you're stuck at login, click below to clear all auth data:
+            </p>
+            <button
+              onClick={() => {
+                clearAllAuthData()
+                window.location.reload()
+              }}
+              className="w-full px-3 py-2 text-xs bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+            >
+              Clear All Auth Data & Reload
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
