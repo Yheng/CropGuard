@@ -126,7 +126,6 @@ models/
 
 # Image uploads (for development)
 uploads/
-images/
 
 # Local development certificates
 *.pem
