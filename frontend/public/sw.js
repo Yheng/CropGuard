@@ -1,10 +1,11 @@
-// CropGuard Service Worker - Offline-First Image Caching
-// Optimized for rural farmers with intermittent connectivity
+// CropGuard Service Worker - Advanced Offline Sync with Conflict Resolution
+// Optimized for rural farmers with intermittent connectivity and data conflicts
 
-const CACHE_NAME = 'cropguard-v1.0.0'
-const API_CACHE_NAME = 'cropguard-api-v1.0.0'
-const IMAGES_CACHE_NAME = 'cropguard-images-v1.0.0'
-const OFFLINE_CACHE_NAME = 'cropguard-offline-v1.0.0'
+const CACHE_NAME = 'cropguard-v2.0.0'
+const API_CACHE_NAME = 'cropguard-api-v2.0.0'
+const IMAGES_CACHE_NAME = 'cropguard-images-v2.0.0'
+const OFFLINE_CACHE_NAME = 'cropguard-offline-v2.0.0'
+const CONFLICT_CACHE_NAME = 'cropguard-conflicts-v2.0.0'
 
 // Cache size limits (important for mobile devices with limited storage)
 const MAX_CACHE_SIZE = 100 * 1024 * 1024 // 100MB total
@@ -160,6 +161,15 @@ self.addEventListener('message', event => {
       break
     case 'FORCE_SYNC':
       handleForceSyncMessage(payload)
+      break
+    case 'RESOLVE_CONFLICT':
+      handleResolveConflictMessage(payload)
+      break
+    case 'GET_CONFLICTS':
+      handleGetConflictsMessage(event.ports[0])
+      break
+    case 'AUTO_RESOLVE_CONFLICTS':
+      handleAutoResolveConflictsMessage(payload)
       break
     default:
       console.log('[CropGuard SW] Unknown message type:', type)
@@ -497,6 +507,16 @@ async function initializeOfflineStorage() {
         const cacheStore = db.createObjectStore('cachedData', { keyPath: 'key' })
         cacheStore.createIndex('lastUpdated', 'lastUpdated', { unique: false })
         cacheStore.createIndex('expiresAt', 'expiresAt', { unique: false })
+      }
+      
+      // Conflicts store for data conflict resolution
+      if (!db.objectStoreNames.contains('conflicts')) {
+        const conflictsStore = db.createObjectStore('conflicts', { keyPath: 'id' })
+        conflictsStore.createIndex('timestamp', 'timestamp', { unique: false })
+        conflictsStore.createIndex('resolved', 'resolved', { unique: false })
+        conflictsStore.createIndex('autoResolvable', 'autoResolvable', { unique: false })
+        conflictsStore.createIndex('resourceType', 'resourceType', { unique: false })
+        conflictsStore.createIndex('resourceId', 'resourceId', { unique: false })
       }
     }
   })
@@ -888,4 +908,440 @@ async function incrementRetryCount(db, item) {
   })
 }
 
-console.log('[CropGuard SW] Service worker loaded and ready')
+// Conflict Resolution System
+
+async function detectDataConflict(localData, serverData) {
+  // Conflict detection based on timestamps and data integrity
+  const conflicts = []
+  
+  if (!localData || !serverData) {
+    return conflicts
+  }
+  
+  const localTimestamp = new Date(localData.updatedAt || localData.createdAt)
+  const serverTimestamp = new Date(serverData.updatedAt || serverData.createdAt)
+  
+  // Version conflict - different update times
+  if (Math.abs(localTimestamp.getTime() - serverTimestamp.getTime()) > 5000) { // 5 second threshold
+    conflicts.push({
+      type: 'version_conflict',
+      field: 'timestamp',
+      localValue: localTimestamp.toISOString(),
+      serverValue: serverTimestamp.toISOString(),
+      severity: 'medium'
+    })
+  }
+  
+  // Data field conflicts
+  const conflictFields = ['status', 'priority', 'metadata', 'diagnosis', 'recommendations']
+  
+  for (const field of conflictFields) {
+    if (localData[field] !== undefined && serverData[field] !== undefined) {
+      const localValue = JSON.stringify(localData[field])
+      const serverValue = JSON.stringify(serverData[field])
+      
+      if (localValue !== serverValue) {
+        conflicts.push({
+          type: 'data_conflict',
+          field,
+          localValue: localData[field],
+          serverValue: serverData[field],
+          severity: getSeverityForField(field)
+        })
+      }
+    }
+  }
+  
+  return conflicts
+}
+
+function getSeverityForField(field) {
+  const highPriorityFields = ['status', 'diagnosis', 'priority']
+  const mediumPriorityFields = ['recommendations', 'metadata']
+  
+  if (highPriorityFields.includes(field)) return 'high'
+  if (mediumPriorityFields.includes(field)) return 'medium'
+  return 'low'
+}
+
+async function storeConflict(conflict) {
+  const db = await openOfflineDB()
+  const transaction = db.transaction(['conflicts'], 'readwrite')
+  const store = transaction.objectStore('conflicts')
+  
+  const conflictRecord = {
+    id: generateConflictId(),
+    ...conflict,
+    timestamp: new Date().toISOString(),
+    resolved: false,
+    autoResolvable: isAutoResolvable(conflict)
+  }
+  
+  await store.add(conflictRecord)
+  
+  // Notify main thread about new conflict
+  await notifyClients('CONFLICT_DETECTED', conflictRecord)
+  
+  return conflictRecord.id
+}
+
+function isAutoResolvable(conflict) {
+  // Rules for automatic conflict resolution
+  const { conflicts } = conflict
+  
+  // Auto-resolve if only timestamp conflicts
+  if (conflicts.every(c => c.type === 'version_conflict')) {
+    return true
+  }
+  
+  // Auto-resolve low severity data conflicts
+  if (conflicts.every(c => c.severity === 'low')) {
+    return true
+  }
+  
+  // Auto-resolve specific field patterns
+  const autoResolvablePatterns = [
+    // Server data is newer by more than 1 hour
+    c => c.type === 'version_conflict' && 
+         new Date(c.serverValue).getTime() - new Date(c.localValue).getTime() > 3600000,
+    
+    // Status changes from pending to reviewed (always accept server)
+    c => c.field === 'status' && 
+         c.localValue === 'pending' && 
+         ['reviewed', 'completed'].includes(c.serverValue)
+  ]
+  
+  return conflicts.some(c => 
+    autoResolvablePatterns.some(pattern => pattern(c))
+  )
+}
+
+async function autoResolveConflict(conflict) {
+  console.log('[CropGuard SW] Auto-resolving conflict:', conflict.id)
+  
+  const resolution = determineAutoResolution(conflict)
+  
+  if (resolution) {
+    await applyConflictResolution(conflict.id, resolution)
+    return true
+  }
+  
+  return false
+}
+
+function determineAutoResolution(conflict) {
+  const { conflicts, localData, serverData } = conflict
+  
+  // Strategy 1: Server wins for status updates
+  if (conflicts.some(c => c.field === 'status' && 
+                         ['reviewed', 'completed', 'published'].includes(c.serverValue))) {
+    return {
+      strategy: 'server_wins',
+      reason: 'Server status update takes precedence'
+    }
+  }
+  
+  // Strategy 2: Latest timestamp wins for general updates
+  const serverTime = new Date(serverData.updatedAt || serverData.createdAt).getTime()
+  const localTime = new Date(localData.updatedAt || localData.createdAt).getTime()
+  
+  if (Math.abs(serverTime - localTime) > 300000) { // 5 minutes threshold
+    return {
+      strategy: serverTime > localTime ? 'server_wins' : 'local_wins',
+      reason: 'Latest timestamp resolution'
+    }
+  }
+  
+  // Strategy 3: Merge non-conflicting fields
+  const hasHighSeverityConflicts = conflicts.some(c => c.severity === 'high')
+  if (!hasHighSeverityConflicts) {
+    return {
+      strategy: 'merge',
+      reason: 'No high-severity conflicts detected'
+    }
+  }
+  
+  return null // Cannot auto-resolve
+}
+
+async function applyConflictResolution(conflictId, resolution) {
+  const db = await openOfflineDB()
+  
+  // Get conflict record
+  const conflictTransaction = db.transaction(['conflicts'], 'readonly')
+  const conflictStore = conflictTransaction.objectStore('conflicts')
+  const conflict = await conflictStore.get(conflictId)
+  
+  if (!conflict) {
+    throw new Error('Conflict not found')
+  }
+  
+  let resolvedData
+  
+  switch (resolution.strategy) {
+    case 'server_wins':
+      resolvedData = conflict.serverData
+      break
+    case 'local_wins':
+      resolvedData = conflict.localData
+      break
+    case 'merge':
+      resolvedData = mergeConflictData(conflict.localData, conflict.serverData, conflict.conflicts)
+      break
+    default:
+      throw new Error('Unknown resolution strategy')
+  }
+  
+  // Update local data with resolved version
+  await updateLocalData(conflict.resourceType, conflict.resourceId, resolvedData)
+  
+  // Mark conflict as resolved
+  const updateTransaction = db.transaction(['conflicts'], 'readwrite')
+  const updateStore = updateTransaction.objectStore('conflicts')
+  
+  conflict.resolved = true
+  conflict.resolution = resolution
+  conflict.resolvedAt = new Date().toISOString()
+  conflict.resolvedData = resolvedData
+  
+  await updateStore.put(conflict)
+  
+  // Notify main thread
+  await notifyClients('CONFLICT_RESOLVED', {
+    conflictId,
+    resolution,
+    resolvedData
+  })
+  
+  console.log('[CropGuard SW] Conflict resolved:', conflictId, resolution.strategy)
+}
+
+function mergeConflictData(localData, serverData, conflicts) {
+  const merged = { ...localData }
+  
+  // Apply server values for specific conflict types
+  for (const conflict of conflicts) {
+    if (conflict.severity === 'high' || 
+        conflict.field === 'status' ||
+        conflict.type === 'version_conflict') {
+      merged[conflict.field] = conflict.serverValue
+    }
+  }
+  
+  // Always use latest timestamp
+  merged.updatedAt = new Date().toISOString()
+  merged.syncedAt = new Date().toISOString()
+  
+  return merged
+}
+
+async function updateLocalData(resourceType, resourceId, data) {
+  const db = await openOfflineDB()
+  
+  let storeName
+  switch (resourceType) {
+    case 'analysis':
+      storeName = 'uploadQueue'
+      break
+    case 'action':
+      storeName = 'offlineActions'
+      break
+    case 'cached_data':
+      storeName = 'cachedData'
+      break
+    default:
+      throw new Error('Unknown resource type')
+  }
+  
+  const transaction = db.transaction([storeName], 'readwrite')
+  const store = transaction.objectStore(storeName)
+  
+  const existingRecord = await store.get(resourceId)
+  if (existingRecord) {
+    const updatedRecord = { ...existingRecord, ...data }
+    await store.put(updatedRecord)
+  }
+}
+
+function generateConflictId() {
+  return `conflict_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+// Conflict resolution message handlers
+
+async function handleResolveConflictMessage(payload) {
+  const { conflictId, resolution } = payload
+  
+  try {
+    await applyConflictResolution(conflictId, resolution)
+    await notifyClients('CONFLICT_RESOLUTION_SUCCESS', { conflictId })
+  } catch (error) {
+    console.error('[CropGuard SW] Failed to resolve conflict:', error)
+    await notifyClients('CONFLICT_RESOLUTION_ERROR', { 
+      conflictId, 
+      error: error.message 
+    })
+  }
+}
+
+async function handleGetConflictsMessage(port) {
+  try {
+    const db = await openOfflineDB()
+    const transaction = db.transaction(['conflicts'], 'readonly')
+    const store = transaction.objectStore('conflicts')
+    
+    // Get unresolved conflicts
+    const conflicts = await getAllFromStore(store)
+    const unresolvedConflicts = conflicts.filter(c => !c.resolved)
+    
+    port.postMessage({ 
+      type: 'CONFLICTS_RESULT', 
+      payload: unresolvedConflicts 
+    })
+  } catch (error) {
+    port.postMessage({ 
+      type: 'CONFLICTS_ERROR', 
+      payload: error.message 
+    })
+  }
+}
+
+async function handleAutoResolveConflictsMessage(payload) {
+  const { maxConflicts = 10 } = payload
+  
+  try {
+    const db = await openOfflineDB()
+    const transaction = db.transaction(['conflicts'], 'readonly')
+    const store = transaction.objectStore('conflicts')
+    
+    const conflicts = await getAllFromStore(store)
+    const autoResolvableConflicts = conflicts
+      .filter(c => !c.resolved && c.autoResolvable)
+      .slice(0, maxConflicts)
+    
+    let resolvedCount = 0
+    let failedCount = 0
+    
+    for (const conflict of autoResolvableConflicts) {
+      try {
+        const success = await autoResolveConflict(conflict)
+        if (success) {
+          resolvedCount++
+        } else {
+          failedCount++
+        }
+      } catch (error) {
+        console.error('[CropGuard SW] Auto-resolve failed:', error)
+        failedCount++
+      }
+    }
+    
+    await notifyClients('AUTO_RESOLVE_COMPLETE', {
+      resolved: resolvedCount,
+      failed: failedCount,
+      total: autoResolvableConflicts.length
+    })
+    
+  } catch (error) {
+    console.error('[CropGuard SW] Auto-resolve conflicts failed:', error)
+    await notifyClients('AUTO_RESOLVE_ERROR', { error: error.message })
+  }
+}
+
+// Enhanced sync with conflict detection
+
+async function syncWithConflictDetection(item, syncFunction) {
+  try {
+    // Attempt sync
+    const result = await syncFunction(item)
+    
+    // Check for conflicts in response
+    if (result.conflict || result.status === 409) {
+      const conflictData = result.conflictData || result.data
+      
+      const conflicts = await detectDataConflict(item, conflictData)
+      
+      if (conflicts.length > 0) {
+        const conflictRecord = {
+          resourceType: item.type || 'analysis',
+          resourceId: item.id,
+          localData: item,
+          serverData: conflictData,
+          conflicts,
+          syncAttempt: {
+            timestamp: new Date().toISOString(),
+            error: result.error || 'Conflict detected during sync'
+          }
+        }
+        
+        const conflictId = await storeConflict(conflictRecord)
+        
+        // Try auto-resolution
+        if (conflictRecord.autoResolvable) {
+          setTimeout(() => {
+            autoResolveConflict(conflictRecord)
+          }, 1000) // Delay to allow UI notification
+        }
+        
+        return { success: false, conflict: true, conflictId }
+      }
+    }
+    
+    return { success: true, result }
+  } catch (error) {
+    console.error('[CropGuard SW] Sync with conflict detection failed:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Update existing sync functions to use conflict detection
+
+async function enhancedSyncSingleUpload(upload) {
+  return await syncWithConflictDetection(upload, async (item) => {
+    const formData = new FormData()
+    formData.append('image', item.imageBlob, `crop-${item.id}.jpg`)
+    formData.append('metadata', JSON.stringify(item.metadata))
+    formData.append('farmerId', item.farmerId)
+    formData.append('priority', item.priority)
+    formData.append('offlineId', item.id)
+    formData.append('lastModified', item.updatedAt || item.createdAt)
+
+    const response = await fetch('/api/analyses', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Conflict-Detection': 'enabled'
+      }
+    })
+
+    const responseData = await response.json()
+
+    if (response.status === 409) {
+      return {
+        conflict: true,
+        conflictData: responseData.conflictData,
+        status: 409
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+    }
+
+    return { success: true, data: responseData }
+  })
+}
+
+// Initialize conflicts store
+async function initializeConflictsStore(db) {
+  if (!db.objectStoreNames.contains('conflicts')) {
+    const conflictsStore = db.createObjectStore('conflicts', { keyPath: 'id' })
+    conflictsStore.createIndex('timestamp', 'timestamp', { unique: false })
+    conflictsStore.createIndex('resolved', 'resolved', { unique: false })
+    conflictsStore.createIndex('autoResolvable', 'autoResolvable', { unique: false })
+    conflictsStore.createIndex('resourceType', 'resourceType', { unique: false })
+    conflictsStore.createIndex('resourceId', 'resourceId', { unique: false })
+  }
+}
+
+console.log('[CropGuard SW] Service worker loaded with advanced conflict resolution')

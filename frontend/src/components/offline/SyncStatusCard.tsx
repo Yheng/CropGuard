@@ -22,8 +22,10 @@ import { ProgressChart } from '../ui/Chart'
 import { cn } from '../../utils/cn'
 import { useOfflineSync } from '../../hooks/useOfflineSync'
 import { useConnectionState } from '../../hooks/useConnectionState'
+import { useConflictResolution, useConflictStats } from '../../hooks/useConflictResolution'
 import type { OfflineAnalysis } from '../../utils/offlineStorage'
 import { offlineStorage } from '../../utils/offlineStorage'
+import ConflictResolutionModal from './ConflictResolutionModal'
 
 interface SyncStatusCardProps {
   className?: string
@@ -43,6 +45,7 @@ export function SyncStatusCard({
   const [queuedUploads, setQueuedUploads] = React.useState<OfflineAnalysis[]>([])
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isPaused, setIsPaused] = React.useState(false)
+  const [showConflictModal, setShowConflictModal] = React.useState(false)
 
   const {
     syncStatus,
@@ -59,6 +62,17 @@ export function SyncStatusCard({
     quality,
     connectionDescription
   } = useConnectionState()
+
+  // Conflict resolution
+  const {
+    conflicts,
+    resolveConflict,
+    autoResolveAll,
+    refreshConflicts,
+    isResolving
+  } = useConflictResolution()
+
+  const conflictStats = useConflictStats()
 
   // Load queued uploads
   const loadQueuedUploads = React.useCallback(async () => {
@@ -191,6 +205,32 @@ export function SyncStatusCard({
       
       <CardContent>
         <div className="space-y-4">
+          {/* Conflict Warning */}
+          {conflictStats.pending > 0 && (
+            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-orange-400" />
+                  <div>
+                    <p className="font-medium text-orange-300">
+                      {conflictStats.pending} Data Conflicts
+                    </p>
+                    <p className="text-sm text-orange-400">
+                      {conflictStats.autoResolvable} auto-resolvable, {conflictStats.manualRequired} need attention
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setShowConflictModal(true)}
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Resolve
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Sync Overview */}
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 bg-[#1F2A44] rounded-lg">
@@ -337,6 +377,17 @@ export function SyncStatusCard({
           )}
         </div>
       </CardContent>
+
+      {/* Conflict Resolution Modal */}
+      <ConflictResolutionModal
+        isOpen={showConflictModal}
+        conflicts={conflicts}
+        onClose={() => setShowConflictModal(false)}
+        onResolveConflict={resolveConflict}
+        onAutoResolveAll={autoResolveAll}
+        onRefresh={refreshConflicts}
+        isResolving={isResolving}
+      />
     </Card>
   )
 }

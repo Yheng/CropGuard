@@ -1,5 +1,6 @@
 const { logger, appLogger } = require('../../middleware/logger');
 const { AppError } = require('../../middleware/errorHandler');
+const ImagePreprocessingService = require('./preprocessing/preprocessingService');
 
 /**
  * AI Service Manager - Orchestrates multiple AI providers and handles failover
@@ -17,6 +18,9 @@ class AIServiceManager {
       averageResponseTime: 0,
       providerStats: {}
     };
+    
+    // Initialize preprocessing service
+    this.preprocessingService = new ImagePreprocessingService();
   }
 
   /**
@@ -78,8 +82,29 @@ class AIServiceManager {
     this.metrics.totalRequests++;
 
     try {
-      // Check cache first
-      const cacheKey = await this.generateCacheKey(imagePath, metadata);
+      // Step 1: Preprocess image for optimal AI analysis
+      logger.debug('Starting image preprocessing', {
+        category: 'ai-service',
+        imagePath,
+        metadata
+      });
+      
+      const preprocessingResult = await this.preprocessingService.preprocessImage(imagePath, metadata);
+      const processedImagePath = preprocessingResult.outputPath;
+      
+      logger.info('Image preprocessing completed', {
+        category: 'ai-service',
+        originalPath: imagePath,
+        processedPath: processedImagePath,
+        preprocessingTime: preprocessingResult.processingTime,
+        qualityMetrics: preprocessingResult.qualityMetrics
+      });
+
+      // Step 2: Check cache with processed image
+      const cacheKey = await this.generateCacheKey(processedImagePath, {
+        ...metadata,
+        preprocessing: preprocessingResult.preprocessingApplied
+      });
       const cachedResult = this.getCachedResult(cacheKey);
       
       if (cachedResult) {
@@ -88,6 +113,8 @@ class AIServiceManager {
           cacheKey: cacheKey.substring(0, 16) + '...',
           cacheHit: true
         });
+        // Add preprocessing info to cached result
+        cachedResult.preprocessing = preprocessingResult;
         return cachedResult;
       }
 
@@ -100,7 +127,11 @@ class AIServiceManager {
         }
 
         try {
-          const result = await this.analyzeWithProvider(providerName, imagePath, metadata);
+          const result = await this.analyzeWithProvider(providerName, processedImagePath, metadata);
+          
+          // Add preprocessing information to result
+          result.preprocessing = preprocessingResult;
+          result.originalImagePath = imagePath;
           
           // Cache successful result
           this.setCachedResult(cacheKey, result);
@@ -358,8 +389,16 @@ class AIServiceManager {
       ...this.metrics,
       cacheSize: this.cache.size,
       successRate: this.metrics.totalRequests > 0 ? 
-        (this.metrics.successfulRequests / this.metrics.totalRequests * 100).toFixed(1) + '%' : 'N/A'
+        (this.metrics.successfulRequests / this.metrics.totalRequests * 100).toFixed(1) + '%' : 'N/A',
+      preprocessing: this.preprocessingService.getStatistics()
     };
+  }
+
+  /**
+   * Get preprocessing service health
+   */
+  async getPreprocessingHealth() {
+    return await this.preprocessingService.healthCheck();
   }
 
   /**

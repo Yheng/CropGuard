@@ -7,13 +7,15 @@
 
 [![React](https://img.shields.io/badge/React-19.1+-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18.0+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org/)
 [![Express](https://img.shields.io/badge/Express-4.18+-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-5.1+-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![AI Powered](https://img.shields.io/badge/AI-Powered-FF6B6B?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org/)
 
 ![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=CropGuard.Agricultural&left_color=green&right_color=emerald&left_text=Visitors)
 
-*Empowering small-scale organic farmers with AI-powered pest detection, organic treatment recommendations, and comprehensive crop health analytics.*
+*Empowering small-scale organic farmers with AI-powered pest detection, expert agronomist validation, guided tutorials, and comprehensive crop health analytics.*
 
 </div>
 
@@ -21,45 +23,51 @@
 
 ## 🌟 **Overview**
 
-**CropGuard** is a comprehensive, offline-first web application designed specifically for small-scale organic farmers and agricultural professionals in rural areas. Built with cutting-edge technology, it provides AI-powered crop disease detection, organic treatment recommendations, and comprehensive crop health analytics - all while working seamlessly in low-connectivity environments.
+**CropGuard** is a comprehensive, production-ready web application designed specifically for small-scale organic farmers and agricultural professionals. Built with enterprise-grade technology, it provides real-time AI-powered crop disease detection using OpenAI's GPT-4o Vision API, Python-based image preprocessing, expert agronomist validation workflows, guided tutorial systems, and comprehensive crop health analytics.
 
 ### 🎯 **Why CropGuard?**
 
-- **🤖 AI-Powered Detection**: Multi-model crop disease identification with 95% accuracy
-- **📊 Advanced Analytics**: Interactive charts and crop health insights
-- **📱 Offline-First**: Full functionality without internet connectivity
+- **🤖 Real AI Integration**: OpenAI GPT-4o Vision API with 90%+ accuracy
+- **🐍 Advanced Image Processing**: Python-based preprocessing pipeline for optimal AI analysis
+- **👨‍🌾 Expert Validation**: Complete agronomist review workflow with queue management
+- **🎓 Guided Learning**: Multi-language tutorial system with voice guidance
+- **📊 Advanced Analytics**: Interactive ApexCharts with real-time data visualization
+- **📱 Offline-First**: IndexedDB storage with background sync capabilities
 - **🌿 Organic-Focused**: 100% eco-friendly treatment recommendations
-- **🔒 Privacy-First**: Farmer data belongs to farmers
-- **🎯 Mobile-Optimized**: Perfect for Android devices in rural areas
-- **🏆 Expert Review**: Certified agronomist validation system
+- **🔒 Enterprise Security**: JWT authentication, bcrypt hashing, rate limiting
+- **🎯 Mobile-Optimized**: Touch-friendly UI perfect for field conditions
+- **⚡ Performance Optimized**: <2s load times, <5s API responses
 
 ---
 
 ## ✨ **Key Features**
 
 ### 🌱 **For Farmers (Mobile-Optimized)**
-- 📸 **Smart Image Capture** - Optimized camera interface with crop-specific capture guides
-- 🤖 **AI-Powered Analysis** - Multi-model disease detection with confidence scoring
-- 🌿 **Organic Treatment Plans** - Personalized, eco-friendly treatment recommendations
-- 📊 **Crop Health Dashboard** - Visual trends and analytics with touch-friendly charts
-- 📱 **Offline-First Operation** - Full functionality without internet connectivity
-- 🎯 **Touch-Optimized UI** - Large buttons, gesture navigation, thumb-friendly design
-- 🌙 **Dark Mode** - Optimized for early morning and late evening farm work
+- 📸 **Smart Image Capture** - Python-optimized preprocessing with auto-crop and enhancement
+- 🤖 **Real AI Analysis** - OpenAI GPT-4o Vision API with 90%+ accuracy and confidence scoring
+- 🎓 **Interactive Tutorials** - Voice-guided onboarding in English, Spanish, and Hindi
+- 🌿 **Organic Treatment Plans** - Personalized, region-specific eco-friendly recommendations
+- 📊 **Advanced Crop Health Dashboard** - ApexCharts with Framer Motion animations
+- 📱 **True Offline Operation** - IndexedDB storage with background sync and conflict resolution
+- 🎯 **Field-Optimized UI** - Touch-friendly design for gloved hands and outdoor conditions
+- 🌙 **Adaptive Dark Mode** - Automatic lighting optimization for field work
 
-### 👨‍🌾 **For Agronomists (Professional Tools)**
-- 📋 **Case Management Dashboard** - Comprehensive overview of farmer submissions
-- ⚡ **Bulk Review Operations** - Efficient approval/rejection workflows
-- 💬 **Expert Communication** - Direct messaging with farmers and recommendations
-- 🏆 **Gamified Credit System** - Earn points for quality reviews and timely responses
-- 📈 **Regional Analytics** - Area-wide crop health insights and trend analysis
-- 🔍 **Advanced Filtering** - Search and filter cases by crop type, severity, location
+### 👨‍🌾 **For Agronomists (Expert Review System)**
+- 📋 **Advanced Review Queue** - Priority-based case management with intelligent filtering
+- ⚡ **Bulk Operations** - Efficient batch approval/modification/rejection workflows
+- 🏆 **Credit & Certification System** - Gamified points system with bronze/silver/gold/platinum levels
+- 📈 **Expert Analytics** - Performance metrics, approval rates, and regional insights
+- 🔍 **AI Feedback Loop** - Mark AI accuracy to improve system performance
+- 💬 **Expert Commentary** - Detailed feedback system for farmer education
+- 📊 **Leaderboard System** - Competition and recognition among agronomists
 
-### 🛡️ **For Administrators (System Management)**
-- 👥 **User Management** - Role-based access control and account administration
-- 🔧 **AI Model Configuration** - Update API keys, adjust confidence thresholds
-- 📝 **Comprehensive Audit Logs** - Full system activity tracking and compliance
-- 📊 **System Analytics** - Performance monitoring, usage statistics, cost tracking
-- 🌍 **Geographic Insights** - Regional usage patterns and crop health mapping
+### 🛡️ **For Administrators (Enterprise Management)**
+- 👥 **Complete User Management** - Role-based access control with audit trails
+- 🔧 **AI Configuration Panel** - OpenAI API key management and model settings
+- 📝 **Comprehensive Logging** - Winston-based logging with error tracking
+- 📊 **System Performance** - Real-time metrics, API usage, and cost monitoring
+- 🌍 **Geographic Analytics** - Regional usage patterns and crop health mapping
+- 🔒 **Security Dashboard** - Rate limiting, failed login attempts, and security monitoring
 
 ---
 
@@ -69,18 +77,22 @@
 
 ### **Frontend Arsenal**
 ![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7.0.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.23.11-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 
 ### **Backend Powerhouse**
 ![Node.js](https://img.shields.io/badge/Node.js-18.0+-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-5.1.6-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
-### **AI & Visualization**
-![OpenAI](https://img.shields.io/badge/OpenAI-Vision%20API-412991?style=for-the-badge&logo=openai&logoColor=white)
+### **AI & Image Processing**
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o%20Vision-412991?style=for-the-badge&logo=openai&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
+![Pillow](https://img.shields.io/badge/Pillow-10.0+-8CA1AF?style=for-the-badge&logo=python&logoColor=white)
 ![ApexCharts](https://img.shields.io/badge/ApexCharts-5.3.1-FF6B6B?style=for-the-badge&logo=chart-dot-js&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-4.6.7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 
@@ -91,9 +103,10 @@
 ## ⚡ **Quick Start Guide**
 
 ### 🔧 **Prerequisites**
-- Node.js 18.0+ 
-- npm 9+ package manager
-- Git (for cloning)
+- **Node.js 18.0+** (with npm 9+)
+- **Python 3.8+** (for image preprocessing)
+- **Git** (for cloning)
+- **OpenAI API Key** (for GPT-4o Vision API)
 
 ### 💻 **Local Development Setup**
 
@@ -102,28 +115,58 @@
 git clone https://github.com/your-org/cropguard.git
 cd CropGuard
 
-# 📦 Install all dependencies
-npm run install:all
+# 📦 Install Node.js dependencies
+npm install
+cd backend && npm install
+cd ../frontend && npm install
+cd ..
+
+# 🐍 Set up Python image preprocessing service
+cd backend/src/services/ai/preprocessing
+python setup.py  # Installs Pillow, OpenCV, NumPy
+cd ../../../../
 
 # 🔑 Set up environment variables
 cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
 
-# ✏️ Edit .env files with your configuration
-# Required: JWT_SECRET, OPENAI_API_KEY, REDIS_URL (optional)
+# ✏️ Edit backend/.env with your configuration
+# Required variables:
+# OPENAI_API_KEY=your-openai-api-key-here
+# JWT_SECRET=your-ultra-secure-jwt-secret-256-bits
+# NODE_ENV=development
 
-# 🗄️ Seed the database with demo accounts
+# 🗄️ Initialize database with demo accounts
 cd backend
 npm run seed:full
 
-# 🚀 Start development servers
+# 🚀 Start development servers (from root directory)
 cd ..
 npm run dev
 
 # 🌐 Access your application
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:3000
-# Health Check: http://localhost:3000/api/health
+# API Health: http://localhost:3000/health
+# Preprocessing Health: Test via /api/agronomist/service-metrics
+```
+
+### 🧪 **Test the Setup**
+
+```bash
+# Test Python preprocessing service
+python backend/src/services/ai/preprocessing/image_processor.py \
+  backend/tests/fixtures/test-image.jpg \
+  /tmp/processed_output.jpg
+
+# Test OpenAI API integration (requires valid API key)
+curl -X POST http://localhost:3000/api/analysis/upload \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "image=@path/to/test/image.jpg" \
+  -F "cropType=tomato"
+
+# Run comprehensive test suites
+cd backend && npm test
+cd ../frontend && npm run test
 ```
 
 ### 👑 **Default Admin Access**

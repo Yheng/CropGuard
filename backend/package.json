@@ -9,6 +9,14 @@
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:security": "node run-security-tests.js",
+    "test:security:owasp": "jest tests/security-owasp-top10.test.js",
+    "test:security:auth": "jest tests/security-auth-advanced.test.js",
+    "test:security:injection": "jest tests/security-injection-bypass.test.js",
+    "test:security:api": "jest tests/security-api-rate-limiting.test.js",
+    "test:security:infrastructure": "jest tests/security-infrastructure.test.js",
+    "test:security:agricultural": "jest tests/security-agricultural-scenarios.test.js",
+    "test:security:assessment": "jest tests/security-assessment-runner.test.js",
     "lint": "eslint src --ext .js,.ts",
     "format": "prettier --write src/**/*.{js,ts}",
     "seed": "node src/scripts/seed.js",
@@ -30,6 +38,7 @@
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -64,5 +73,18 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": ["<rootDir>/tests/**/*.test.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js",
+      "!src/scripts/**",
+      "!src/**/*.config.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
   }
 }

@@ -59,6 +59,14 @@ router.post('/register',
   // Update last login
   await runQuery('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
+  // Set httpOnly cookie
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
@@ -71,8 +79,7 @@ router.post('/register',
         phone: user.phone,
         location: user.location,
         createdAt: user.created_at
-      },
-      token
+      }
     }
   });
 }));
@@ -111,6 +118,14 @@ router.post('/login',
   // Update last login
   await runQuery('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
 
+  // Set httpOnly cookie
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
   res.json({
     success: true,
     message: 'Login successful',
@@ -122,8 +137,7 @@ router.post('/login',
         role: user.role,
         phone: user.phone,
         location: user.location
-      },
-      token
+      }
     }
   });
 }), resetBruteForceCounter);
@@ -164,12 +178,16 @@ router.put('/profile',
   authenticateToken,
   validate(validationSchemas.updateProfile),
   asyncHandler(async (req, res) => {
+    // Whitelist allowed update fields for security
+    const allowedFields = ['name', 'phone', 'location', 'avatar_url'];
     const updates = [];
     const values = [];
 
     Object.keys(req.body).forEach(key => {
-      updates.push(`${key} = ?`);
-      values.push(req.body[key]);
+      if (allowedFields.includes(key)) {
+        updates.push(`${key} = ?`);
+        values.push(req.body[key]);
+      }
     });
 
   if (updates.length === 0) {
@@ -230,8 +248,13 @@ router.post('/change-password',
 
 // Logout (for token blacklisting in future)
 router.post('/logout', authenticateToken, asyncHandler(async (req, res) => {
-  // For now, just send success response
-  // In production, you might want to implement token blacklisting
+  // Clear the httpOnly cookie
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  
   res.json({
     success: true,
     message: 'Logged out successfully'

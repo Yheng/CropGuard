@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 
 // Import routes and middleware
 const authRoutes = require('../src/routes/auth');
@@ -46,17 +47,15 @@ function createTestApp() {
   app.use(requestSizeValidator());
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(cookieParser());
   app.use(suspiciousActivityDetector);
   app.use(advancedSanitization);
 
-  // Logging and monitoring (in test mode, make these no-ops)
+  // Logging and monitoring (disabled in test mode)
   if (process.env.NODE_ENV !== 'test') {
     app.use(requestLogger);
     app.use(performanceLogger);
-  }
-
-  // Global rate limiting (relaxed for tests)
-  if (process.env.NODE_ENV !== 'test') {
+    // Global rate limiting (disabled in test mode to avoid conflicts)
     app.use(createRateLimitMiddleware('global'));
   }
 

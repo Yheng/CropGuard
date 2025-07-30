@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 const rateLimit = require('rate-limiter-flexible');
 require('dotenv').config();
 
@@ -13,6 +14,7 @@ const treatmentRoutes = require('./routes/treatments');
 const analyticsRoutes = require('./routes/analytics');
 const userRoutes = require('./routes/users');
 const healthRoutes = require('./routes/health');
+const agronomistRoutes = require('./routes/agronomist');
 
 const { initializeDatabase } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -68,6 +70,7 @@ app.use(compression());
 app.use(requestSizeValidator());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 app.use(suspiciousActivityDetector);
 app.use(advancedSanitization);
 
@@ -97,6 +100,7 @@ app.use('/api/analysis', analysisRoutes);
 app.use('/api/treatments', treatmentRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/agronomist', agronomistRoutes);
 
 // Static file serving for uploaded images
 app.use('/uploads', express.static('uploads'));

@@ -1,0 +1,11 @@
+# CropGuard Image Preprocessing Service Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core image processing
+Pillow>=10.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Optional performance improvements
+# opencv-contrib-python>=4.8.0  # Additional OpenCV modules (optional)
+# scikit-image>=0.21.0          # Advanced image processing (optional)

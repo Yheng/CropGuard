@@ -36,14 +36,13 @@ export const authService = {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
-      })
+      }, { withCredentials: true })
       
-      const { token, user } = response.data.data
-      localStorage.setItem('auth_token', token)
+      const { user } = response.data.data
       localStorage.setItem('user_data', JSON.stringify(user))
       dispatchAuthChange()
       
-      return { token, user }
+      return { token: 'cookie', user }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
@@ -68,14 +67,13 @@ export const authService = {
         password,
         name: email.split('@')[0], // Use email prefix as name
         role: 'farmer'
-      })
+      }, { withCredentials: true })
       
-      const { token, user } = response.data.data
-      localStorage.setItem('auth_token', token)
+      const { user } = response.data.data
       localStorage.setItem('user_data', JSON.stringify(user))
       dispatchAuthChange()
       
-      return { token, user }
+      return { token: 'cookie', user }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
@@ -88,7 +86,7 @@ export const authService = {
     }
   },
   
-  logout: () => {
+  logout: async () => {
     // Clear user-specific data on logout
     const userData = localStorage.getItem('user_data')
     if (userData) {
@@ -108,18 +106,27 @@ export const authService = {
       }
     }
     
-    localStorage.removeItem('auth_token')
+    // Send logout request to clear httpOnly cookie
+    try {
+      await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true })
+    } catch (error) {
+      console.warn('Logout request failed:', error)
+    }
+    
     localStorage.removeItem('user_data')
     dispatchAuthChange()
   },
   
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('auth_token')
-    return !!token
+    // Check if user data exists (cookie auth doesn't allow JS access to token)
+    const userData = localStorage.getItem('user_data')
+    return !!userData
   },
   
   getToken: (): string | null => {
-    return localStorage.getItem('auth_token')
+    // With httpOnly cookies, we can't access the token from JS
+    // Return null as the cookie is sent automatically
+    return null
   },
   
   getCurrentUser: () => {
@@ -131,10 +138,9 @@ export const authService = {
   setupAxiosInterceptors: () => {
     axios.interceptors.request.use(
       (config) => {
-        const token = authService.getToken()
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
+        // No need to manually set Authorization header with httpOnly cookies
+        // The cookie will be sent automatically with credentials: 'include'
+        config.withCredentials = true
         return config
       },
       (error) => {
