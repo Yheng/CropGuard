@@ -62,6 +62,7 @@ const defaultWeatherData: WeatherData = {
   lastUpdated: new Date().toISOString()
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const FieldModeContext = createContext<FieldModeContextType | undefined>(undefined)
 
 export function FieldModeProvider({ children }: { children: React.ReactNode }) {
