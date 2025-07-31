@@ -93,28 +93,6 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
 
   // Function definitions
-  const _initializeWeatherData = async () => {
-    // Check if we have recent weather data in localStorage
-    const cached = localStorage.getItem('cropguard-weather-data')
-    if (cached) {
-      try {
-        const data = JSON.parse(cached)
-        const lastUpdated = new Date(data.lastUpdated)
-        const now = new Date()
-        const hoursSinceUpdate = (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60)
-        
-        if (hoursSinceUpdate < 1) { // Use cached data if less than 1 hour old
-          setWeatherData(data)
-          return
-        }
-      } catch {
-        // Ignore cache errors
-      }
-    }
-
-    // Simulate weather data or use defaults
-    await refreshWeatherData()
-  }
 
   const refreshWeatherData = async (): Promise<void> => {
     try {
@@ -171,40 +149,11 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const _adaptToWeatherConditions = (_weather: WeatherData) => {
-    // Auto-switch to high contrast in bright sunlight
-    if (_weather.condition === 'sunny' && _weather.brightness > 85) {
-      if (fieldMode === 'standard') {
-        setFieldMode('field')
-      }
-      updateSettings({ highContrastMode: true })
-    }
-    
-    // Enable glove mode in rainy conditions
-    if (_weather.condition === 'rainy') {
-      updateSettings({ gloveMode: true, touchTargetSize: 'large' })
-    }
-    
-    // Adjust font size in low light
-    if (_weather.brightness < 30) {
-      updateSettings({ fontSizeMultiplier: Math.max(1.1, settings.fontSizeMultiplier) })
-    }
-  }
 
   const updateSettings = (newSettings: Partial<FieldModeSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }))
   }
 
-  const _getTouchTargetSize = (): number => {
-    const baseSize = 44 // iOS minimum
-    const gloveBonus = settings.gloveMode ? 16 : 0
-    
-    switch (settings.touchTargetSize) {
-      case 'large': return baseSize + 16 + gloveBonus
-      case 'extra-large': return baseSize + 32 + gloveBonus
-      default: return baseSize + gloveBonus
-    }
-  }
 
   const getAdaptiveColors = (): AdaptiveColors => {
     const isHighContrast = fieldMode === 'high-contrast' || settings.highContrastMode

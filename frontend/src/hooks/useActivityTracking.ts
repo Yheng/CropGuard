@@ -346,7 +346,7 @@ class ActivityTracker {
     return sanitized
   }
 
-  public async getActivities(filter: ActivityFilter = {}): Promise<ActivityEvent[]> {
+  public async getActivities(): Promise<ActivityEvent[]> {
     // In a real implementation, this would fetch from your backend
     // For now, return mock data
     return []
@@ -545,7 +545,8 @@ export function withActivityTracking<T extends object>(
           track('component.unmounted', { componentName })
         }
       }
-    }, [track, componentName])
+    }, [track, componentName]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Note: props is intentionally omitted from dependencies to only track on mount/unmount
 
     return React.createElement(Component, props as T)
   }

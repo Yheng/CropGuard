@@ -94,7 +94,7 @@ export interface AnalysisWorkflowData {
   timeSpent: number // in minutes
   slaDeadline?: string
   escalated: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 interface AnalysisWorkflowProps {
@@ -320,7 +320,6 @@ function WorkflowStepComponent({
 function WorkflowActions({
   analysis,
   availableActions,
-  userRole,
   onAction,
   className
 }: {
@@ -441,7 +440,6 @@ function WorkflowSummary({
   className?: string
 }) {
   const currentStep = workflowSteps.find(step => step.stage === analysis.currentStage)
-  const totalEstimatedTime = workflowSteps.reduce((total, step) => total + step.estimatedDuration, 0)
   const isOverdue = analysis.slaDeadline && new Date(analysis.slaDeadline) < new Date()
 
   return (

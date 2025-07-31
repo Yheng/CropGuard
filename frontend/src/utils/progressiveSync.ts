@@ -425,7 +425,7 @@ class ProgressiveSyncManager {
 
   // Utility methods
   private getCurrentConnectionQuality(): string {
-    const connection = (navigator as any).connection
+    const connection = (navigator as Navigator & { connection?: { effectiveType: string } }).connection
     if (!connection) return 'unknown'
     
     this.syncProgress.connectionQuality = connection.effectiveType || 'unknown'

@@ -390,7 +390,7 @@ export function RoleBasedLayout({
   currentPath,
   onNavigate,
   onLogout,
-  onNotificationAction: _onNotificationAction,
+  // onNotificationAction prop intentionally unused
   className
 }: RoleBasedLayoutProps) {
   const layout = useResponsiveLayout(user)

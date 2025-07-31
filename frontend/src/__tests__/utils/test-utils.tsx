@@ -18,7 +18,7 @@ export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   theme?: Partial<ThemeContextType>;
   fieldMode?: Partial<FieldModeContextType>;
   withRouter?: boolean;
-  user?: any;
+  user?: Record<string, unknown>;
 }
 
 // Mock theme context default values
@@ -43,10 +43,11 @@ const defaultFieldModeContext: FieldModeContextType = {
 };
 
 // Custom render function with providers
+// eslint-disable-next-line react-refresh/only-export-components
 export function customRender(
   ui: ReactElement,
   {
-    route = '/',
+    // route = '/', // unused variable
     initialEntries,
     theme,
     fieldMode,
@@ -54,7 +55,7 @@ export function customRender(
     user,
     ...renderOptions
   }: CustomRenderOptions = {}
-): RenderResult & { user?: any } {
+): RenderResult & { user?: Record<string, unknown> } {
   const themeValue = { ...defaultThemeContext, ...theme };
   const fieldModeValue = { ...defaultFieldModeContext, ...fieldMode };
 
@@ -89,6 +90,7 @@ export function customRender(
 }
 
 // Re-export everything from testing library
+/* eslint-disable react-refresh/only-export-components */
 export * from '@testing-library/react';
 export { default as userEvent } from '@testing-library/user-event';
 
@@ -98,7 +100,8 @@ export { customRender as render };
 // Test data factories
 // ===================
 
-export const createMockUser = (overrides: Partial<any> = {}) => ({
+/* eslint-disable react-refresh/only-export-components */
+export const createMockUser = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: 'user-123',
   name: 'Test Farmer',
   email: 'farmer@test.com',
@@ -107,7 +110,7 @@ export const createMockUser = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-export const createMockCrop = (overrides: Partial<any> = {}) => ({
+export const createMockCrop = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: 'crop-123',
   name: 'Tomato',
   type: 'vegetable',
@@ -117,7 +120,7 @@ export const createMockCrop = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-export const createMockAnalysis = (overrides: Partial<any> = {}) => ({
+export const createMockAnalysis = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: 'analysis-123',
   imageUrl: 'https://example.com/crop-image.jpg',
   cropType: 'tomato',
@@ -131,7 +134,7 @@ export const createMockAnalysis = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-export const createMockDisease = (overrides: Partial<any> = {}) => ({
+export const createMockDisease = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: 'disease-123',
   name: 'Late Blight',
   severity: 'medium',
@@ -141,7 +144,7 @@ export const createMockDisease = (overrides: Partial<any> = {}) => ({
   ...overrides,
 });
 
-export const createMockTreatment = (overrides: Partial<any> = {}) => ({
+export const createMockTreatment = (overrides: Partial<Record<string, unknown>> = {}) => ({
   id: 'treatment-123',
   name: 'Copper Fungicide Application',
   type: 'chemical',
@@ -164,7 +167,7 @@ export const mockApiResponse = <T,>(data: T, success = true) => ({
   timestamp: new Date().toISOString(),
 });
 
-export const mockPaginatedResponse = <T>(
+export const mockPaginatedResponse = <T,>(
   items: T[],
   page = 1,
   limit = 10,
@@ -333,7 +336,7 @@ export const setupLocalStorageTest = () => {
   });
 };
 
-export const setLocalStorageItem = (key: string, value: any) => {
+export const setLocalStorageItem = (key: string, value: unknown) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
@@ -475,3 +478,4 @@ export const mockWeatherData = () => ({
 });
 
 export default customRender;
+/* eslint-enable react-refresh/only-export-components */

@@ -41,9 +41,9 @@ export function ResponsiveLayout({
   navigation,
   header,
   footer,
-  sidebar: _sidebar,
+  // sidebar prop intentionally unused
   className,
-  showMobileMenu: _showMobileMenu = false,
+  // showMobileMenu prop intentionally unused
   onMobileMenuToggle
 }: ResponsiveLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)

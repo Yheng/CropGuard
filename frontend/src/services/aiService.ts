@@ -59,7 +59,7 @@ class AIService {
     lastResetDay: new Date().getDate()
   }
   private responseCache = new Map<string, CacheEntry>()
-  private requestQueue: Array<() => Promise<any>> = []
+  private requestQueue: Array<() => Promise<unknown>> = []
   private isProcessingQueue = false
 
   // Configuration management
@@ -532,11 +532,11 @@ Focus on organic, sustainable treatment options when possible. ${additionalConte
     try {
       // Try to parse as JSON first
       return JSON.parse(content)
-    } catch (_error) {
+    } catch {
       console.log('Failed to parse JSON, attempting to extract structured data from text response:', content)
       
       // Try to extract structured information from text response
-      const lines = content.split('\n')
+      // lines variable removed as unused
       const result = {
         confidence: 0.7,
         disease: null,

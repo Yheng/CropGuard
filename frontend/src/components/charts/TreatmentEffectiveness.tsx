@@ -367,7 +367,7 @@ export function TreatmentEffectiveness({
               { value: '1y', label: 'Last year' }
             ]}
             value={timeRange}
-            onChange={(value) => onTimeRangeChange?.(value as '30d' | '90d' | '6m' | '1y'))
+            onChange={(value) => onTimeRangeChange?.(value as '30d' | '90d' | '6m' | '1y')}
             className="w-40"
           />
 

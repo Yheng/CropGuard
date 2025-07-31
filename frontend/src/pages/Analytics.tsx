@@ -3,12 +3,43 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, RefreshCw, BarChart3, Camera, PieChart, TrendingUp } from 'lucide-react'
 import { userDataService } from '../services/userDataService'
 
+interface UserStats {
+  totalAnalyses: number
+  healthyPlants: number
+  plantsNeedingCare: number
+  diseasedPlants: number
+}
+
+interface MonthlyAnalysis {
+  month: string
+  count: number
+}
+
+interface StatusDistribution {
+  status: string
+  count: number
+  color: string
+}
+
+interface FieldActivity {
+  name: string
+  lastAnalysis: string
+  status: string
+  analyses: number
+}
+
+interface AnalyticsData {
+  monthlyAnalyses: MonthlyAnalysis[]
+  statusDistribution: StatusDistribution[]
+  fieldActivity: FieldActivity[]
+}
+
 export function Analytics() {
   const navigate = useNavigate()
-  const [analyticsData, setAnalyticsData] = useState<any>(null)
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [userStats, setUserStats] = useState<any>(null)
+  const [userStats, setUserStats] = useState<UserStats | null>(null)
 
   useEffect(() => {
     loadAnalyticsData()
@@ -198,14 +229,14 @@ export function Analytics() {
             <h3 className="text-xl font-semibold text-white mb-6">Monthly Analysis Trend</h3>
             {analyticsData?.monthlyAnalyses?.length > 0 ? (
               <div className="space-y-4">
-                {analyticsData.monthlyAnalyses.map((item: any, index: number) => (
+                {analyticsData.monthlyAnalyses.map((item, index: number) => (
                   <div key={index} className="flex items-center justify-between">
                     <span className="text-gray-300">{item.month}</span>
                     <div className="flex items-center gap-3">
                       <div className="w-32 bg-slate-700 rounded-full h-2">
                         <div 
                           className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full" 
-                          style={{ width: `${Math.min(100, (item.count / Math.max(...analyticsData.monthlyAnalyses.map((m: any) => m.count))) * 100)}%` }}
+                          style={{ width: `${Math.min(100, (item.count / Math.max(...analyticsData.monthlyAnalyses.map((m) => m.count))) * 100)}%` }}
                         ></div>
                       </div>
                       <span className="text-emerald-400 font-medium w-8 text-right">{item.count}</span>
@@ -226,7 +257,7 @@ export function Analytics() {
             <h3 className="text-xl font-semibold text-white mb-6">Health Status Distribution</h3>
             {analyticsData?.statusDistribution?.length > 0 ? (
               <div className="space-y-4">
-                {analyticsData.statusDistribution.map((item: any, index: number) => {
+                {analyticsData.statusDistribution.map((item, index: number) => {
                   const getStatusColor = (status: string) => {
                     switch (status.toLowerCase()) {
                       case 'healthy': return 'from-emerald-500 to-green-500'
@@ -266,7 +297,7 @@ export function Analytics() {
           <div className="bg-slate-800 rounded-lg p-6 border border-gray-700">
             <h3 className="text-xl font-semibold text-white mb-6">Top Active Fields</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {analyticsData.fieldActivity.map((field: any, index: number) => (
+              {analyticsData.fieldActivity.map((field, index: number) => (
                 <div key={index} className="bg-slate-700/50 rounded-lg p-4 border border-gray-600">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold text-white">{field.field}</h4>

@@ -134,8 +134,6 @@ export const filterDataByRole = (
   user: User,
   filters: FilterOptions = {}
 ): Analysis[] => {
-  const accessRules = getAccessRules(user)
-
   let filteredData = data.filter(item => {
     // Role-based access control
     switch (user.role) {

@@ -463,7 +463,7 @@ class OfflineSyncManager {
   }
 
   private async adaptiveDelay(): Promise<void> {
-    const connection = (navigator as any).connection
+    const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection
     let delay = 500 // Default delay
     
     if (connection) {

@@ -212,7 +212,7 @@ export class ServiceWorkerManager {
 
     if ('sync' in this.registration) {
       try {
-        await (this.registration as any).sync.register(tag)
+        await (this.registration as ServiceWorkerRegistration & { sync?: { register: (tag: string) => Promise<void> } }).sync?.register(tag)
         console.log(`[ServiceWorkerManager] Background sync registered: ${tag}`)
       } catch (error) {
         console.error('[ServiceWorkerManager] Background sync registration failed:', error)
@@ -228,7 +228,7 @@ export class ServiceWorkerManager {
 
     if ('periodicSync' in this.registration) {
       try {
-        await (this.registration as any).periodicSync.register(tag, { minInterval })
+        await (this.registration as ServiceWorkerRegistration & { periodicSync?: { register: (tag: string, options: { minInterval: number }) => Promise<void> } }).periodicSync?.register(tag, { minInterval })
         console.log(`[ServiceWorkerManager] Periodic sync registered: ${tag}`)
       } catch (error) {
         console.error('[ServiceWorkerManager] Periodic sync registration failed:', error)

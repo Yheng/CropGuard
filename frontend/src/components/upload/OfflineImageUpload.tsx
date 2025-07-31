@@ -101,7 +101,7 @@ export function OfflineImageUpload({
 
   // Listen for sync events
   React.useEffect(() => {
-    const handleSyncEvent = (event: any) => {
+    const handleSyncEvent = (event: { type: string; data: { id: string; analysisId?: string } }) => {
       if (event.type === 'upload_completed') {
         setQueuedUploads(prev => prev.filter(upload => upload.id !== event.data.id))
         onUploadSuccess?.(event.data.analysisId)
@@ -314,7 +314,7 @@ export function OfflineImageUpload({
       }
 
       // Queue for offline storage
-      const _uploadId = await offlineStorage.queueAnalysisUpload(
+      await offlineStorage.queueAnalysisUpload(
         farmerId,
         selectedFile,
         metadata,

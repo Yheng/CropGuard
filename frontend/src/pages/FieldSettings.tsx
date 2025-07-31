@@ -34,7 +34,7 @@ export function FieldSettings() {
     try {
       updateSettings(tempSettings)
       setTimeout(() => setIsSaving(false), 500)
-    } catch (_error) {
+    } catch {
       setIsSaving(false)
     }
   }

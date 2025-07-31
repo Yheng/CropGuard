@@ -27,7 +27,7 @@ export function FieldOptimizedButton({
   ...props
 }: FieldOptimizedButtonProps) {
   const { settings, isFieldOptimized } = useFieldMode()
-  const getButtonClasses = (_variant?: string) => ''
+  const getButtonClasses = () => ''
   const getPressTimeout = () => 300
   const [isPressed, setIsPressed] = useState(false)
   const [isLongPressed, setIsLongPressed] = useState(false)
@@ -122,13 +122,13 @@ export function FieldOptimizedButton({
     
     switch (variant) {
       case 'secondary':
-        return `${baseClasses} ${getButtonClasses('secondary')}`
+        return `${baseClasses} ${getButtonClasses()}`
       case 'danger':
         return `${baseClasses} bg-red-600 hover:bg-red-700 text-white focus:ring-red-500/20 border-2 border-transparent ${isFieldOptimized ? 'border-red-800' : ''}`
       case 'success':
         return `${baseClasses} bg-green-600 hover:bg-green-700 text-white focus:ring-green-500/20 border-2 border-transparent ${isFieldOptimized ? 'border-green-800' : ''}`
       default:
-        return `${baseClasses} ${getButtonClasses('primary')}`
+        return `${baseClasses} ${getButtonClasses()}`
     }
   }
 

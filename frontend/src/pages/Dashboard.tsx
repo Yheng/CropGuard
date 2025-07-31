@@ -13,7 +13,7 @@ export function Dashboard() {
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [recentAnalyses, setRecentAnalyses] = useState<PlantAnalysis[]>([])
   const navigate = useNavigate()
-  const { executeWithNavigation, executeQuick } = useAsyncAction()
+  useAsyncAction()  // Hook called for side effects only
   // Restored FieldModeContext (should be safe now)
   const { fieldMode, settings, weatherData, isFieldOptimized, setFieldMode } = useFieldMode()
   // Keep metrics disabled for now to avoid potential loops
@@ -79,17 +79,6 @@ export function Dashboard() {
     }
   }
 
-  const navigateWithLoading = (path: string, message: string) => {
-    try {
-      executeWithNavigation(async () => {
-        navigate(path)
-      }, message)
-    } catch (error) {
-      console.error('Navigation error, using direct navigation:', error)
-      // Fallback to direct navigation
-      navigate(path)
-    }
-  }
 
   // Simple navigation without loading context (backup)
   const navigateSimple = (path: string) => {

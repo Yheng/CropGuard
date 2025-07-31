@@ -100,7 +100,7 @@ export class WebVitalsMonitor {
     try {
       // const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
       // Mock implementation for now
-      const mockVital = (_name: string) => ({
+      const mockVital = () => ({
         getCLS: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 0.1 }),
         getFID: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 100 }),
         getFCP: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 2000 }),
@@ -141,8 +141,9 @@ export class WebVitalsMonitor {
 
   private static reportVital(name: string, value: number): void {
     // Report to analytics service
-    if ((window as any).gtag) {
-      (window as any).gtag('event', name, {
+    const windowWithGtag = window as Window & { gtag?: (event: string, name: string, config: Record<string, unknown>) => void }
+    if (windowWithGtag.gtag) {
+      windowWithGtag.gtag('event', name, {
         event_category: 'Web Vitals',
         value: Math.round(name === 'CLS' ? value * 1000 : value),
         non_interaction: true,

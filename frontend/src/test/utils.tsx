@@ -56,6 +56,7 @@ export const mockApiResponses = {
 }
 
 // Custom render function with providers
+/* eslint-disable react-refresh/only-export-components */
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <BrowserRouter>
@@ -106,7 +107,6 @@ export const mockIntersectionObserver = () => {
 }
 
 // Re-export everything
-// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'
-// eslint-disable-next-line react-refresh/only-export-components
 export { customRender as render }
+/* eslint-enable react-refresh/only-export-components */

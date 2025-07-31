@@ -556,14 +556,7 @@ describe('Agricultural Domain Scenarios', () => {
     subscriptionPlan: 'professional'
   };
 
-  const adminUser: User = {
-    id: 'admin-123',
-    name: 'Admin User',
-    email: 'admin@cropguard.com',
-    role: 'admin',
-    permissions: ['manage_users', 'system_config', 'view_all_data'],
-    subscriptionPlan: 'enterprise'
-  };
+  // adminUser variable removed as it was unused
 
   it('allows farmer to access crop analysis', () => {
     render(

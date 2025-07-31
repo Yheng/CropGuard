@@ -394,12 +394,12 @@ class OfflineSyncManager {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  private async handleServiceWorkerUploadSuccess(payload: any) {
+  private async handleServiceWorkerUploadSuccess(payload: { uploadId: string; analysisId: string }) {
     const { uploadId, analysisId } = payload
     this.emitEvent('upload_completed', { id: uploadId, analysisId })
   }
 
-  private async handleServiceWorkerSyncSuccess(payload: any) {
+  private async handleServiceWorkerSyncSuccess(payload: { actionId: string }) {
     const { actionId } = payload
     this.emitEvent('action_synced', { id: actionId })
   }

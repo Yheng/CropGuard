@@ -102,7 +102,7 @@ export function AgronomistDashboard({
   pendingAnalyses,
   stats,
   onReviewSubmit,
-  onAnalysisFilter: _onAnalysisFilter,
+  // onAnalysisFilter: _onAnalysisFilter,  // Filter handler not implemented yet
   onBulkAction,
   className
 }: AgronomistDashboardProps) {
@@ -110,7 +110,7 @@ export function AgronomistDashboard({
   const [filters, setFilters] = React.useState<AnalysisFilters>({})
   const [searchQuery, setSearchQuery] = React.useState('')
   const [sortBy, setSortBy] = React.useState<'priority' | 'date' | 'confidence'>('priority')
-  const [viewMode, _setViewMode] = React.useState<'grid' | 'list'>('list')
+  const [, ] = React.useState<'grid' | 'list'>('list')
   const [selectedAnalysis, setSelectedAnalysis] = React.useState<PendingAnalysis | null>(null)
   const [reviewForm, setReviewForm] = React.useState({
     status: 'approved' as 'approved' | 'rejected' | 'needs_revision',

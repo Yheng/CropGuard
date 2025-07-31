@@ -156,7 +156,7 @@ class ConflictResolutionManager {
   // Real-time conflict detection
   startConflictMonitoring(callback: (conflicts: ConflictData[]) => void) {
     const listener = (event: MessageEvent) => {
-      const { type, payload } = event.data
+      const { type } = event.data
       
       if (type === 'CONFLICT_DETECTED') {
         // Refresh conflicts when new ones are detected

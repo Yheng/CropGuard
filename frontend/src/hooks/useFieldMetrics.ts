@@ -107,7 +107,7 @@ export function useFieldMetrics() {
       }
       finalizeSession()
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track field mode changes
   useEffect(() => {
@@ -123,7 +123,7 @@ export function useFieldMetrics() {
       newMode: fieldMode,
       settings
     })
-  }, [fieldMode, settings, isFieldOptimized, track])
+  }, [fieldMode, settings, isFieldOptimized, track, recordInteraction])
 
   // Track weather adaptations
   useEffect(() => {
@@ -135,7 +135,7 @@ export function useFieldMetrics() {
         adaptationTriggered: settings.autoWeatherAdaptation
       })
     }
-  }, [weatherData, settings.autoWeatherAdaptation, track])
+  }, [weatherData, settings, track])
 
   const initializeMetrics = () => {
     const defaultMetrics: FieldUsabilityMetrics = {
@@ -226,7 +226,7 @@ export function useFieldMetrics() {
     actionsCount.current++
     
     return duration
-  }, [currentSession, track])
+  }, [currentSession, track, recordInteraction])
 
   const recordTaskError = useCallback((errorType: 'touch_miss' | 'input_error' | 'navigation_error') => {
     if (currentSession) {
@@ -237,7 +237,7 @@ export function useFieldMetrics() {
       taskId: currentSession?.id,
       taskType: currentSession?.type
     })
-  }, [currentSession])
+  }, [currentSession, recordInteraction])
 
   const recordInteraction = useCallback((
     type: InteractionEvent['type'],
@@ -283,7 +283,7 @@ export function useFieldMetrics() {
       accuracy,
       confidence
     })
-  }, [isFieldOptimized, weatherData, track])
+  }, [isFieldOptimized, weatherData, track, recordInteraction])
 
   const recordOfflineUsage = useCallback((duration: number, tasksCompleted: number, syncSuccess: boolean) => {
     track('offline.usage', {
@@ -298,7 +298,7 @@ export function useFieldMetrics() {
       tasksCompleted,
       syncSuccess
     })
-  }, [isFieldOptimized, track])
+  }, [isFieldOptimized, track, recordInteraction])
 
   const updateMetrics = useCallback(() => {
     if (!metrics) return
@@ -341,9 +341,9 @@ export function useFieldMetrics() {
     if (navigator.onLine) {
       submitMetricsToBackend(updatedMetrics)
     }
-  }, [metrics, interactions, isFieldOptimized, settings])
+  }, [metrics, interactions, isFieldOptimized, settings, submitMetricsToBackend])
 
-  const submitMetricsToBackend = async (metricsData: FieldUsabilityMetrics) => {
+  const submitMetricsToBackend = useCallback(async (metricsData: FieldUsabilityMetrics) => {
     try {
       // In a real implementation, this would call your analytics API
       await fetch('/api/analytics/field-metrics', {
@@ -370,7 +370,7 @@ export function useFieldMetrics() {
       pending.push({ timestamp: Date.now(), metrics: metricsData })
       localStorage.setItem('cropguard-pending-metrics', JSON.stringify(pending))
     }
-  }
+  }, [isFieldOptimized])
 
   const finalizeSession = () => {
     if (currentSession) {

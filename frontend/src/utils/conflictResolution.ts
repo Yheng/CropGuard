@@ -102,7 +102,7 @@ class ConflictResolver {
       }
 
       // Generate resolution options for manual resolution
-      const resolutionOptions = this.generateResolutionOptions(conflicts, localData, serverData)
+      const resolutionOptions = this.generateResolutionOptions(conflicts)
       
       return {
         resolved: false,
@@ -203,8 +203,8 @@ class ConflictResolver {
 
       // Check for value differences
       if (!this.valuesEqual(localValue, serverValue)) {
-        const severity = this.calculateConflictSeverity(field, resourceType)
-        const autoResolvable = this.canAutoResolveField(field, localValue, serverValue, resourceType)
+        const severity = this.calculateConflictSeverity(field)
+        const autoResolvable = this.canAutoResolveField(field, localValue, serverValue)
 
         conflicts.push({
           id: this.generateConflictId(resourceType, resourceId, 'field', field),
@@ -296,10 +296,10 @@ class ConflictResolver {
         return this.resolveUserConflict(conflict, localData, serverData)
       
       case 'review':
-        return this.resolveReviewConflict(conflict, localData, serverData)
+        return this.resolveReviewConflict(conflict)
       
       case 'setting':
-        return this.resolveSettingConflict(conflict, localData, serverData)
+        return this.resolveSettingConflict(conflict)
       
       default:
         return this.resolveGenericConflict(conflict, localData, serverData)
@@ -308,9 +308,8 @@ class ConflictResolver {
 
   // Resource-specific conflict resolution
   private resolveAnalysisConflict(
-    conflict: DataConflict,
-    _localData: Record<string, unknown> | null,
-    _serverData: Record<string, unknown> | null
+    conflict: DataConflict
+    // localData and serverData parameters intentionally unused in this resolver
   ): ConflictResolution | null {
     // For analysis data, prioritize server data for AI results but keep local metadata
     if (conflict.conflictType === 'field') {
@@ -343,9 +342,8 @@ class ConflictResolver {
   }
 
   private resolveUserConflict(
-    conflict: DataConflict,
-    localData: Record<string, unknown> | null,
-    serverData: Record<string, unknown> | null
+    conflict: DataConflict
+    // localData and serverData parameters intentionally unused in this resolver
   ): ConflictResolution | null {
     if (conflict.conflictType === 'field') {
       const field = Object.keys(conflict.localVersion)[0]
@@ -377,9 +375,7 @@ class ConflictResolver {
   }
 
   private resolveReviewConflict(
-    conflict: DataConflict,
-    localData: Record<string, unknown> | null,
-    serverData: Record<string, unknown> | null
+    conflict: DataConflict
   ): ConflictResolution | null {
     // Reviews are typically created once and not modified, so server version wins
     return {
@@ -392,9 +388,7 @@ class ConflictResolver {
   }
 
   private resolveSettingConflict(
-    conflict: DataConflict,
-    localData: Record<string, unknown> | null,
-    serverData: Record<string, unknown> | null
+    conflict: DataConflict
   ): ConflictResolution | null {
     if (conflict.conflictType === 'field') {
       // Settings usually prioritize local changes
@@ -447,9 +441,7 @@ class ConflictResolver {
 
   // Manual resolution support
   private generateResolutionOptions(
-    conflicts: DataConflict[],
-    localData: Record<string, unknown> | null,
-    serverData: Record<string, unknown> | null
+    conflicts: DataConflict[]
   ): Record<string, ConflictResolution[]> {
     const options: Record<string, ConflictResolution[]> = {}
 
@@ -473,7 +465,7 @@ class ConflictResolver {
 
       // Add merge option if applicable
       if (this.config.enableFieldLevelMerging && this.canMerge(conflict)) {
-        const mergedData = this.attemptMerge(conflict, localData, serverData)
+        const mergedData = this.attemptMerge(conflict)
         
         if (mergedData) {
           options[conflict.id].push({
@@ -578,8 +570,7 @@ class ConflictResolver {
   }
 
   private calculateConflictSeverity(
-    field: string,
-    _resourceType: string
+    field: string
   ): DataConflict['severity'] {
     // Critical fields that should never be auto-resolved
     const criticalFields = ['id', 'userId', 'farmerId', 'analysisId']
@@ -600,11 +591,10 @@ class ConflictResolver {
   private canAutoResolveField(
     field: string,
     localValue: unknown,
-    serverValue: unknown,
-    resourceType: string
+    serverValue: unknown
   ): boolean {
     // Never auto-resolve critical fields
-    if (this.calculateConflictSeverity(field, resourceType) === 'critical') {
+    if (this.calculateConflictSeverity(field) === 'critical') {
       return false
     }
 
@@ -623,9 +613,7 @@ class ConflictResolver {
   }
 
   private attemptMerge(
-    conflict: DataConflict,
-    _localData: Record<string, unknown> | null,
-    _serverData: Record<string, unknown> | null
+    conflict: DataConflict
   ): Record<string, unknown> | null {
     if (conflict.conflictType !== 'field') return null
 

@@ -43,7 +43,7 @@ export interface FieldWorkRecommendations {
 class WeatherService {
   private apiKey: string | null = null
   private baseUrl = 'https://api.openweathermap.org/data/2.5'
-  private cache = new Map<string, { data: any; timestamp: number }>()
+  private cache = new Map<string, { data: WeatherCondition; timestamp: number }>()
   private cacheExpiry = 10 * 60 * 1000 // 10 minutes
 
   constructor() {
@@ -217,7 +217,7 @@ class WeatherService {
       temperature = 15 + Math.random() * 10
       humidity = 60 + Math.random() * 30
     } else {
-      const weatherTypes: Array<WeatherCondition['condition']> = ['sunny', 'cloudy', 'rainy']
+      // weatherTypes array removed as unused
       const weights = timeOfDay === 'midday' ? [0.6, 0.3, 0.1] : [0.4, 0.4, 0.2]
       
       const random = Math.random()

@@ -103,7 +103,7 @@ export function AdminDashboard({
   // Load data on component mount
   React.useEffect(() => {
     loadDashboardData()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadDashboardData = async () => {
     setLoading(true)
@@ -204,21 +204,6 @@ export function AdminDashboard({
     }
   }
 
-  const _handleSaveAIConfig = async () => {
-    try {
-      setLoading(true)
-      await adminService.updateAIConfig(tempAIConfig)
-      setAIConfig(tempAIConfig)
-      aiService.setConfiguration(tempAIConfig) // Update global AI service
-      setShowAIConfig(false)
-      onUpdateAIConfig?.(tempAIConfig) // Call callback if provided
-    } catch (error) {
-      console.error('Error saving AI config:', error)
-      setError('Failed to save AI configuration')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Handle user actions
   const handleUserAction = async (action: 'activate' | 'suspend' | 'delete', userId: string) => {

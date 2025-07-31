@@ -47,7 +47,7 @@ export function usePerformance() {
         // LCP
         const lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries()
-          const lastEntry = entries[entries.length - 1] as any
+          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number }
           largestContentfulPaint = lastEntry.startTime
         })
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
@@ -55,8 +55,9 @@ export function usePerformance() {
         // CLS
         const clsObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              cumulativeLayoutShift += (entry as any).value
+            const clsEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value: number }
+            if (!clsEntry.hadRecentInput) {
+              cumulativeLayoutShift += clsEntry.value
             }
           }
         })
@@ -195,7 +196,7 @@ export function usePerformance() {
 }
 
 // Create a performance monitoring wrapper for API calls
-export function withPerformanceTracking<T extends any[], R>(
+export function withPerformanceTracking<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   trackAPICall?: (responseTime: number, success: boolean) => void
 ) {

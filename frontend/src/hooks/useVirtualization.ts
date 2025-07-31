@@ -1,25 +1,25 @@
 import { useState, useMemo, useCallback } from 'react';
 
-interface VirtualizationOptions {
+interface VirtualizationOptions<T = unknown> {
   itemHeight: number;
   containerHeight: number;
   overscan?: number;
-  items: any[];
+  items: T[];
 }
 
-interface VirtualItem {
+interface VirtualItem<T = unknown> {
   index: number;
   start: number;
   end: number;
-  item: any;
+  item: T;
 }
 
-export const useVirtualization = ({
+export const useVirtualization = <T = unknown>({
   itemHeight,
   containerHeight,
   overscan = 5,
   items
-}: VirtualizationOptions) => {
+}: VirtualizationOptions<T>) => {
   const [scrollTop, setScrollTop] = useState(0);
 
   const totalHeight = items.length * itemHeight;
@@ -35,7 +35,7 @@ export const useVirtualization = ({
   }, [scrollTop, itemHeight, containerHeight, overscan, items.length]);
 
   const virtualItems = useMemo(() => {
-    const virtualItems: VirtualItem[] = [];
+    const virtualItems: VirtualItem<T>[] = [];
     
     for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
       virtualItems.push({
@@ -64,19 +64,19 @@ export const useVirtualization = ({
 };
 
 // Hook for infinite scrolling with virtualization
-export const useInfiniteVirtualization = ({
+export const useInfiniteVirtualization = <T = unknown>({
   itemHeight,
   containerHeight,
   overscan = 5,
   loadMore,
   hasNextPage,
   isLoading
-}: VirtualizationOptions & {
+}: Omit<VirtualizationOptions<T>, 'items'> & {
   loadMore: () => void;
   hasNextPage: boolean;
   isLoading: boolean;
 }) => {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<T[]>([]);
   const [scrollTop, setScrollTop] = useState(0);
 
   const totalHeight = items.length * itemHeight;
@@ -92,7 +92,7 @@ export const useInfiniteVirtualization = ({
   }, [scrollTop, itemHeight, containerHeight, overscan, items.length]);
 
   const virtualItems = useMemo(() => {
-    const virtualItems: VirtualItem[] = [];
+    const virtualItems: VirtualItem<T>[] = [];
     
     for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
       if (items[i]) {
@@ -136,7 +136,7 @@ export const useInfiniteVirtualization = ({
 };
 
 // Hook for grid virtualization
-export const useGridVirtualization = ({
+export const useGridVirtualization = <T = unknown>({
   itemWidth,
   itemHeight,
   containerWidth,
@@ -149,7 +149,7 @@ export const useGridVirtualization = ({
   containerWidth: number;
   containerHeight: number;
   gap?: number;
-  items: any[];
+  items: T[];
 }) => {
   const [scrollTop, setScrollTop] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -187,7 +187,7 @@ export const useGridVirtualization = ({
   ]);
 
   const virtualItems = useMemo(() => {
-    const virtualItems: Array<VirtualItem & { row: number; col: number; x: number; y: number }> = [];
+    const virtualItems: Array<VirtualItem<T> & { row: number; col: number; x: number; y: number }> = [];
     
     for (let row = visibleRange.startRow; row <= visibleRange.endRow; row++) {
       for (let col = visibleRange.startCol; col <= visibleRange.endCol; col++) {

@@ -276,7 +276,7 @@ class ConnectionMonitor {
         timestamp: new Date(),
         latency,
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Connection test failed'
       }
 
       this.addConnectivityTest(test)
@@ -340,7 +340,7 @@ class ConnectionMonitor {
         this.connectionState.outageCount = parsed.outageCount || 0
         this.connectionState.totalOutageTime = parsed.totalOutageTime || 0
         this.connectivityTests = parsed.connectivityTests || []
-        this.outages = parsed.outages?.map((o: any) => ({
+        this.outages = parsed.outages?.map((o: { start: string; end?: string }) => ({
           start: new Date(o.start),
           end: o.end ? new Date(o.end) : undefined
         })) || []
@@ -458,7 +458,7 @@ export function useConnectionState(options?: UseConnectionStateOptions) {
     })
 
     return unsubscribe
-  }, [])
+  }, [options])
 
   // Test connectivity manually
   const testConnectivity = React.useCallback(async () => {

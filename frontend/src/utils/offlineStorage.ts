@@ -127,7 +127,7 @@ class OfflineStorageManager {
     })
   }
 
-  private setupObjectStores(db: IDBDatabase, _oldVersion: number) {
+  private setupObjectStores(db: IDBDatabase) {
     // Upload queue for analysis images
     if (!db.objectStoreNames.contains('uploadQueue')) {
       const uploadStore = db.createObjectStore('uploadQueue', { 
@@ -206,7 +206,7 @@ class OfflineStorageManager {
         deviceInfo: {
           userAgent: navigator.userAgent,
           platform: navigator.platform,
-          connection: (navigator as any).connection?.effectiveType || 'unknown'
+          connection: (navigator as Navigator & { connection?: { effectiveType: string } }).connection?.effectiveType || 'unknown'
         }
       },
       status: 'queued',
@@ -722,7 +722,7 @@ class OfflineStorageManager {
   private requestBackgroundSync(tag: string): void {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then(registration => {
-        return (registration as any).sync?.register(tag)
+        return (registration as ServiceWorkerRegistration & { sync?: { register: (tag: string) => Promise<void> } }).sync?.register(tag)
       }).catch(error => {
         console.warn('[OfflineStorage] Background sync not available:', error)
       })

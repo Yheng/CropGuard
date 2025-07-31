@@ -95,7 +95,7 @@ describe('Input Component', () => {
     it('supports aria-describedby for helper text', () => {
       render(<Input helperText="This is helper text" />);
       
-      const input = screen.getByRole('textbox');
+      screen.getByRole('textbox');
       const helperText = screen.getByText('This is helper text');
       
       // Helper text should be associated with input

@@ -8,7 +8,6 @@ import {
   CheckCircle,
   Clock,
   Leaf,
-  TrendingUp,
   MapPin,
   Calendar,
   Bell,
@@ -86,7 +85,7 @@ export function FarmerDashboard({
   onNotificationRead,
   className
 }: FarmerDashboardProps) {
-  const [_selectedTimeRange, _setSelectedTimeRange] = React.useState<'week' | 'month' | 'season'>('week')
+  // selectedTimeRange state removed as unused
 
   const getHealthStatus = (score: number) => {
     if (score >= 80) return { status: 'Excellent', color: '#10B981', icon: CheckCircle }
@@ -95,13 +94,6 @@ export function FarmerDashboard({
     return { status: 'Critical', color: '#DC2626', icon: AlertTriangle }
   }
 
-  const _getTrendIcon = (_trend: string) => {
-    switch (trend) {
-      case 'improving': return <TrendingUp className="w-4 h-4 text-[#10B981]" />
-      case 'declining': return <TrendingUp className="w-4 h-4 text-red-400 rotate-180" />
-      default: return <Activity className="w-4 h-4 text-gray-400" />
-    }
-  }
 
   const getTaskPriorityColor = (priority: string) => {
     switch (priority) {
@@ -498,7 +490,7 @@ export function FarmerDashboard({
                 {data.notifications
                   .filter(n => !n.read)
                   .slice(0, 3)
-                  .map((notification, _index) => (
+                  .map((notification) => (
                     <div
                       key={notification.id}
                       className="flex items-start gap-3 p-3 bg-[#1F2A44] rounded-lg cursor-pointer hover:bg-[#1F2A44]/80 transition-colors"

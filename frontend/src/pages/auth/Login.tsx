@@ -19,7 +19,7 @@ export function Login() {
     if (authService.isAuthenticated()) {
       navigate('/dashboard', { replace: true })
     }
-  }, [])
+  }, [navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

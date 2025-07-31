@@ -223,7 +223,7 @@ class HapticsService {
   /**
    * Simulate haptic feedback for devices without vibration API
    */
-  private simulateHapticFeedback(pattern: HapticPattern): void {
+  private simulateHapticFeedback(): void {
     // Create visual feedback as fallback
     const body = document.body
     const originalTransform = body.style.transform
@@ -253,14 +253,14 @@ class HapticsService {
     // Monitor ambient light if available (for pocket detection)
     if ('AmbientLightSensor' in window) {
       try {
-        // @ts-expect-error - AmbientLightSensor is experimental
+        // @ts-expect-error AmbientLightSensor is experimental API not in TypeScript types
         const sensor = new AmbientLightSensor()
         sensor.addEventListener('reading', () => {
-          // @ts-expect-error
+          // @ts-expect-error illuminance property not in TypeScript types
           this.environmental.deviceInPocket = sensor.illuminance < 10
         })
         sensor.start()
-      } catch (error) {
+      } catch {
         // AmbientLightSensor not supported
       }
     }

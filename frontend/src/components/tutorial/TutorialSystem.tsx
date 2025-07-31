@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
@@ -46,11 +46,11 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
   const isLastStep = currentStep === steps.length - 1;
 
   // Text-to-speech configuration for different languages
-  const speechConfig = {
+  const speechConfig = useMemo(() => ({
     en: { lang: 'en-US', rate: 0.9, pitch: 1.0 },
     es: { lang: 'es-ES', rate: 0.9, pitch: 1.0 },
     hi: { lang: 'hi-IN', rate: 0.8, pitch: 1.0 }
-  };
+  }), []);
 
   // Initialize tutorial when visible
   useEffect(() => {
@@ -73,7 +73,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
       clearHighlights();
       stopSpeech();
     };
-  }, [currentStep, isVisible, step]);
+  }, [currentStep, isVisible, step, steps.length, highlightElement, playGuidance, clearHighlights, stopSpeech]);
 
   // Auto-advance for timed steps
   useEffect(() => {
@@ -84,7 +84,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [currentStep, step]);
+  }, [currentStep, step, nextStep]);
 
   // Validation-based advancement
   useEffect(() => {
@@ -99,9 +99,9 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
       const interval = setInterval(checkValidation, 1000);
       return () => clearInterval(interval);
     }
-  }, [currentStep, step]);
+  }, [currentStep, step, markStepCompleted, nextStep]);
 
-  const playGuidance = async () => {
+  const playGuidance = useCallback(async () => {
     if (!step) return;
 
     try {
@@ -142,9 +142,9 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
       console.error('Failed to play guidance:', error);
       setIsPlaying(false);
     }
-  };
+  }, [step, isMuted, language, speechConfig, stopSpeech]);
 
-  const stopSpeech = () => {
+  const stopSpeech = useCallback(() => {
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
     }
@@ -152,7 +152,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
       speechSynthesisRef.current = null;
     }
     setIsPlaying(false);
-  };
+  }, []);
 
   const togglePlayback = () => {
     if (isPlaying) {
@@ -172,7 +172,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
     }
   };
 
-  const highlightElement = (selector: string) => {
+  const highlightElement = useCallback((selector: string) => {
     try {
       const element = document.querySelector(selector);
       if (element) {
@@ -182,25 +182,25 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
     } catch (error) {
       console.warn('Failed to highlight element:', selector, error);
     }
-  };
+  }, []);
 
-  const clearHighlights = () => {
+  const clearHighlights = useCallback(() => {
     document.querySelectorAll('.tutorial-highlight').forEach(el => {
       el.classList.remove('tutorial-highlight');
     });
-  };
+  }, []);
 
-  const markStepCompleted = () => {
+  const markStepCompleted = useCallback(() => {
     setCompletedSteps(prev => new Set([...prev, currentStep]));
-  };
+  }, [currentStep]);
 
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     if (isLastStep) {
       onComplete();
     } else {
       setCurrentStep(prev => prev + 1);
     }
-  };
+  }, [isLastStep, onComplete]);
 
   const previousStep = () => {
     if (currentStep > 0) {
@@ -255,7 +255,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
         default:
           return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
       }
-    } catch (_error) {
+    } catch {
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     }
   };
