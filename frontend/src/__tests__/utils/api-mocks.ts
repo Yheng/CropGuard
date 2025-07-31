@@ -7,7 +7,6 @@
 import { vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
-import axios from 'axios';
 import { createMockUser, createMockAnalysis, createMockTreatment, mockApiResponse } from './test-utils';
 
 // Base API URL
@@ -50,7 +49,7 @@ export const generateMockUsers = (count = 3) =>
 export const handlers = [
   // Authentication endpoints
   http.post(`${API_BASE_URL}/auth/login`, async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { email: string; password: string };
     const { email, password } = body;
 
     if (email === 'test@example.com' && password === 'password123') {
@@ -69,8 +68,8 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE_URL}/auth/register`, async ({ request }) => {
-    const body = await request.json() as any;
-    const { email, password, name } = body;
+    const body = await request.json() as { email: string; password: string; name: string };
+    const { email, name } = body;
 
     return HttpResponse.json(
       mockApiResponse({
@@ -104,7 +103,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE_URL}/analysis/analyze`, async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { imageId: string; cropType?: string };
     const { imageId, cropType } = body;
 
     const analysis = createMockAnalysis({
@@ -162,7 +161,6 @@ export const handlers = [
   // Treatment endpoints
   http.get(`${API_BASE_URL}/treatments`, ({ request }) => {
     const url = new URL(request.url);
-    const diseaseId = url.searchParams.get('diseaseId');
     const cropType = url.searchParams.get('cropType');
 
     let treatments = generateMockTreatments(10);
@@ -184,7 +182,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE_URL}/treatments/apply`, async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { treatmentId: string; analysisId: string; notes?: string };
     const { treatmentId, analysisId, notes } = body;
 
     return HttpResponse.json(
@@ -454,8 +452,8 @@ export const testScenarios = {
 
   // Network error
   networkError: () => {
-    const error = new Error('Network Error');
-    (error as any).code = 'ERR_NETWORK';
+    const error = new Error('Network Error') as Error & { code: string };
+    error.code = 'ERR_NETWORK';
     mockAuthService.login.mockRejectedValueOnce(error);
   },
 
@@ -515,7 +513,7 @@ export const setupApiMocks = () => {
 // Utility functions
 // ================
 
-export const waitForApiCall = (mockFn: any, timeout = 1000) => {
+export const waitForApiCall = (mockFn: { mock: { calls: unknown[] } }, timeout = 1000) => {
   return new Promise((resolve, reject) => {
     const checkInterval = setInterval(() => {
       if (mockFn.mock.calls.length > 0) {
