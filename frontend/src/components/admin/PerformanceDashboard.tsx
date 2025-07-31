@@ -3,13 +3,9 @@ import { motion } from 'framer-motion'
 import { 
   Zap, 
   Clock, 
-  TrendingUp, 
   AlertTriangle, 
   CheckCircle,
-  Activity,
-  BarChart3,
   Gauge,
-  Server,
   Network
 } from 'lucide-react'
 import { usePerformance } from '../../hooks/usePerformance'
