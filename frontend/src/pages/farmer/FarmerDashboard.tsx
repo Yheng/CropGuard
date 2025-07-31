@@ -18,9 +18,9 @@ import {
   CloudRain,
   Thermometer
 } from 'lucide-react'
-import { Card, CardHeader, CardContent, CardFooter } from '../../components/ui/Card'
+import { Card, CardHeader, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
-import { ProgressChart, MetricCard } from '../../components/ui/Chart'
+import { MetricCard } from '../../components/ui/Chart'
 import { cn } from '../../utils/cn'
 
 interface FarmerData {
@@ -86,7 +86,7 @@ export function FarmerDashboard({
   onNotificationRead,
   className
 }: FarmerDashboardProps) {
-  const [selectedTimeRange, setSelectedTimeRange] = React.useState<'week' | 'month' | 'season'>('week')
+  const [_selectedTimeRange, _setSelectedTimeRange] = React.useState<'week' | 'month' | 'season'>('week')
 
   const getHealthStatus = (score: number) => {
     if (score >= 80) return { status: 'Excellent', color: '#10B981', icon: CheckCircle }
@@ -95,7 +95,7 @@ export function FarmerDashboard({
     return { status: 'Critical', color: '#DC2626', icon: AlertTriangle }
   }
 
-  const getTrendIcon = (trend: string) => {
+  const _getTrendIcon = (_trend: string) => {
     switch (trend) {
       case 'improving': return <TrendingUp className="w-4 h-4 text-[#10B981]" />
       case 'declining': return <TrendingUp className="w-4 h-4 text-red-400 rotate-180" />
@@ -498,7 +498,7 @@ export function FarmerDashboard({
                 {data.notifications
                   .filter(n => !n.read)
                   .slice(0, 3)
-                  .map((notification, index) => (
+                  .map((notification, _index) => (
                     <div
                       key={notification.id}
                       className="flex items-start gap-3 p-3 bg-[#1F2A44] rounded-lg cursor-pointer hover:bg-[#1F2A44]/80 transition-colors"

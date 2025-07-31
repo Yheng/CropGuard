@@ -28,7 +28,7 @@ class OfflineSyncManager {
   private isRunning: boolean = false
   private syncInterval: NodeJS.Timeout | null = null
   private metrics: SyncMetrics
-  private eventListeners: Map<string, ((event: any) => void)[]> = new Map()
+  private eventListeners: Map<string, ((event: unknown) => void)[]> = new Map()
 
   constructor(config: Partial<SyncManagerConfig> = {}) {
     this.config = {
@@ -336,7 +336,7 @@ class OfflineSyncManager {
     }
   }
 
-  private async syncAction(action: any): Promise<void> {
+  private async syncAction(action: OfflineAction): Promise<void> {
     const response = await fetch(action.url, {
       method: action.method,
       headers: {
@@ -355,7 +355,7 @@ class OfflineSyncManager {
   }
 
   // Conflict resolution
-  private async handleConflict(localData: OfflineAnalysis, serverData: any): Promise<void> {
+  private async handleConflict(localData: OfflineAnalysis, serverData: Record<string, unknown>): Promise<void> {
     if (!this.config.enableConflictResolution) {
       throw new Error('Conflict detected but resolution disabled')
     }
@@ -391,7 +391,7 @@ class OfflineSyncManager {
     }
   }
 
-  private canAutoResolveConflict(localData: OfflineAnalysis, serverData: any): boolean {
+  private canAutoResolveConflict(localData: OfflineAnalysis, serverData: Record<string, unknown>): boolean {
     // Simple rules for auto-resolution
     const timeDiff = Math.abs(
       new Date(localData.createdAt).getTime() - 
@@ -402,7 +402,7 @@ class OfflineSyncManager {
     return timeDiff < 5 * 60 * 1000
   }
 
-  private determineAutoResolution(localData: OfflineAnalysis, serverData: any): string {
+  private determineAutoResolution(localData: OfflineAnalysis, serverData: Record<string, unknown>): string {
     const localTime = new Date(localData.createdAt).getTime()
     const serverTime = new Date(serverData.createdAt || serverData.timestamp).getTime()
     
@@ -417,7 +417,7 @@ class OfflineSyncManager {
     // This is a simplified version
   }
 
-  private async storeConflictForManualResolution(localData: OfflineAnalysis, serverData: any): Promise<void> {
+  private async storeConflictForManualResolution(localData: OfflineAnalysis, serverData: Record<string, unknown>): Promise<void> {
     // Store conflict for manual resolution via ConflictResolutionModal
     const conflict = {
       id: `conflict_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -435,18 +435,18 @@ class OfflineSyncManager {
     console.log('[OfflineSyncManager] Storing conflict for manual resolution:', conflict.id)
   }
 
-  private detectSpecificConflicts(localData: OfflineAnalysis, serverData: any): any[] {
+  private detectSpecificConflicts(localData: OfflineAnalysis, serverData: Record<string, unknown>): Array<{ type: string; field: string; localValue: unknown; serverValue: unknown; severity: string }> {
     const conflicts = []
     
     // Compare specific fields
     const fieldsToCheck = ['status', 'priority', 'metadata']
     
     for (const field of fieldsToCheck) {
-      if (localData[field] !== serverData[field]) {
+      if ((localData as Record<string, unknown>)[field] !== serverData[field]) {
         conflicts.push({
           type: 'data_conflict',
           field,
-          localValue: localData[field],
+          localValue: (localData as Record<string, unknown>)[field],
           serverValue: serverData[field],
           severity: field === 'status' ? 'high' : 'medium'
         })
@@ -525,14 +525,14 @@ class OfflineSyncManager {
   }
 
   // Event system
-  on(event: string, listener: (data: any) => void): void {
+  on(event: string, listener: (data: unknown) => void): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
     }
     this.eventListeners.get(event)!.push(listener)
   }
 
-  off(event: string, listener: (data: any) => void): void {
+  off(event: string, listener: (data: unknown) => void): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       const index = listeners.indexOf(listener)
@@ -542,7 +542,7 @@ class OfflineSyncManager {
     }
   }
 
-  private emit(event: string, data: any): void {
+  private emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       listeners.forEach(listener => {

@@ -142,7 +142,7 @@ export class ServiceWorkerManager {
     }
   }
 
-  async sendMessage(message: any): Promise<any> {
+  async sendMessage(message: unknown): Promise<unknown> {
     if (!this.isReady || !this.registration?.active) {
       throw new Error('Service worker not ready')
     }

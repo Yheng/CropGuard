@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react'
+import { Lock, AlertTriangle, EyeOff } from 'lucide-react'
 import type { User } from '../routing/ProtectedRoute'
 import { usePermissions } from '../routing/ProtectedRoute'
 import { cn } from '../../utils/cn'
@@ -63,7 +63,7 @@ function RestrictedContent({
       case 'permission':
         return {
           icon: AlertTriangle,
-          message: hintText || 'Insufficient permissions',
+          message: hintText || (requiredPermissions.length > 0 ? `Requires permissions: ${requiredPermissions.join(', ')}` : 'Insufficient permissions'),
           color: 'text-red-400 bg-red-400/10 border-red-400/20'
         }
       case 'subscription':
@@ -355,6 +355,7 @@ export function PremiumOnly({ children, user, ...props }: Omit<PermissionGatePro
 }
 
 // Hook for conditional rendering based on permissions
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePermissionGate(user?: User | null) {
   const permissions = usePermissions(user)
 

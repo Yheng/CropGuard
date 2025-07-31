@@ -70,13 +70,13 @@ const getAllUsers = () => {
 }
 
 // Save a new registered user
-const saveRegisteredUser = (user: any) => {
+const saveRegisteredUser = (user: User & { password?: string }) => {
   try {
     const savedUsers = localStorage.getItem('cropguard_demo_users')
     const registeredUsers = savedUsers ? JSON.parse(savedUsers) : []
     
     // Check if user already exists in registered users
-    const existingIndex = registeredUsers.findIndex((u: any) => u.email === user.email)
+    const existingIndex = registeredUsers.findIndex((u: User & { password?: string }) => u.email === user.email)
     if (existingIndex >= 0) {
       registeredUsers[existingIndex] = user // Update existing
     } else {

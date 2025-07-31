@@ -43,7 +43,8 @@ export function Checkbox({
   ...props
 }: CheckboxProps) {
   const checkboxRef = React.useRef<HTMLInputElement>(null)
-  const checkboxId = id || React.useId()
+  const generatedId = React.useId()
+  const checkboxId = id || generatedId
 
   React.useEffect(() => {
     if (checkboxRef.current) {

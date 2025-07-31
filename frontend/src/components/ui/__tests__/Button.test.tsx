@@ -4,18 +4,15 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test-utils';
+import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { Camera, Save, Trash2 } from 'lucide-react';
 import {
   Button,
   PrimaryButton,
   SecondaryButton,
-  OutlineButton,
-  GhostButton,
   DangerButton,
   SuccessButton,
-  WarningButton,
   FloatingActionButton,
   IconButton,
   ButtonGroup,

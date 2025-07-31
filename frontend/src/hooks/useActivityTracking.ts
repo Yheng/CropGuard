@@ -10,7 +10,7 @@ export interface ActivityEvent {
   category: 'authentication' | 'analysis' | 'review' | 'user_management' | 'system' | 'data_access'
   severity: 'info' | 'warning' | 'error' | 'critical'
   description: string
-  details: Record<string, any>
+  details: Record<string, unknown>
   ipAddress?: string
   userAgent?: string
   sessionId?: string
@@ -21,7 +21,7 @@ export interface ActivityEvent {
   }
   outcome: 'success' | 'failure' | 'partial'
   duration?: number // in milliseconds
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface ActivityFilter {
@@ -251,7 +251,7 @@ class ActivityTracker {
   public track(
     action: string,
     user: { id: string; name: string; role: 'farmer' | 'agronomist' | 'admin' },
-    details: Record<string, any> = {},
+    details: Record<string, unknown> = {},
     options: {
       category?: string
       severity?: 'info' | 'warning' | 'error' | 'critical'
@@ -321,7 +321,7 @@ class ActivityTracker {
     return 'client_ip'
   }
 
-  private sanitizeDetails(details: Record<string, any>, sensitivityLevel?: string): Record<string, any> {
+  private sanitizeDetails(details: Record<string, unknown>, sensitivityLevel?: string): Record<string, unknown> {
     if (sensitivityLevel === 'low') return details
 
     const sanitized = { ...details }
@@ -393,7 +393,7 @@ export function useActivityTracking(
 
   const track = React.useCallback((
     action: string,
-    details: Record<string, any> = {},
+    details: Record<string, unknown> = {},
     options: Parameters<ActivityTracker['track']>[3] = {}
   ) => {
     if (user && globalTracker) {
@@ -404,7 +404,7 @@ export function useActivityTracking(
   const trackAnalysisAction = React.useCallback((
     action: 'created' | 'updated' | 'deleted' | 'submitted' | 'viewed',
     analysisId: string,
-    additionalDetails: Record<string, any> = {}
+    additionalDetails: Record<string, unknown> = {}
   ) => {
     track(`analysis.${action}`, {
       analysisId,
@@ -421,7 +421,7 @@ export function useActivityTracking(
   const trackReviewAction = React.useCallback((
     action: 'started' | 'completed' | 'approved' | 'rejected',
     analysisId: string,
-    additionalDetails: Record<string, any> = {}
+    additionalDetails: Record<string, unknown> = {}
   ) => {
     track(`review.${action}`, {
       analysisId,
@@ -438,7 +438,7 @@ export function useActivityTracking(
   const trackUserAction = React.useCallback((
     action: 'created' | 'updated' | 'deactivated' | 'role_changed',
     targetUserId: string,
-    additionalDetails: Record<string, any> = {}
+    additionalDetails: Record<string, unknown> = {}
   ) => {
     track(`user.${action}`, {
       targetUserId,
@@ -456,7 +456,7 @@ export function useActivityTracking(
   const trackDataAccess = React.useCallback((
     action: 'exported' | 'imported' | 'accessed',
     dataType: string,
-    additionalDetails: Record<string, any> = {}
+    additionalDetails: Record<string, unknown> = {}
   ) => {
     track(`data.${action}`, {
       dataType,
@@ -470,7 +470,7 @@ export function useActivityTracking(
   const trackError = React.useCallback((
     error: Error,
     context: string,
-    additionalDetails: Record<string, any> = {}
+    additionalDetails: Record<string, unknown> = {}
   ) => {
     track('system.error', {
       error: error.message,
@@ -533,10 +533,10 @@ export function withActivityTracking<T extends object>(
           componentName,
           props: trackingConfig.trackProps?.reduce((acc, key) => {
             if (key in props) {
-              acc[key] = (props as any)[key]
+              acc[key] = (props as Record<string, unknown>)[key]
             }
             return acc
-          }, {} as any)
+          }, {} as Record<string, unknown>)
         })
       }
 

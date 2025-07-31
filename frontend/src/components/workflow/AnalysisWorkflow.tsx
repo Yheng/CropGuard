@@ -8,22 +8,13 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
-  ArrowRight,
-  ArrowLeft,
-  Pause,
   Play,
   RotateCcw,
-  MessageSquare,
   User,
-  Calendar,
-  Leaf,
-  Bug,
-  FileText,
   Settings,
   Timer,
   Star,
-  Flag,
-  Target
+  Flag
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '../ui/Card'
 import { Button } from '../ui/Button'

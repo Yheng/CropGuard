@@ -18,7 +18,11 @@ interface AnalysisHistoryChartProps {
 }
 
 export function AnalysisHistoryChart({ data, timeRange, height = 350 }: AnalysisHistoryChartProps) {
-  const [chartData, setChartData] = useState<any[]>([])
+  const [chartData, setChartData] = useState<Array<{
+    name: string
+    data: number[]
+    color: string
+  }>>([])
   const [viewType, setViewType] = useState<'stacked' | 'percentage'>('stacked')
 
   useEffect(() => {

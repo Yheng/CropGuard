@@ -8,33 +8,21 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Plus,
   Search,
-  Filter,
   Download,
   RefreshCw,
   Eye,
   Edit3,
   Trash2,
   Key,
-  Database,
   Server,
   Monitor,
   BarChart3,
   UserPlus,
-  Mail,
-  Phone,
   MapPin,
-  Calendar,
   Clock,
-  Star,
   TrendingUp,
-  TrendingDown,
   Zap,
-  Globe,
-  Lock,
-  FileText,
-  Send,
   MoreHorizontal,
   X,
   LogOut
@@ -216,7 +204,7 @@ export function AdminDashboard({
     }
   }
 
-  const handleSaveAIConfig = async () => {
+  const _handleSaveAIConfig = async () => {
     try {
       setLoading(true)
       await adminService.updateAIConfig(tempAIConfig)
@@ -444,7 +432,7 @@ export function AdminDashboard({
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'users' | 'system' | 'audit' | 'ai' | 'performance')}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2',
                 activeTab === tab.id
@@ -1323,7 +1311,7 @@ export function AdminDashboard({
                   <label className="block text-sm font-medium text-gray-300 mb-1">Role</label>
                   <select
                     value={newUser.role}
-                    onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value as any }))}
+                    onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value as 'farmer' | 'agronomist' | 'admin' }))}
                     className="w-full px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#10B981]"
                   >
                     <option value="farmer">Farmer</option>

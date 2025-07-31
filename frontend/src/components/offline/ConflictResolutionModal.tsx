@@ -18,7 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { Button } from '../ui/Button'
-import { Card, CardHeader, CardContent } from '../ui/Card'
+import { Card } from '../ui/Card'
 
 export interface ConflictData {
   id: string
@@ -28,8 +28,8 @@ export interface ConflictData {
   resolved: boolean
   autoResolvable: boolean
   conflicts: ConflictDetail[]
-  localData: any
-  serverData: any
+  localData: Record<string, unknown>
+  serverData: Record<string, unknown>
   syncAttempt: {
     timestamp: string
     error: string
@@ -39,8 +39,8 @@ export interface ConflictData {
 export interface ConflictDetail {
   type: 'version_conflict' | 'data_conflict'
   field: string
-  localValue: any
-  serverValue: any
+  localValue: unknown
+  serverValue: unknown
   severity: 'low' | 'medium' | 'high'
 }
 
@@ -121,7 +121,7 @@ export function ConflictResolutionModal({
     }
   }
 
-  const formatValue = (value: any) => {
+  const formatValue = (value: unknown) => {
     if (typeof value === 'object') {
       return JSON.stringify(value, null, 2)
     }
@@ -447,7 +447,7 @@ function ConflictResolutionPanel({
   onFieldToggle: (field: string) => void
   onResolve: () => void
   isResolving: boolean
-  formatValue: (value: any) => string
+  formatValue: (value: unknown) => string
 }) {
   const strategies = [
     {

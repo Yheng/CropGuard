@@ -255,7 +255,7 @@ const TutorialSystem: React.FC<TutorialSystemProps> = ({
         default:
           return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
       }
-    } catch (error) {
+    } catch (_error) {
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     }
   };

@@ -5,8 +5,8 @@ import { cn } from '../../utils/cn'
 interface FormContextValue {
   errors: Record<string, string>
   touched: Record<string, boolean>
-  values: Record<string, any>
-  setFieldValue: (name: string, value: any) => void
+  values: Record<string, unknown>
+  setFieldValue: (name: string, value: unknown) => void
   setFieldTouched: (name: string, touched: boolean) => void
   setFieldError: (name: string, error: string) => void
   validateField: (name: string) => void
@@ -15,6 +15,7 @@ interface FormContextValue {
 
 const FormContext = React.createContext<FormContextValue | null>(null)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFormContext() {
   const context = React.useContext(FormContext)
   if (!context) {
@@ -31,16 +32,16 @@ type ValidationRule = {
   pattern?: RegExp | { value: RegExp; message: string }
   min?: number | { value: number; message: string }
   max?: number | { value: number; message: string }
-  validate?: (value: any) => string | boolean
-  custom?: (value: any, values: Record<string, any>) => string | boolean
+  validate?: (value: unknown) => string | boolean
+  custom?: (value: unknown, values: Record<string, unknown>) => string | boolean
 }
 
 type ValidationSchema = Record<string, ValidationRule>
 
 interface FormProps {
   children: React.ReactNode
-  onSubmit: (values: Record<string, any>) => void | Promise<void>
-  initialValues?: Record<string, any>
+  onSubmit: (values: Record<string, unknown>) => void | Promise<void>
+  initialValues?: Record<string, unknown>
   validationSchema?: ValidationSchema
   className?: string
   validateOnChange?: boolean
@@ -101,8 +102,8 @@ export function Form({
 
     // Pattern validation
     if (!error && value && rules.pattern) {
-      const pattern = (rules.pattern as any).value || rules.pattern
-      const message = (rules.pattern as any).message || `${name} format is invalid`
+      const pattern = (rules.pattern as { value: RegExp; message: string }).value || (rules.pattern as RegExp)
+      const message = (rules.pattern as { value: RegExp; message: string }).message || `${name} format is invalid`
       if (!(pattern as RegExp).test(value)) {
         error = message
       }
@@ -155,7 +156,7 @@ export function Form({
     }))
   }, [values, validationSchema])
 
-  const setFieldValue = React.useCallback((name: string, value: any) => {
+  const setFieldValue = React.useCallback((name: string, value: unknown) => {
     setValues(prev => ({
       ...prev,
       [name]: value
@@ -244,8 +245,8 @@ interface FormFieldProps {
   name: string
   children: (field: {
     name: string
-    value: any
-    onChange: (value: any) => void
+    value: unknown
+    onChange: (value: unknown) => void
     onBlur: () => void
     error?: string
     touched: boolean
@@ -258,7 +259,7 @@ export function FormField({ name, children }: FormFieldProps) {
   const field = {
     name,
     value: values[name],
-    onChange: (value: any) => setFieldValue(name, value),
+    onChange: (value: unknown) => setFieldValue(name, value),
     onBlur: () => setFieldTouched(name, true),
     error: touched[name] ? errors[name] : undefined,
     touched: touched[name] || false

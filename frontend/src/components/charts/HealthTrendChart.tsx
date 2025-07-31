@@ -17,7 +17,14 @@ interface HealthTrendChartProps {
 }
 
 export function HealthTrendChart({ data, timeRange, height = 300 }: HealthTrendChartProps) {
-  const [chartData, setChartData] = useState<any[]>([])
+  const [chartData, setChartData] = useState<Array<{
+    name: string
+    data: Array<{
+      x: number
+      y: number
+      fillColor: string
+    }>
+  }>>([])
   const [trend, setTrend] = useState<'up' | 'down' | 'stable'>('stable')
 
   useEffect(() => {

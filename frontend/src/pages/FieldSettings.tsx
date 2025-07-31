@@ -25,7 +25,7 @@ export function FieldSettings() {
   const [tempSettings, setTempSettings] = useState(settings)
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleSettingChange = (key: keyof typeof settings, value: any) => {
+  const handleSettingChange = (key: keyof typeof settings, value: string | number | boolean) => {
     setTempSettings(prev => ({ ...prev, [key]: value }))
   }
 
@@ -34,7 +34,7 @@ export function FieldSettings() {
     try {
       updateSettings(tempSettings)
       setTimeout(() => setIsSaving(false), 500)
-    } catch (error) {
+    } catch (_error) {
       setIsSaving(false)
     }
   }
@@ -107,7 +107,7 @@ export function FieldSettings() {
               ].map(({ mode, title, desc }) => (
                 <button
                   key={mode}
-                  onClick={() => setFieldMode(mode as any)}
+                  onClick={() => setFieldMode(mode as 'standard' | 'field' | 'high-contrast')}
                   className={`p-4 text-left rounded-lg border transition-colors ${
                     fieldMode === mode
                       ? 'bg-green-600 border-green-500 text-white'

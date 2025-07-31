@@ -43,7 +43,7 @@ export interface OfflineAction {
   type: 'create' | 'update' | 'delete'
   resource: 'analysis' | 'user' | 'review' | 'setting'
   resourceId: string
-  data: any
+  data: Record<string, unknown>
   url: string
   method: string
   headers: Record<string, string>
@@ -58,7 +58,7 @@ export interface OfflineAction {
 
 export interface CachedData {
   key: string
-  data: any
+  data: Record<string, unknown>
   timestamp: string
   expiresAt?: string
   version: number
@@ -346,7 +346,7 @@ class OfflineStorageManager {
   // Cached data management
   async setCachedData(
     key: string, 
-    data: any, 
+    data: Record<string, unknown>, 
     expirationHours: number = 24
   ): Promise<void> {
     await this.ensureInitialized()
@@ -361,11 +361,11 @@ class OfflineStorageManager {
     
     const cachedData: CachedData = {
       key,
-      data: finalData,
+      data: typeof finalData === 'string' ? finalData : finalData as Record<string, unknown>,
       timestamp: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
       version: 1,
-      size: new Blob([finalData]).size,
+      size: new Blob([typeof finalData === 'string' ? finalData : JSON.stringify(finalData)]).size,
       compressed
     }
 
@@ -375,7 +375,7 @@ class OfflineStorageManager {
     await this.promisifyRequest(store.put(cachedData))
   }
 
-  async getCachedData<T = any>(key: string): Promise<T | null> {
+  async getCachedData<T>(key: string): Promise<T | null> {
     await this.ensureInitialized()
 
     const transaction = this.db!.transaction(['cachedData'], 'readonly')
@@ -395,11 +395,11 @@ class OfflineStorageManager {
 
     // Decompress if needed
     let data = cached.data
-    if (cached.compressed) {
-      data = await this.decompressString(data)
+    if (cached.compressed && typeof cached.data === 'string') {
+      data = await this.decompressString(cached.data)
     }
 
-    return typeof data === 'string' ? JSON.parse(data) : data
+    return typeof data === 'string' ? JSON.parse(data) : data as T
   }
 
   async clearCachedData(keyPattern?: string): Promise<void> {
@@ -480,7 +480,7 @@ class OfflineStorageManager {
     
     for (const storeName of storeNames) {
       const transaction = this.db!.transaction([storeName], 'readonly')
-      const store = transaction.objectStore('store')
+      const store = transaction.objectStore(storeName)
       const all = await this.promisifyRequest(store.getAll())
       
       const storeSize = all.reduce((size, item) => {
@@ -549,7 +549,7 @@ class OfflineStorageManager {
     }
   }
 
-  private promisifyRequest<T = any>(request: IDBRequest<T>): Promise<T> {
+  private promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
@@ -690,7 +690,7 @@ class OfflineStorageManager {
     return compressed
   }
 
-  private estimateObjectSize(obj: any): number {
+  private estimateObjectSize(obj: unknown): number {
     const str = JSON.stringify(obj)
     return new Blob([str]).size
   }

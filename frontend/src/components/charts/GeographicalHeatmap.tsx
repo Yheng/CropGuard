@@ -177,7 +177,7 @@ export function GeographicalHeatmap({
       clusters,
       regionStats
     }
-  }, [data, layers, showClusters, zoomLevel])
+  }, [data, layers, showClusters, zoomLevel, regions])
 
   // Create clusters for better performance with large datasets
   function createClusters(points: GeographicalDataPoint[], zoom: number) {
@@ -306,7 +306,7 @@ export function GeographicalHeatmap({
               { value: 'terrain', label: 'Terrain' }
             ]}
             value={mapStyle}
-            onChange={(value) => setMapStyle(value as any)}
+            onChange={(value) => setMapStyle(value as 'standard' | 'satellite' | 'terrain')}
             className="w-32"
           />
 

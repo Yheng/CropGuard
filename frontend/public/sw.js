@@ -681,8 +681,8 @@ async function performProgressiveSync() {
     const db = await initializeOfflineStorage()
     
     // Get all pending uploads and actions sorted by priority
-    const uploads = await getAllFromStore(db, 'uploadQueue')
-    const actions = await getAllFromStore(db, 'offlineActions')
+    const uploads = await getAllFromStoreByName(db, 'uploadQueue')
+    const actions = await getAllFromStoreByName(db, 'offlineActions')
     
     // Combine and sort by priority
     const allItems = [...uploads, ...actions].sort((a, b) => {
@@ -848,7 +848,7 @@ function getAdaptiveDelay(connectionQuality) {
   }
 }
 
-async function getAllFromStore(db, storeName) {
+async function getAllFromStoreByName(db, storeName) {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([storeName], 'readonly')
     const store = transaction.objectStore(storeName)

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test-utils';
+import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { Mail, Search, User } from 'lucide-react';
 import { Input, TextArea } from '../Input';

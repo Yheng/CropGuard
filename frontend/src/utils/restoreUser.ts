@@ -15,5 +15,5 @@ export const restoreTestUser = () => {
 
 // Make it available globally for console access
 if (typeof window !== 'undefined') {
-  (window as any).restoreTestUser = restoreTestUser
+  (window as unknown as { restoreTestUser: typeof restoreTestUser }).restoreTestUser = restoreTestUser
 }

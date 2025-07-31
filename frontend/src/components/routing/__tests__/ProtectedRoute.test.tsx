@@ -4,9 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test-utils';
+import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import { ProtectedRoute, usePermissions, withRoleProtection, User } from '../ProtectedRoute';
 
 // Mock window.history.back

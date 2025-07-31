@@ -64,7 +64,7 @@ interface InteractionEvent {
   timestamp: number
   context: string
   fieldModeActive: boolean
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 export function useFieldMetrics() {
@@ -242,7 +242,7 @@ export function useFieldMetrics() {
   const recordInteraction = useCallback((
     type: InteractionEvent['type'],
     context: string,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ) => {
     const interaction: InteractionEvent = {
       type,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { TutorialConfig, tutorialRegistry, getRecommendedTutorial } from '../components/tutorial/tutorialConfigs';
 
 interface TutorialState {
@@ -55,27 +55,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     }
   });
 
-  // Load tutorial progress from localStorage on mount
-  useEffect(() => {
-    loadTutorialProgress();
-  }, [userId]);
-
-  // Auto-start tutorial for first-time users
-  useEffect(() => {
-    if (isFirstTimeUser && state.preferences.autoStart) {
-      const recommendedTutorial = getRecommendedTutorial(userRole, true);
-      if (recommendedTutorial && !state.completedTutorials.has(recommendedTutorial.id)) {
-        setTimeout(() => startTutorial(recommendedTutorial.id), 1000);
-      }
-    }
-  }, [isFirstTimeUser, userRole, state.preferences.autoStart]);
-
-  // Save tutorial progress to localStorage whenever state changes
-  useEffect(() => {
-    saveTutorialProgress();
-  }, [state.completedTutorials, state.skippedTutorials, state.preferences]);
-
-  const loadTutorialProgress = () => {
+  const loadTutorialProgress = useCallback(() => {
     try {
       const stored = localStorage.getItem(`cropguard_tutorial_${userId}`);
       if (stored) {
@@ -93,9 +73,9 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     } catch (error) {
       console.warn('Failed to load tutorial progress from localStorage:', error);
     }
-  };
+  }, [userId]);
 
-  const saveTutorialProgress = () => {
+  const saveTutorialProgress = useCallback(() => {
     try {
       const data = {
         completedTutorials: Array.from(state.completedTutorials),
@@ -107,9 +87,9 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     } catch (error) {
       console.warn('Failed to save tutorial progress to localStorage:', error);
     }
-  };
+  }, [userId, state.completedTutorials, state.skippedTutorials, state.preferences]);
 
-  const startTutorial = (tutorialId: string) => {
+  const startTutorial = useCallback((tutorialId: string) => {
     const tutorial = tutorialRegistry[tutorialId];
     if (!tutorial) {
       console.warn(`Tutorial not found: ${tutorialId}`);
@@ -128,7 +108,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
       userRole,
       isFirstTime: isFirstTimeUser
     });
-  };
+  }, [userRole, isFirstTimeUser]);
 
   const completeTutorial = () => {
     if (!state.currentTutorial) return;
@@ -262,7 +242,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     }, 3000);
   };
 
-  const trackTutorialEvent = (eventName: string, data: Record<string, any>) => {
+  const trackTutorialEvent = (eventName: string, data: Record<string, unknown>) => {
     // Send tutorial events to analytics
     try {
       if (typeof window !== 'undefined' && window.gtag) {
@@ -277,6 +257,26 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
       console.warn('Failed to track tutorial event:', error);
     }
   };
+
+  // Load tutorial progress from localStorage on mount
+  useEffect(() => {
+    loadTutorialProgress();
+  }, [loadTutorialProgress]);
+
+  // Auto-start tutorial for first-time users
+  useEffect(() => {
+    if (isFirstTimeUser && state.preferences.autoStart) {
+      const recommendedTutorial = getRecommendedTutorial(userRole, true);
+      if (recommendedTutorial && !state.completedTutorials.has(recommendedTutorial.id)) {
+        setTimeout(() => startTutorial(recommendedTutorial.id), 1000);
+      }
+    }
+  }, [isFirstTimeUser, userRole, state.preferences.autoStart, state.completedTutorials, startTutorial]);
+
+  // Save tutorial progress to localStorage whenever state changes
+  useEffect(() => {
+    saveTutorialProgress();
+  }, [saveTutorialProgress]);
 
   const contextValue: TutorialContextType = {
     state,
@@ -298,6 +298,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTutorial = (): TutorialContextType => {
   const context = useContext(TutorialContext);
   if (context === undefined) {
@@ -307,6 +308,7 @@ export const useTutorial = (): TutorialContextType => {
 };
 
 // Tutorial hook for component-specific guidance
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTutorialStep = (stepId: string) => {
   const { state } = useTutorial();
 
@@ -321,6 +323,7 @@ export const useTutorialStep = (stepId: string) => {
 };
 
 // Hook for tutorial trigger components
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTutorialTrigger = () => {
   const { startTutorial, shouldShowTutorial, state } = useTutorial();
 

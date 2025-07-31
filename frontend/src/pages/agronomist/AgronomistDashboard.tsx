@@ -7,7 +7,6 @@ import {
   XCircle,
   Eye,
   Edit3,
-  MessageSquare,
   Star,
   Clock,
   AlertTriangle,
@@ -20,7 +19,6 @@ import {
   Camera,
   FileText,
   Send,
-  MoreHorizontal,
   Download,
   RefreshCw,
   Users,
@@ -104,7 +102,7 @@ export function AgronomistDashboard({
   pendingAnalyses,
   stats,
   onReviewSubmit,
-  onAnalysisFilter,
+  onAnalysisFilter: _onAnalysisFilter,
   onBulkAction,
   className
 }: AgronomistDashboardProps) {
@@ -112,18 +110,18 @@ export function AgronomistDashboard({
   const [filters, setFilters] = React.useState<AnalysisFilters>({})
   const [searchQuery, setSearchQuery] = React.useState('')
   const [sortBy, setSortBy] = React.useState<'priority' | 'date' | 'confidence'>('priority')
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('list')
+  const [viewMode, _setViewMode] = React.useState<'grid' | 'list'>('list')
   const [selectedAnalysis, setSelectedAnalysis] = React.useState<PendingAnalysis | null>(null)
   const [reviewForm, setReviewForm] = React.useState({
     status: 'approved' as 'approved' | 'rejected' | 'needs_revision',
     confidence: 85,
     comments: '',
-    modifiedPrediction: null as any,
+    modifiedPrediction: null as { issueName: string; issueType: 'pest' | 'disease' | 'nutrient' | 'environmental'; severity: number; treatmentSuggestions: string[] } | null,
     tags: [] as string[]
   })
 
   const filteredAnalyses = React.useMemo(() => {
-    let filtered = pendingAnalyses.filter(analysis => {
+    const filtered = pendingAnalyses.filter(analysis => {
       if (searchQuery && !analysis.farmerName.toLowerCase().includes(searchQuery.toLowerCase()) && 
           !analysis.cropType.toLowerCase().includes(searchQuery.toLowerCase()) &&
           !analysis.aiPrediction.issueName.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -141,9 +139,10 @@ export function AgronomistDashboard({
 
     return filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { high: 3, medium: 2, low: 1 }
           return priorityOrder[b.priority] - priorityOrder[a.priority]
+        }
         case 'date':
           return new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime()
         case 'confidence':
@@ -355,7 +354,7 @@ export function AgronomistDashboard({
               <div className="flex flex-wrap gap-2">
                 <select
                   value={filters.priority || ''}
-                  onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value as any || undefined }))}
+                  onChange={(e) => setFilters(prev => ({ ...prev, priority: (e.target.value as 'high' | 'medium' | 'low') || undefined }))}
                   className="px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Priorities</option>
@@ -366,7 +365,7 @@ export function AgronomistDashboard({
 
                 <select
                   value={filters.issueType || ''}
-                  onChange={(e) => setFilters(prev => ({ ...prev, issueType: e.target.value as any || undefined }))}
+                  onChange={(e) => setFilters(prev => ({ ...prev, issueType: (e.target.value as 'pest' | 'disease' | 'nutrient' | 'environmental') || undefined }))}
                   className="px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Issues</option>
@@ -378,7 +377,7 @@ export function AgronomistDashboard({
 
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as 'priority' | 'date' | 'confidence')}
                   className="px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="priority">Sort by Priority</option>
@@ -702,7 +701,7 @@ export function AgronomistDashboard({
                                   type="radio"
                                   value={option.value}
                                   checked={reviewForm.status === option.value}
-                                  onChange={(e) => setReviewForm(prev => ({ ...prev, status: e.target.value as any }))}
+                                  onChange={(e) => setReviewForm(prev => ({ ...prev, status: e.target.value as 'approved' | 'rejected' | 'needs_revision' }))}
                                   className="w-4 h-4 text-[#10B981] focus:ring-[#10B981] focus:ring-2"
                                 />
                                 <span className="text-white">{option.label}</span>

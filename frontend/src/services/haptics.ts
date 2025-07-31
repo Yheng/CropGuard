@@ -172,7 +172,7 @@ class HapticsService {
    * Calculate vibration pattern based on config and environment
    */
   private calculateVibrationPattern(pattern: HapticPattern): number[] {
-    let basePattern = [...HAPTIC_PATTERNS[pattern]]
+    const basePattern = [...HAPTIC_PATTERNS[pattern]]
     
     // Apply intensity multiplier
     const intensityMultiplier = INTENSITY_MULTIPLIERS[this.config.intensity]
@@ -253,10 +253,10 @@ class HapticsService {
     // Monitor ambient light if available (for pocket detection)
     if ('AmbientLightSensor' in window) {
       try {
-        // @ts-ignore - AmbientLightSensor is experimental
+        // @ts-expect-error - AmbientLightSensor is experimental
         const sensor = new AmbientLightSensor()
         sensor.addEventListener('reading', () => {
-          // @ts-ignore
+          // @ts-expect-error
           this.environmental.deviceInPocket = sensor.illuminance < 10
         })
         sensor.start()
@@ -333,7 +333,7 @@ class HapticsService {
    * Weather-aware haptic feedback
    */
   async weatherBasedFeedback(weatherCondition: string): Promise<void> {
-    this.environmental.weatherCondition = weatherCondition as any
+    this.environmental.weatherCondition = weatherCondition as EnvironmentalConditions['weatherCondition']
     
     if (weatherCondition === 'rainy' || weatherCondition === 'windy') {
       // Use stronger feedback in challenging weather
@@ -382,7 +382,7 @@ class HapticsService {
     const patternCounts: Record<string, number> = {}
     const environmentalUsage: Record<string, number> = {}
     
-    usage.forEach((event: any) => {
+    usage.forEach((event: { pattern: string; environmental: EnvironmentalConditions; config: HapticConfig }) => {
       patternCounts[event.pattern] = (patternCounts[event.pattern] || 0) + 1
       
       if (event.environmental.isFieldMode) {
@@ -399,7 +399,7 @@ class HapticsService {
     return {
       totalHaptics: usage.length,
       mostUsedPattern,
-      averageIntensity: usage.reduce((sum: number, event: any) => {
+      averageIntensity: usage.reduce((sum: number, event: { config: HapticConfig }) => {
         const intensityValue = { light: 1, medium: 2, strong: 3 }[event.config.intensity] || 2
         return sum + intensityValue
       }, 0) / usage.length,

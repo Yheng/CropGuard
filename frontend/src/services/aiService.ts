@@ -186,7 +186,7 @@ class AIService {
 
       if (response.ok) {
         const models = await response.json()
-        const hasVisionModel = models.data.some((model: any) => 
+        const hasVisionModel = models.data.some((model: { id: string }) => 
           model.id === 'gpt-4o' || model.id === 'gpt-4-vision-preview'
         )
         
@@ -411,10 +411,10 @@ Focus on organic, sustainable treatment options when possible. ${additionalConte
   }
 
   private async makeOpenAIRequest(
-    messages: any[], 
-    model: string, 
+    messages: unknown[], 
+    _model: string, 
     config: AIConfiguration
-  ): Promise<{ content: string; usage?: any } | null> {
+  ): Promise<{ content: string; usage?: unknown } | null> {
     try {
       // Use gpt-4o for vision tasks as it supports multimodal input
       const visionModel = 'gpt-4o'
@@ -518,16 +518,26 @@ Focus on organic, sustainable treatment options when possible. ${additionalConte
     }
   }
 
-  private parseAIResponse(content: string): any {
+  private parseAIResponse(content: string): {
+    confidence: number;
+    disease: string | null;
+    severity: 'low' | 'medium' | 'high' | null;
+    recommendations: string[];
+    treatmentPlan: {
+      immediate: string[];
+      followUp: string[];
+      prevention: string[];
+    };
+  } {
     try {
       // Try to parse as JSON first
       return JSON.parse(content)
-    } catch (error) {
+    } catch (_error) {
       console.log('Failed to parse JSON, attempting to extract structured data from text response:', content)
       
       // Try to extract structured information from text response
       const lines = content.split('\n')
-      const result: any = {
+      const result = {
         confidence: 0.7,
         disease: null,
         severity: null,
@@ -752,7 +762,7 @@ if (savedUsage) {
   try {
     const usage = JSON.parse(savedUsage)
     // Private property access through any type
-    ;(aiService as any).usage = usage
+    ;(aiService as { usage: typeof usage }).usage = usage
   } catch (error) {
     console.warn('Failed to load saved usage stats:', error)
   }

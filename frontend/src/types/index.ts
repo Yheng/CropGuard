@@ -43,7 +43,7 @@ export interface ApiResponse<T> {
 export interface ApiError {
   message: string;
   code: number;
-  details?: any;
+  details?: unknown;
 }
 
 // Chart data types

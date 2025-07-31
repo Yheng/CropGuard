@@ -357,7 +357,7 @@ export function SeverityTimeline({
               { value: 'stage', label: 'By Stage' }
             ]}
             value={groupBy}
-            onChange={(value) => setGroupBy(value as any)}
+            onChange={(value) => setGroupBy(value as 'issue' | 'crop' | 'stage')}
             className="w-32"
           />
 

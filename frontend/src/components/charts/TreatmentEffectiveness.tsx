@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import Chart from 'react-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { motion } from 'framer-motion'
@@ -193,7 +193,7 @@ export function TreatmentEffectiveness({
       treatmentTimeline,
       monthlyTrendData
     }
-  }, [treatments, applications, metrics, selectedTreatments, timeRange])
+  }, [treatments, applications, metrics, selectedTreatments])
 
   // Chart options
   const barChartOptions: ApexOptions = {
@@ -305,14 +305,14 @@ export function TreatmentEffectiveness({
     }
   }
 
-  const getCurrentData = () => {
+  const getCurrentData = useCallback(() => {
     switch (selectedMetric) {
       case 'improvement': return processedData.improvementData
       case 'cost': return processedData.costData
       case 'time': return processedData.recoveryTimeData
       default: return processedData.successRateData
     }
-  }
+  }, [selectedMetric, processedData])
 
   const getMetricLabel = () => {
     switch (selectedMetric) {
@@ -333,7 +333,7 @@ export function TreatmentEffectiveness({
     })
     
     return sorted[0]
-  }, [selectedMetric, processedData])
+  }, [selectedMetric, getCurrentData])
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -354,7 +354,7 @@ export function TreatmentEffectiveness({
               { value: 'time', label: 'Recovery Time' }
             ]}
             value={selectedMetric}
-            onChange={(value) => setSelectedMetric(value as any)}
+            onChange={(value) => setSelectedMetric(value as 'success' | 'improvement' | 'cost' | 'time')}
             className="w-40"
           />
 
@@ -367,7 +367,7 @@ export function TreatmentEffectiveness({
               { value: '1y', label: 'Last year' }
             ]}
             value={timeRange}
-            onChange={(value) => onTimeRangeChange?.(value as any)}
+            onChange={(value) => onTimeRangeChange?.(value as '30d' | '90d' | '6m' | '1y'))
             className="w-40"
           />
 

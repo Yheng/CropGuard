@@ -285,6 +285,7 @@ export function AsyncErrorBoundary({
 }
 
 // HOC for wrapping components with error boundary
+// eslint-disable-next-line react-refresh/only-export-components
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
@@ -301,6 +302,7 @@ export function withErrorBoundary<P extends object>(
 }
 
 // Hook for throwing errors to nearest error boundary
+// eslint-disable-next-line react-refresh/only-export-components
 export function useErrorHandler() {
   const [error, setError] = React.useState<Error | null>(null)
 
@@ -339,7 +341,7 @@ export class ValidationError extends Error {
 
 // Error boundary for specific error types
 interface TypedErrorBoundaryProps extends ErrorBoundaryProps {
-  errorTypes?: Array<new (...args: any[]) => Error>
+  errorTypes?: Array<new (...args: unknown[]) => Error>
   onSpecificError?: (error: Error) => void
 }
 

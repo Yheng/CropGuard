@@ -27,7 +27,8 @@ export function Input({
   ...props
 }: InputProps) {
   const [showPassword, setShowPassword] = React.useState(false)
-  const inputId = id || React.useId()
+  const generatedId = React.useId()
+  const inputId = id || generatedId
   const isPassword = type === 'password'
   const inputType = isPassword && showPassword ? 'text' : type
 
@@ -130,7 +131,8 @@ export function TextArea({
   disabled,
   ...props
 }: TextAreaProps) {
-  const textareaId = id || React.useId()
+  const generatedId = React.useId()
+  const textareaId = id || generatedId
 
   return (
     <div className={cn('space-y-2', fullWidth && 'w-full')}>

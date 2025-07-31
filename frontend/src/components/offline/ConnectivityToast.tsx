@@ -5,8 +5,6 @@ import {
   WifiOff,
   CheckCircle,
   AlertTriangle,
-  Upload,
-  Download,
   Signal,
   X
 } from 'lucide-react'
@@ -51,14 +49,11 @@ export function ConnectivityToast({
     isOnline,
     isConnected,
     quality,
-    effectiveType,
-    connectionDescription
+    effectiveType
   } = useConnectionState()
 
   const {
     syncStatus,
-    isSyncing,
-    lastSyncError,
     addEventListener,
     removeEventListener
   } = useOfflineSync()
@@ -86,7 +81,7 @@ export function ConnectivityToast({
         removeToast(newToast.id)
       }, toast.duration || duration)
     }
-  }, [autoHide, duration])
+  }, [autoHide, duration, removeToast])
 
   // Remove toast
   const removeToast = React.useCallback((toastId: string) => {
@@ -165,7 +160,7 @@ export function ConnectivityToast({
 
   // Monitor sync events
   React.useEffect(() => {
-    const handleSyncEvent = (event: any) => {
+    const handleSyncEvent = (event: { type: string; data?: { error?: string; uploadedCount?: number } }) => {
       switch (event.type) {
         case 'sync_completed':
           if (syncStatus && syncStatus.uploadedCount > 0) {
@@ -229,7 +224,7 @@ export function ConnectivityToast({
       className
     )}>
       <AnimatePresence mode="popLayout">
-        {toasts.map((toast, index) => (
+        {toasts.map((toast) => (
           <motion.div
             key={toast.id}
             layout

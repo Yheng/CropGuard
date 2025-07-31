@@ -23,7 +23,7 @@ export interface ActivityEvent {
     id: string;
     name?: string;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ActivityFilter {

@@ -154,16 +154,16 @@ global.File = class MockFile extends Blob {
     this.lastModified = options?.lastModified || Date.now();
     this.webkitRelativePath = '';
   }
-} as any;
+} as typeof File;
 
 // Mock FileReader for image processing tests
 global.FileReader = class MockFileReader {
   result: string | ArrayBuffer | null = null;
   error: DOMException | null = null;
   readyState: number = 0;
-  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onprogress: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
+  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null = null;
+  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null = null;
+  onprogress: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null = null;
 
   addEventListener = vi.fn();
   removeEventListener = vi.fn();
@@ -192,7 +192,7 @@ global.FileReader = class MockFileReader {
   readAsArrayBuffer = vi.fn();
   readAsBinaryString = vi.fn();
   abort = vi.fn();
-} as any;
+} as typeof File;
 
 // Mock URL APIs for file handling
 global.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url');

@@ -74,7 +74,7 @@ const customRender = (
 ) => render(ui, { wrapper: AllTheProviders, ...options })
 
 // Mock fetch for API calls
-export const mockFetch = (response: any, status = 200) => {
+export const mockFetch = (response: unknown, status = 200) => {
   global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: status >= 200 && status < 300,
@@ -106,5 +106,7 @@ export const mockIntersectionObserver = () => {
 }
 
 // Re-export everything
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'
+// eslint-disable-next-line react-refresh/only-export-components
 export { customRender as render }

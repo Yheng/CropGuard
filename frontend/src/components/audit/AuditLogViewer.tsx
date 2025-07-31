@@ -532,7 +532,7 @@ export function AuditLogViewer({
                 <label className="block text-sm font-medium text-gray-300 mb-1">User Role</label>
                 <select
                   value={filters.userRole || ''}
-                  onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, userRole: e.target.value as any || undefined }))}
+                  onChange={(e) => setFilters((prev: ActivityFilter) => ({ ...prev, userRole: (e.target.value as 'farmer' | 'agronomist' | 'admin') || undefined }))}
                   className="w-full px-3 py-2 bg-[#1F2A44] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#10B981]"
                 >
                   <option value="">All Roles</option>

@@ -146,7 +146,7 @@ export const filterDataByRole = (
         }
         break
 
-      case 'agronomist':
+      case 'agronomist': {
         // Agronomists can see assigned analyses, regional data, and public data
         const canViewItem = 
           item.assignedAgronomistId === user.id ||
@@ -164,6 +164,7 @@ export const filterDataByRole = (
           }
         }
         break
+      }
 
       case 'admin':
         // Admins can see all data
@@ -272,10 +273,10 @@ export const filterDataByRole = (
 }
 
 // Sanitize data by removing restricted fields
-export const sanitizeDataForRole = (
-  data: any,
+export const sanitizeDataForRole = <T>(
+  data: T,
   user: User
-): any => {
+): T => {
   const accessRules = getAccessRules(user)
   
   if (accessRules.restrictedFields.length === 0) {
@@ -361,7 +362,7 @@ export function useRoleBasedData(user: User | null) {
     return filterDataByRole(data, user, filters)
   }, [user, filters])
 
-  const sanitizeData = React.useCallback((data: any) => {
+  const sanitizeData = React.useCallback(<T>(data: T): T | null => {
     if (!user) return null
     return sanitizeDataForRole(data, user)
   }, [user])

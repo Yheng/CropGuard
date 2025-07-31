@@ -56,7 +56,7 @@ export function clearAllAuthData() {
   console.log('🔄 Please refresh the page to see changes')
 }
 
-export function debugAuthState() {
+export async function debugAuthState() {
   console.log('🔍 Authentication Debug Information:')
   console.log('📊 localStorage contents:')
   
@@ -79,7 +79,9 @@ export function debugAuthState() {
   
   // Check auth service state
   try {
-    const { authService } = require('../services/auth')
+    // Dynamic import to avoid circular dependencies and require() usage
+    const authModule = await import('../services/auth')
+    const authService = authModule.authService
     console.log('🔐 Auth service state:')
     console.log('  isAuthenticated:', authService.isAuthenticated())
     console.log('  currentUser:', authService.getCurrentUser())
@@ -91,8 +93,8 @@ export function debugAuthState() {
 
 // Make these functions available in the browser console for debugging
 if (typeof window !== 'undefined') {
-  (window as any).clearAllAuthData = clearAllAuthData;
-  (window as any).debugAuthState = debugAuthState;
+  (window as unknown as { clearAllAuthData: typeof clearAllAuthData; debugAuthState: typeof debugAuthState }).clearAllAuthData = clearAllAuthData;
+  (window as unknown as { clearAllAuthData: typeof clearAllAuthData; debugAuthState: typeof debugAuthState }).debugAuthState = debugAuthState;
   
   console.log('🛠️ Debug functions available:')
   console.log('  - clearAllAuthData(): Clear all authentication data')

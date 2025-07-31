@@ -8,8 +8,8 @@ export interface DataConflict {
   resourceType: 'analysis' | 'user' | 'review' | 'setting'
   resourceId: string
   conflictType: ConflictType
-  localVersion: any
-  serverVersion: any
+  localVersion: Record<string, unknown> | null
+  serverVersion: Record<string, unknown> | null
   timestamp: string
   severity: 'low' | 'medium' | 'high' | 'critical'
   description: string
@@ -24,26 +24,26 @@ export interface ConflictResolution {
   impact: string
   recommended: boolean
   mergeStrategy?: MergeStrategy
-  mergedData?: any
+  mergedData?: Record<string, unknown>
 }
 
 export interface MergeStrategy {
   strategy: 'field_priority' | 'timestamp_latest' | 'user_preference' | 'custom'
   rules: MergeRule[]
-  customHandler?: (local: any, server: any) => any
+  customHandler?: (local: Record<string, unknown>, server: Record<string, unknown>) => Record<string, unknown>
 }
 
 export interface MergeRule {
   field: string
   priority: 'local' | 'server' | 'latest' | 'combine'
   weight?: number
-  validator?: (value: any) => boolean
+  validator?: (value: unknown) => boolean
 }
 
 export interface ConflictResolutionResult {
   resolved: boolean
   resolution: ConflictResolution | null
-  resolvedData: any
+  resolvedData: Record<string, unknown> | null
   conflicts: DataConflict[]
   warnings: string[]
 }
@@ -53,7 +53,7 @@ interface ConflictResolutionConfig {
   maxAutoResolutionAge: number // Max age in minutes for auto-resolution
   prioritizeUserData: boolean
   enableFieldLevelMerging: boolean
-  customMergeHandlers: Map<string, (local: any, server: any) => any>
+  customMergeHandlers: Map<string, (local: Record<string, unknown>, server: Record<string, unknown>) => Record<string, unknown>>
 }
 
 class ConflictResolver {
@@ -73,8 +73,8 @@ class ConflictResolver {
 
   // Main conflict detection and resolution
   async resolveConflicts(
-    localData: any,
-    serverData: any,
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null,
     resourceType: DataConflict['resourceType'],
     resourceId: string
   ): Promise<ConflictResolutionResult> {
@@ -129,8 +129,8 @@ class ConflictResolver {
 
   // Detect conflicts between local and server data
   private detectConflicts(
-    localData: any,
-    serverData: any,
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null,
     resourceType: DataConflict['resourceType'],
     resourceId: string
   ): DataConflict[] {
@@ -184,8 +184,8 @@ class ConflictResolver {
   }
 
   private detectFieldConflicts(
-    localData: any,
-    serverData: any,
+    localData: Record<string, unknown>,
+    serverData: Record<string, unknown>,
     resourceType: DataConflict['resourceType'],
     resourceId: string
   ): DataConflict[] {
@@ -228,8 +228,8 @@ class ConflictResolver {
   // Auto-resolution strategies
   private async attemptAutoResolution(
     conflicts: DataConflict[],
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): Promise<ConflictResolutionResult> {
     const resolvedData = { ...serverData }
     const unresolvedConflicts: DataConflict[] = []
@@ -272,8 +272,8 @@ class ConflictResolver {
 
   private async getAutoResolution(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): Promise<ConflictResolution | null> {
     if (!conflict.autoResolvable) {
       return null
@@ -309,8 +309,8 @@ class ConflictResolver {
   // Resource-specific conflict resolution
   private resolveAnalysisConflict(
     conflict: DataConflict,
-    _localData: any,
-    _serverData: any
+    _localData: Record<string, unknown> | null,
+    _serverData: Record<string, unknown> | null
   ): ConflictResolution | null {
     // For analysis data, prioritize server data for AI results but keep local metadata
     if (conflict.conflictType === 'field') {
@@ -344,8 +344,8 @@ class ConflictResolver {
 
   private resolveUserConflict(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): ConflictResolution | null {
     if (conflict.conflictType === 'field') {
       const field = Object.keys(conflict.localVersion)[0]
@@ -378,8 +378,8 @@ class ConflictResolver {
 
   private resolveReviewConflict(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): ConflictResolution | null {
     // Reviews are typically created once and not modified, so server version wins
     return {
@@ -393,8 +393,8 @@ class ConflictResolver {
 
   private resolveSettingConflict(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): ConflictResolution | null {
     if (conflict.conflictType === 'field') {
       // Settings usually prioritize local changes
@@ -412,8 +412,8 @@ class ConflictResolver {
 
   private resolveGenericConflict(
     conflict: DataConflict,
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): ConflictResolution | null {
     // Generic strategy: use timestamp-based resolution
     const localTimestamp = this.extractTimestamp(localData)
@@ -448,8 +448,8 @@ class ConflictResolver {
   // Manual resolution support
   private generateResolutionOptions(
     conflicts: DataConflict[],
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): Record<string, ConflictResolution[]> {
     const options: Record<string, ConflictResolution[]> = {}
 
@@ -496,8 +496,8 @@ class ConflictResolver {
     conflictId: string,
     resolutionId: string,
     conflicts: DataConflict[],
-    localData: any,
-    serverData: any
+    localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
   ): Promise<ConflictResolutionResult> {
     const conflict = conflicts.find(c => c.id === conflictId)
     if (!conflict) {
@@ -566,7 +566,7 @@ class ConflictResolver {
     return ['id', 'createdAt', 'updatedAt', 'version', '_id', '__v'].includes(field)
   }
 
-  private valuesEqual(a: any, b: any): boolean {
+  private valuesEqual(a: unknown, b: unknown): boolean {
     if (a === b) return true
     if (a == null || b == null) return a === b
     
@@ -599,8 +599,8 @@ class ConflictResolver {
 
   private canAutoResolveField(
     field: string,
-    localValue: any,
-    serverValue: any,
+    localValue: unknown,
+    serverValue: unknown,
     resourceType: string
   ): boolean {
     // Never auto-resolve critical fields
@@ -624,9 +624,9 @@ class ConflictResolver {
 
   private attemptMerge(
     conflict: DataConflict,
-    _localData: any,
-    _serverData: any
-  ): any | null {
+    _localData: Record<string, unknown> | null,
+    _serverData: Record<string, unknown> | null
+  ): Record<string, unknown> | null {
     if (conflict.conflictType !== 'field') return null
 
     const field = Object.keys(conflict.localVersion)[0]
@@ -652,12 +652,12 @@ class ConflictResolver {
     return null
   }
 
-  private extractTimestamp(data: any): Date | null {
+  private extractTimestamp(data: Record<string, unknown> | null): Date | null {
     const timestampFields = ['updatedAt', 'lastModified', 'timestamp', 'modifiedAt']
     
     for (const field of timestampFields) {
-      if (data[field]) {
-        const date = new Date(data[field])
+      if (data && data[field]) {
+        const date = new Date(data[field] as string)
         if (!isNaN(date.getTime())) {
           return date
         }
@@ -686,9 +686,9 @@ class ConflictResolver {
   private async handleManualResolution(
     _conflict: DataConflict,
     _resolution: ConflictResolution,
-    _localData: any,
-    serverData: any
-  ): Promise<any> {
+    _localData: Record<string, unknown> | null,
+    serverData: Record<string, unknown> | null
+  ): Promise<Record<string, unknown> | null> {
     // Custom manual resolution handler would be implemented here
     // For now, default to server data
     return serverData

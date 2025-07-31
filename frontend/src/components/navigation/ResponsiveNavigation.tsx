@@ -20,7 +20,7 @@ import { useOfflineSync } from '../../hooks/useOfflineSync'
 interface NavigationItem {
   id: string
   label: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   href: string
   badge?: string | number
   description?: string
@@ -165,7 +165,7 @@ export function ResponsiveNavigation({
     })
   }
 
-  const handleNavigate = (href: string, requiresConnection: boolean = false) => {
+  const handleNavigate = (href: string, _requiresConnection: boolean = false) => {
     // Could add offline handling here
     onNavigate?.(href)
   }

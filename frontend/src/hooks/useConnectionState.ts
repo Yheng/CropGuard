@@ -81,9 +81,30 @@ class ConnectionMonitor {
   }
 
   private getConnectionInfo() {
-    const connection = (navigator as any).connection || 
-                     (navigator as any).mozConnection || 
-                     (navigator as any).webkitConnection
+    const nav = navigator as Navigator & {
+      connection?: {
+        type?: string
+        effectiveType?: string
+        downlink?: number
+        rtt?: number
+        saveData?: boolean
+      }
+      mozConnection?: {
+        type?: string
+        effectiveType?: string
+        downlink?: number
+        rtt?: number
+        saveData?: boolean
+      }
+      webkitConnection?: {
+        type?: string
+        effectiveType?: string
+        downlink?: number
+        rtt?: number
+        saveData?: boolean
+      }
+    }
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection
 
     if (!connection) {
       return {
@@ -127,8 +148,13 @@ class ConnectionMonitor {
     window.addEventListener('offline', this.handleOffline.bind(this))
 
     // Connection change events
-    const connection = (navigator as any).connection
-    if (connection) {
+    const nav = navigator as Navigator & {
+      connection?: {
+        addEventListener?: (event: string, handler: () => void) => void
+      }
+    }
+    const connection = nav.connection
+    if (connection && connection.addEventListener) {
       connection.addEventListener('change', this.handleConnectionChange.bind(this))
     }
 
@@ -395,8 +421,13 @@ class ConnectionMonitor {
     window.removeEventListener('online', this.handleOnline.bind(this))
     window.removeEventListener('offline', this.handleOffline.bind(this))
     
-    const connection = (navigator as any).connection
-    if (connection) {
+    const nav = navigator as Navigator & {
+      connection?: {
+        removeEventListener?: (event: string, handler: () => void) => void
+      }
+    }
+    const connection = nav.connection
+    if (connection && connection.removeEventListener) {
       connection.removeEventListener('change', this.handleConnectionChange.bind(this))
     }
     

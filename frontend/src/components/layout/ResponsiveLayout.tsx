@@ -295,7 +295,7 @@ export function ThemeToggle({ variant = 'button', className }: ThemeToggleProps)
                 <button
                   key={value}
                   onClick={() => {
-                    setTheme(value as any)
+                    setTheme(value as 'light' | 'dark' | 'auto')
                     setShowDropdown(false)
                   }}
                   className={cn(

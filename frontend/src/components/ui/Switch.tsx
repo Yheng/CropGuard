@@ -44,7 +44,8 @@ export function Switch({
   id,
   ...props
 }: SwitchProps) {
-  const switchId = id || React.useId()
+  const generatedId = React.useId()
+  const switchId = id || generatedId
   const sizes = sizeVariants[size]
 
   const switchElement = (

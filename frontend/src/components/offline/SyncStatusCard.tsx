@@ -2,14 +2,10 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload,
-  Download,
   Clock,
   CheckCircle,
   AlertTriangle,
   RefreshCw,
-  Wifi,
-  WifiOff,
-  Zap,
   Pause,
   Play,
   X,
@@ -50,7 +46,6 @@ export function SyncStatusCard({
   const {
     syncStatus,
     isSyncing,
-    connectivityInfo,
     forceSync,
     forceSyncUploads,
     lastSyncError,
@@ -59,7 +54,6 @@ export function SyncStatusCard({
 
   const {
     isOnline,
-    quality,
     connectionDescription
   } = useConnectionState()
 

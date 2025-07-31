@@ -121,7 +121,7 @@ class AdminService {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
+        if ((error as { response?: { status?: number } }).response?.status === 401) {
           // Handle unauthorized access
           localStorage.removeItem('authToken')
           window.location.href = '/login'
@@ -152,7 +152,7 @@ class AdminService {
   }
 
   // User management
-  async getUsers(filters: UserFilters = {}): Promise<{ users: User[]; pagination?: any }> {
+  async getUsers(filters: UserFilters = {}): Promise<{ users: User[]; pagination?: { page: number; limit: number; total: number; pages: number } }> {
     try {
       const params = new URLSearchParams()
       if (filters.role) params.append('role', filters.role)
@@ -189,9 +189,9 @@ class AdminService {
         throw new Error(response.data.message || 'Failed to create user')
       }
       return response.data.data!
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating user:', error)
-      throw new Error(error.response?.data?.message || 'Failed to create user')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to create user')
     }
   }
 
@@ -202,9 +202,9 @@ class AdminService {
         throw new Error(response.data.message || 'Failed to update user')
       }
       return response.data.data!
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating user:', error)
-      throw new Error(error.response?.data?.message || 'Failed to update user')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to update user')
     }
   }
 
@@ -214,9 +214,9 @@ class AdminService {
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to delete user')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting user:', error)
-      throw new Error(error.response?.data?.message || 'Failed to delete user')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to delete user')
     }
   }
 
@@ -227,43 +227,43 @@ class AdminService {
         throw new Error(response.data.message || 'Failed to update user status')
       }
       return response.data.data!
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating user status:', error)
-      throw new Error(error.response?.data?.message || 'Failed to update user status')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to update user status')
     }
   }
 
   // Bulk operations
-  async bulkUpdateUsers(operation: BulkOperation): Promise<any[]> {
+  async bulkUpdateUsers(operation: BulkOperation): Promise<User[]> {
     try {
-      const response = await this.axiosInstance.post<ApiResponse<any[]>>('/users/bulk-update', operation)
+      const response = await this.axiosInstance.post<ApiResponse<User[]>>('/users/bulk-update', operation)
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to bulk update users')
       }
       return response.data.data || []
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error bulk updating users:', error)
-      throw new Error(error.response?.data?.message || 'Failed to bulk update users')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to bulk update users')
     }
   }
 
-  async bulkDeleteUsers(userIds: string[]): Promise<any[]> {
+  async bulkDeleteUsers(userIds: string[]): Promise<{ deleted: string[]; failed: string[] }> {
     try {
-      const response = await this.axiosInstance.post<ApiResponse<any[]>>('/users/bulk-delete', { userIds })
+      const response = await this.axiosInstance.post<ApiResponse<{ deleted: string[]; failed: string[] }>>('/users/bulk-delete', { userIds })
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to bulk delete users')
       }
-      return response.data.data || []
-    } catch (error: any) {
+      return response.data.data || { deleted: [], failed: [] }
+    } catch (error: unknown) {
       console.error('Error bulk deleting users:', error)
-      throw new Error(error.response?.data?.message || 'Failed to bulk delete users')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to bulk delete users')
     }
   }
 
   // User statistics
-  async getUserStats(): Promise<any> {
+  async getUserStats(): Promise<{ totalUsers: number; activeUsers: number; newUsers: number; usersByRole: Record<string, number> }> {
     try {
-      const response = await this.axiosInstance.get<ApiResponse<any>>('/users/stats')
+      const response = await this.axiosInstance.get<ApiResponse<{ totalUsers: number; activeUsers: number; newUsers: number; usersByRole: Record<string, number> }>>('/users/stats')
       return response.data.data || {}
     } catch (error) {
       console.error('Error fetching user stats:', error)
@@ -352,9 +352,9 @@ class AdminService {
       if (!response.data.success) {
         throw new Error(response.data.message || 'Failed to update AI configuration')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating AI config:', error)
-      throw new Error(error.response?.data?.message || 'Failed to update AI configuration')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to update AI configuration')
     }
   }
 
@@ -365,9 +365,9 @@ class AdminService {
         throw new Error(response.data.message || 'Connection test failed')
       }
       return response.data.data!
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error testing AI connection:', error)
-      throw new Error(error.response?.data?.message || 'Connection test failed')
+      throw new Error((error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Connection test failed')
     }
   }
 
@@ -410,13 +410,14 @@ class AdminService {
     }
   }
 
-  async performBulkUserAction(action: 'activate' | 'suspend' | 'delete', userIds: string[]): Promise<any[]> {
+  async performBulkUserAction(action: 'activate' | 'suspend' | 'delete', userIds: string[]): Promise<{ success: string[]; failed: string[] }> {
     try {
       switch (action) {
         case 'activate':
-          return await this.bulkUpdateUsers({ userIds, updates: { status: 'active' } })
-        case 'suspend':
-          return await this.bulkUpdateUsers({ userIds, updates: { status: 'suspended' } })
+        case 'suspend': {
+          const result = await this.bulkUpdateUsers({ userIds, updates: { status: action === 'activate' ? 'active' : 'suspended' } })
+          return { success: result.map(u => u.id), failed: [] }
+        }
         case 'delete':
           return await this.bulkDeleteUsers(userIds)
         default:

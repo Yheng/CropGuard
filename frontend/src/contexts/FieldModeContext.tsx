@@ -93,7 +93,7 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
 
   // Function definitions
-  const initializeWeatherData = async () => {
+  const _initializeWeatherData = async () => {
     // Check if we have recent weather data in localStorage
     const cached = localStorage.getItem('cropguard-weather-data')
     if (cached) {
@@ -171,9 +171,9 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const adaptToWeatherConditions = (weather: WeatherData) => {
+  const _adaptToWeatherConditions = (_weather: WeatherData) => {
     // Auto-switch to high contrast in bright sunlight
-    if (weather.condition === 'sunny' && weather.brightness > 85) {
+    if (_weather.condition === 'sunny' && _weather.brightness > 85) {
       if (fieldMode === 'standard') {
         setFieldMode('field')
       }
@@ -181,12 +181,12 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Enable glove mode in rainy conditions
-    if (weather.condition === 'rainy') {
+    if (_weather.condition === 'rainy') {
       updateSettings({ gloveMode: true, touchTargetSize: 'large' })
     }
     
     // Adjust font size in low light
-    if (weather.brightness < 30) {
+    if (_weather.brightness < 30) {
       updateSettings({ fontSizeMultiplier: Math.max(1.1, settings.fontSizeMultiplier) })
     }
   }
@@ -195,7 +195,7 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
     setSettings(prev => ({ ...prev, ...newSettings }))
   }
 
-  const getTouchTargetSize = (): number => {
+  const _getTouchTargetSize = (): number => {
     const baseSize = 44 // iOS minimum
     const gloveBonus = settings.gloveMode ? 16 : 0
     
@@ -332,6 +332,7 @@ export function FieldModeProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFieldMode() {
   const context = useContext(FieldModeContext)
   if (context === undefined) {
@@ -341,6 +342,7 @@ export function useFieldMode() {
 }
 
 // Hook for components to get field-optimized styling
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFieldOptimizedStyles() {
   const { settings, isFieldOptimized, getAdaptiveColors } = useFieldMode()
   

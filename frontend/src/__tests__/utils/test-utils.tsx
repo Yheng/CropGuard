@@ -157,7 +157,7 @@ export const createMockTreatment = (overrides: Partial<any> = {}) => ({
 // Mock API responses
 // ==================
 
-export const mockApiResponse = <T>(data: T, success = true) => ({
+export const mockApiResponse = <T,>(data: T, success = true) => ({
   success,
   data,
   message: success ? 'Operation successful' : 'Operation failed',

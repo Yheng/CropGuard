@@ -79,10 +79,25 @@ export function OfflineImageUpload({
     forceSyncUploads 
   } = useOfflineSync()
 
+  const loadQueuedUploads = React.useCallback(async () => {
+    try {
+      const uploads = await offlineStorage.getQueuedUploads()
+      const farmersUploads = uploads
+        .filter(upload => upload.farmerId === farmerId)
+        .map(upload => ({
+          ...upload,
+          localPreview: upload.imageUrl
+        }))
+      setQueuedUploads(farmersUploads)
+    } catch (error) {
+      console.error('[OfflineImageUpload] Failed to load queued uploads:', error)
+    }
+  }, [farmerId])
+
   // Load queued uploads
   React.useEffect(() => {
     loadQueuedUploads()
-  }, [])
+  }, [loadQueuedUploads])
 
   // Listen for sync events
   React.useEffect(() => {
@@ -98,22 +113,7 @@ export function OfflineImageUpload({
 
     addEventListener(handleSyncEvent)
     return () => removeEventListener(handleSyncEvent)
-  }, [addEventListener, removeEventListener, onUploadSuccess, onUploadError])
-
-  const loadQueuedUploads = async () => {
-    try {
-      const uploads = await offlineStorage.getQueuedUploads()
-      const farmersUploads = uploads
-        .filter(upload => upload.farmerId === farmerId)
-        .map(upload => ({
-          ...upload,
-          localPreview: upload.imageUrl
-        }))
-      setQueuedUploads(farmersUploads)
-    } catch (error) {
-      console.error('[OfflineImageUpload] Failed to load queued uploads:', error)
-    }
-  }
+  }, [addEventListener, removeEventListener, onUploadSuccess, onUploadError, loadQueuedUploads])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -314,7 +314,7 @@ export function OfflineImageUpload({
       }
 
       // Queue for offline storage
-      const uploadId = await offlineStorage.queueAnalysisUpload(
+      const _uploadId = await offlineStorage.queueAnalysisUpload(
         farmerId,
         selectedFile,
         metadata,

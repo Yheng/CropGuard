@@ -656,7 +656,6 @@ describe('Signup Component', () => {
         </MemoryRouter>
       );
 
-      const roleSelect = screen.getByLabelText(/i am a/i);
       const options = screen.getAllByRole('option');
 
       expect(options).toHaveLength(2);

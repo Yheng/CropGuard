@@ -6,7 +6,6 @@ import {
   Upload,
   Clock,
   AlertTriangle,
-  CheckCircle,
   X,
   RefreshCw,
   Settings
@@ -40,7 +39,6 @@ export function OfflineBanner({
     isOnline,
     isConnected,
     quality,
-    connectionDescription,
     shouldShowOfflineWarning
   } = useConnectionState()
 

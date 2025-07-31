@@ -269,6 +269,7 @@ export function RovingTabIndex({
 }
 
 // High contrast mode detector
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHighContrastMode() {
   const [isHighContrast, setIsHighContrast] = React.useState(false)
 
@@ -293,6 +294,7 @@ export function useHighContrastMode() {
 }
 
 // Reduced motion detector
+// eslint-disable-next-line react-refresh/only-export-components
 export function useReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false)
 

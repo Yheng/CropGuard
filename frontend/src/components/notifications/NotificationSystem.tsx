@@ -12,8 +12,6 @@ import {
   Settings,
   Award,
   FileText,
-  Filter,
-  MoreHorizontal,
   Cloud
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '../ui/Card'
@@ -37,7 +35,7 @@ export interface Notification {
     cropType?: string
     region?: string
     severity?: number
-    [key: string]: any
+    [key: string]: unknown
   }
   targetRoles: ('farmer' | 'agronomist' | 'admin')[]
   expiresAt?: string
@@ -102,6 +100,8 @@ const filterNotificationsForRole = (
 }
 
 // Get role-specific notification templates
+// Note: This function is available for future use in generating role-specific templates
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getNotificationTemplatesForRole = (role: 'farmer' | 'agronomist' | 'admin') => {
   const baseTemplates = {
     farmer: [
@@ -450,7 +450,7 @@ export function NotificationPanel({
           <div className="flex items-center gap-2">
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
+              onChange={(e) => setFilter(e.target.value as 'all' | 'unread' | 'urgent')}
               className="flex-1 px-2 py-1 bg-[#1F2A44] border border-gray-600 rounded text-sm text-white focus:outline-none focus:border-[#10B981]"
             >
               <option value="all">All</option>

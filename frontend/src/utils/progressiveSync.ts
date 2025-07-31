@@ -1,7 +1,7 @@
 // CropGuard Progressive Sync System
 // Implements intelligent batching and priority-based synchronization for rural connectivity
 
-import type { OfflineAnalysis, OfflineAction, SyncStatus } from './offlineStorage'
+import type { OfflineAnalysis, OfflineAction } from './offlineStorage'
 import { offlineStorage } from './offlineStorage'
 
 export interface SyncBatch {
@@ -210,8 +210,8 @@ class ProgressiveSyncManager {
       }
       
       // Same priority: sort by creation time (older first)
-      const aTime = (a as any).createdAt || (a as any).timestamp || Date.now()
-      const bTime = (b as any).createdAt || (b as any).timestamp || Date.now()
+      const aTime = (a as OfflineAnalysis).createdAt || (a as OfflineAction).timestamp || Date.now()
+      const bTime = (b as OfflineAnalysis).createdAt || (b as OfflineAction).timestamp || Date.now()
       return new Date(aTime).getTime() - new Date(bTime).getTime()
     })
 
@@ -241,7 +241,7 @@ class ProgressiveSyncManager {
       }
       
       currentBatch.push(item)
-      currentPriority = (item as any).priority || 'normal'
+      currentPriority = item.priority || 'normal'
       currentSize += this.estimateItemSize(item)
     }
     

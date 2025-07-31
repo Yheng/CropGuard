@@ -22,19 +22,20 @@ interface LoadingContextType {
   endLoading: () => void
   
   // Utility functions
-  withLoading: <T extends any[]>(
-    fn: (...args: T) => Promise<any>, 
+  withLoading: <T extends unknown[]>(
+    fn: (...args: T) => Promise<unknown>, 
     message?: string
-  ) => (...args: T) => Promise<any>
+  ) => (...args: T) => Promise<unknown>
   
-  withNavigation: <T extends any[]>(
-    fn: (...args: T) => Promise<any>, 
+  withNavigation: <T extends unknown[]>(
+    fn: (...args: T) => Promise<unknown>, 
     message?: string
-  ) => (...args: T) => Promise<any>
+  ) => (...args: T) => Promise<unknown>
 }
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLoading() {
   const context = useContext(LoadingContext)
   if (context === undefined) {
@@ -89,8 +90,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     }))
   }, [])
 
-  const withLoading = useCallback(<T extends any[]>(
-    fn: (...args: T) => Promise<any>,
+  const withLoading = useCallback(<T extends unknown[]>(
+    fn: (...args: T) => Promise<unknown>,
     message = 'Processing...'
   ) => {
     return async (...args: T) => {
@@ -104,8 +105,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     }
   }, [startLoading, endLoading])
 
-  const withNavigation = useCallback(<T extends any[]>(
-    fn: (...args: T) => Promise<any>,
+  const withNavigation = useCallback(<T extends unknown[]>(
+    fn: (...args: T) => Promise<unknown>,
     message = 'Navigating...'
   ) => {
     return async (...args: T) => {
@@ -157,6 +158,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
 }
 
 // Helper hook for common loading patterns
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAsyncAction() {
   const { withLoading, withNavigation } = useLoading()
   

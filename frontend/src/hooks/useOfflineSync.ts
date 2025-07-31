@@ -18,7 +18,7 @@ export interface SyncEvent {
     progress?: number
     total?: number
     error?: string
-    [key: string]: any
+    [key: string]: unknown
   }
 }
 
@@ -367,7 +367,12 @@ class OfflineSyncManager {
   }
 
   private getAdaptiveDelay(): number {
-    const connection = (navigator as any).connection
+    const nav = navigator as Navigator & {
+      connection?: {
+        effectiveType?: string
+      }
+    }
+    const connection = nav.connection
     if (!connection) return 100
 
     // Adjust delay based on connection quality
@@ -421,7 +426,15 @@ class OfflineSyncManager {
   }
 
   getConnectivityInfo(): ConnectivityInfo {
-    const connection = (navigator as any).connection
+    const nav = navigator as Navigator & {
+      connection?: {
+        effectiveType?: string
+        downlink?: number
+        rtt?: number
+        saveData?: boolean
+      }
+    }
+    const connection = nav.connection
     
     return {
       isOnline: navigator.onLine,
@@ -506,15 +519,21 @@ export function useOfflineSync(options?: Partial<SyncOptions>) {
     window.addEventListener('offline', updateConnectivity)
 
     // Listen for connection changes
-    const connection = (navigator as any).connection
-    if (connection) {
+    const nav = navigator as Navigator & {
+      connection?: {
+        addEventListener?: (event: string, handler: () => void) => void
+        removeEventListener?: (event: string, handler: () => void) => void
+      }
+    }
+    const connection = nav.connection
+    if (connection && connection.addEventListener) {
       connection.addEventListener('change', updateConnectivity)
     }
 
     return () => {
       window.removeEventListener('online', updateConnectivity)
       window.removeEventListener('offline', updateConnectivity)
-      if (connection) {
+      if (connection && connection.removeEventListener) {
         connection.removeEventListener('change', updateConnectivity)
       }
     }

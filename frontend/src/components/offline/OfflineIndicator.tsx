@@ -4,14 +4,10 @@ import {
   Wifi,
   WifiOff,
   Upload,
-  Download,
   Clock,
-  CheckCircle,
   AlertTriangle,
-  Zap,
   Signal,
-  CloudOff,
-  Activity
+  CloudOff
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useConnectionState } from '../../hooks/useConnectionState'
@@ -44,7 +40,6 @@ export function OfflineIndicator({
   const {
     syncStatus,
     isSyncing,
-    connectivityInfo,
     hasPendingData
   } = useOfflineSync()
 

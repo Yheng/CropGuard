@@ -76,8 +76,8 @@ export class PerformanceMonitor {
   }
 
   // Get all metrics
-  getAllStats(): Record<string, any> {
-    const stats: Record<string, any> = {};
+  getAllStats(): Record<string, ReturnType<typeof this.getStats>> {
+    const stats: Record<string, ReturnType<typeof this.getStats>> = {};
     for (const [name] of this.metrics) {
       stats[name] = this.getStats(name);
     }
@@ -100,37 +100,37 @@ export class WebVitalsMonitor {
     try {
       // const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
       // Mock implementation for now
-      const mockVital = (name: string) => ({
-        getCLS: (callback: any) => callback({ value: Math.random() * 0.1 }),
-        getFID: (callback: any) => callback({ value: Math.random() * 100 }),
-        getFCP: (callback: any) => callback({ value: Math.random() * 2000 }),
-        getLCP: (callback: any) => callback({ value: Math.random() * 3000 }),
-        getTTFB: (callback: any) => callback({ value: Math.random() * 500 })
+      const mockVital = (_name: string) => ({
+        getCLS: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 0.1 }),
+        getFID: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 100 }),
+        getFCP: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 2000 }),
+        getLCP: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 3000 }),
+        getTTFB: (callback: (metric: { value: number }) => void) => callback({ value: Math.random() * 500 })
       });
       
       const { getCLS, getFID, getFCP, getLCP, getTTFB } = mockVital('vitals');
       
-      getCLS((metric: any) => {
+      getCLS((metric: { value: number }) => {
         this.vitals.CLS = metric.value;
         this.reportVital('CLS', metric.value);
       });
 
-      getFID((metric: any) => {
+      getFID((metric: { value: number }) => {
         this.vitals.FID = metric.value;
         this.reportVital('FID', metric.value);
       });
 
-      getFCP((metric: any) => {
+      getFCP((metric: { value: number }) => {
         this.vitals.FCP = metric.value;
         this.reportVital('FCP', metric.value);
       });
 
-      getLCP((metric: any) => {
+      getLCP((metric: { value: number }) => {
         this.vitals.LCP = metric.value;
         this.reportVital('LCP', metric.value);
       });
 
-      getTTFB((metric: any) => {
+      getTTFB((metric: { value: number }) => {
         this.vitals.TTFB = metric.value;
         this.reportVital('TTFB', metric.value);
       });

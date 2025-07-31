@@ -27,7 +27,7 @@ export function FieldOptimizedButton({
   ...props
 }: FieldOptimizedButtonProps) {
   const { settings, isFieldOptimized } = useFieldMode()
-  const getButtonClasses = (variant?: string) => ''
+  const getButtonClasses = (_variant?: string) => ''
   const getPressTimeout = () => 300
   const [isPressed, setIsPressed] = useState(false)
   const [isLongPressed, setIsLongPressed] = useState(false)

@@ -314,25 +314,4 @@ jobs:
           curl -f https://api.cropguard.app/api/health || exit 1
           curl -f https://cropguard.app || exit 1
 
-      - name: 🔔 Notify deployment success
-        uses: 8398a7/action-slack@v3
-        with:
-          status: success
-          text: 🎉 CropGuard successfully deployed to production!
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-  # Job 9: Notification on Failure
-  notify-failure:
-    name: 🚨 Notify on Failure
-    runs-on: ubuntu-latest
-    needs: [quality, test-frontend, test-backend, test-e2e, build-scan]
-    if: failure()
-    steps:
-      - name: 🚨 Notify failure
-        uses: 8398a7/action-slack@v3
-        with:
-          status: failure
-          text: ❌ CropGuard CI/CD pipeline failed. Please check the logs.
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

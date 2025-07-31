@@ -43,7 +43,7 @@ export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
 };
 
-export const debounce = <T extends (...args: any[]) => void>(
+export const debounce = <T extends (...args: unknown[]) => void>(
   func: T,
   delay: number
 ): ((...args: Parameters<T>) => void) => {

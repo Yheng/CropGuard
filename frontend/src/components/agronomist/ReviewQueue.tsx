@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
   AlertTriangle,
   CheckCircle,
-  X,
   Eye,
   User,
   Calendar,
@@ -22,10 +21,20 @@ interface Analysis {
   image_path: string;
   crop_type: string;
   location: string;
-  ai_diagnosis: any;
+  ai_diagnosis: {
+    disease?: string;
+    pest?: string;
+    condition?: string;
+    description?: string;
+  };
   ai_confidence: number;
   ai_severity: string;
-  ai_recommendations: any[];
+  ai_recommendations: {
+    id: string;
+    type: string;
+    description: string;
+    urgency: 'low' | 'medium' | 'high';
+  }[];
   priority: number;
   created_at: string;
   farmer_requested: boolean;
@@ -57,13 +66,13 @@ const ReviewQueue: React.FC<ReviewQueueProps> = ({
 
   useEffect(() => {
     fetchQueue();
-  }, [filters]);
+  }, [filters, fetchQueue]);
 
   useEffect(() => {
     onBulkSelect(Array.from(selectedIds));
   }, [selectedIds, onBulkSelect]);
 
-  const fetchQueue = async () => {
+  const fetchQueue = useCallback(async () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
@@ -85,11 +94,11 @@ const ReviewQueue: React.FC<ReviewQueueProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, sortBy, sortOrder]);
 
   const sortAnalyses = (analyses: Analysis[], sortBy: string, order: string) => {
     return [...analyses].sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: number, bValue: number;
 
       switch (sortBy) {
         case 'priority':

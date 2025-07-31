@@ -63,7 +63,7 @@ export function SuspenseWrapper({
 
 // Lazy component wrapper with enhanced loading
 interface LazyComponentProps {
-  loader: () => Promise<{ default: React.ComponentType<any> }>
+  loader: () => Promise<{ default: React.ComponentType<Record<string, unknown>> }>
   fallback?: React.ReactNode
   errorFallback?: React.ComponentType<{ error: Error; retry: () => void }>
   retryCount?: number
@@ -82,7 +82,7 @@ export function LazyComponent({
   const [retries, setRetries] = React.useState(0)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  const LazyComponentRef = React.useRef<React.ComponentType<any> | null>(null)
+  const LazyComponentRef = React.useRef<React.ComponentType<Record<string, unknown>> | null>(null)
 
   const loadComponent = React.useCallback(async () => {
     try {
@@ -369,7 +369,8 @@ export function LazyLoad({
 }
 
 // Code splitting utilities
-export const lazy = <T extends React.ComponentType<any>>(
+// eslint-disable-next-line react-refresh/only-export-components
+export const lazy = <T extends React.ComponentType<Record<string, unknown>>>(
   importFunc: () => Promise<{ default: T }>,
   options: {
     fallback?: React.ReactNode
@@ -379,7 +380,7 @@ export const lazy = <T extends React.ComponentType<any>>(
 ) => {
   const LazyComponentWrapper = React.lazy(importFunc)
   
-  return React.forwardRef((props: any, ref: any) => (
+  return React.forwardRef<T, Record<string, unknown>>((props, ref) => (
     <SuspenseWrapper
       fallback={options.fallback}
       delay={options.delay}

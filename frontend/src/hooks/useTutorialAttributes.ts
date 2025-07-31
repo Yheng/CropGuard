@@ -12,7 +12,7 @@ export function useTutorialAttributes(tutorialId: string, options?: {
   const { isActive } = useTutorialStep(tutorialId);
   
   return useMemo(() => {
-    const attributes: Record<string, any> = {
+    const attributes: Record<string, unknown> = {
       'data-tutorial': tutorialId
     };
 

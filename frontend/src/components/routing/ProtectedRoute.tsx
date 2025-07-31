@@ -331,6 +331,7 @@ export function ProtectedRoute({
 }
 
 // Hook for checking permissions in components
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePermissions(user?: User | null) {
   const hasRole = React.useCallback((role: string) => {
     return user?.role === role
@@ -375,6 +376,7 @@ export function usePermissions(user?: User | null) {
 }
 
 // HOC for protecting components
+// eslint-disable-next-line react-refresh/only-export-components
 export function withRoleProtection<T extends object>(
   Component: React.ComponentType<T>,
   requiredRoles: string[],
@@ -386,7 +388,7 @@ export function withRoleProtection<T extends object>(
     return (
       <ProtectedRoute
         user={user}
-        requiredRoles={requiredRoles as any}
+        requiredRoles={requiredRoles as ('farmer' | 'agronomist' | 'admin')[]}
         requiredPermissions={requiredPermissions}
       >
         <Component {...restProps as T} />

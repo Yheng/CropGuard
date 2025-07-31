@@ -128,16 +128,18 @@ export function Select({
       case 'Escape':
         setIsOpen(false)
         break
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault()
         const nextElement = (e.target as HTMLElement).nextElementSibling as HTMLElement
         nextElement?.focus()
         break
-      case 'ArrowUp':
+      }
+      case 'ArrowUp': {
         e.preventDefault()
         const prevElement = (e.target as HTMLElement).previousElementSibling as HTMLElement
         prevElement?.focus()
         break
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { 
   Leaf, Shield, Camera, BarChart3, Menu, X, Star, CheckCircle, 
   Award, Smartphone, Users, Zap, Globe, LogOut
@@ -10,7 +10,6 @@ import { authService } from '../services/auth'
 export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     setIsAuthenticated(authService.isAuthenticated())

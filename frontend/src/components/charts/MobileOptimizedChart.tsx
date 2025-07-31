@@ -34,7 +34,7 @@ interface MobileChartData {
   id: string
   title: string
   type: 'line' | 'bar' | 'area' | 'pie' | 'scatter' | 'heatmap'
-  data: any[]
+  data: Record<string, unknown>[]
   options: ApexOptions
   height?: number
   responsive?: {
@@ -240,9 +240,9 @@ export function MobileOptimizedChart({
       yaxis: Array.isArray(options.yaxis) ? options.yaxis : {
         ...options.yaxis,
         labels: {
-          ...(options.yaxis as any)?.labels,
+          ...(options.yaxis as Record<string, unknown>)?.labels,
           style: {
-            ...(options.yaxis as any)?.labels?.style,
+            ...(options.yaxis as Record<string, unknown>)?.labels?.style,
             fontSize: isMobile ? '10px' : '12px'
           }
         }

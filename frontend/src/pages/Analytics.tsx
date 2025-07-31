@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Download, RefreshCw, BarChart3, Camera, PieChart, TrendingUp } from 'lucide-react'
+import { ArrowLeft, RefreshCw, BarChart3, Camera, PieChart, TrendingUp } from 'lucide-react'
 import { userDataService } from '../services/userDataService'
 
 export function Analytics() {
