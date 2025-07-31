@@ -4,12 +4,12 @@
  * mock providers, and common test helpers for agricultural domain testing.
  */
 
-import React, { ReactElement, ReactNode } from 'react';
-import { render, RenderOptions, RenderResult } from '@testing-library/react';
+import React, { type ReactElement, type ReactNode } from 'react';
+import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { ThemeContext, ThemeContextType } from '@/contexts/ThemeContext';
-import { FieldModeContext, FieldModeContextType } from '@/contexts/FieldModeContext';
+import { ThemeContext, type ThemeContextType } from '@/contexts/ThemeContext';
+import { FieldModeContext, type FieldModeContextType } from '@/contexts/FieldModeContext';
 
 // Types for test utilities
 export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -24,22 +24,38 @@ export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 // Mock theme context default values
 const defaultThemeContext: ThemeContextType = {
   theme: 'light',
+  resolvedTheme: 'light',
   setTheme: vi.fn(),
   toggleTheme: vi.fn(),
 };
 
 // Mock field mode context default values
 const defaultFieldModeContext: FieldModeContextType = {
-  isFieldMode: false,
-  setFieldMode: vi.fn(),
-  toggleFieldMode: vi.fn(),
-  fieldSettings: {
-    largeButtons: true,
-    highContrast: false,
-    simplifiedUI: true,
-    voiceNavigation: false,
+  fieldMode: 'standard',
+  settings: {
+    touchTargetSize: 'standard',
+    pressTimeout: 300,
+    hapticFeedback: true,
+    autoWeatherAdaptation: true,
+    highContrastMode: false,
+    fontSizeMultiplier: 1,
+    oneHandedMode: false,
+    gloveMode: false,
   },
-  updateFieldSettings: vi.fn(),
+  weatherData: null,
+  setFieldMode: vi.fn(),
+  updateSettings: vi.fn(),
+  refreshWeatherData: vi.fn(),
+  isFieldOptimized: false,
+  getAdaptiveColors: vi.fn().mockReturnValue({
+    background: '#ffffff',
+    foreground: '#000000',
+    accent: '#22c55e',
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    success: '#22c55e',
+    contrast: '#000000',
+  }),
 };
 
 // Custom render function with providers

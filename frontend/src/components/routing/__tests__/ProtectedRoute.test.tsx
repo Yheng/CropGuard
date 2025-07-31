@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test-utils';
+import { render, screen } from '@/__tests__/utils/test-utils';
 import userEvent from '@testing-library/user-event';
-import { ProtectedRoute, usePermissions, withRoleProtection, User } from '../ProtectedRoute';
+import { ProtectedRoute, usePermissions, withRoleProtection, type User } from '../ProtectedRoute';
 
 // Mock window.history.back
 const mockHistoryBack = vi.fn();

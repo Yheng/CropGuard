@@ -23,7 +23,7 @@ interface WeatherData {
   lastUpdated: string
 }
 
-interface FieldModeContextType {
+export interface FieldModeContextType {
   fieldMode: FieldMode
   settings: FieldModeSettings
   weatherData: WeatherData | null
@@ -62,7 +62,7 @@ const defaultWeatherData: WeatherData = {
   lastUpdated: new Date().toISOString()
 }
 
-const FieldModeContext = createContext<FieldModeContextType | undefined>(undefined)
+export const FieldModeContext = createContext<FieldModeContextType | undefined>(undefined)
 
 export function FieldModeProvider({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme()
