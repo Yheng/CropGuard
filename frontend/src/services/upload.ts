@@ -1,11 +1,11 @@
 // Upload service (placeholder)
 export const uploadService = {
-  uploadImage: async (_file: File) => {
+  uploadImage: async () => {
     // Implementation pending
     throw new Error('Upload service not implemented yet');
   },
   
-  getUploadStatus: async (_uploadId: string) => {
+  getUploadStatus: async () => {
     // Implementation pending
     throw new Error('Upload service not implemented yet');
   }

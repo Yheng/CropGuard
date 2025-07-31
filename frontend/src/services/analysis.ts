@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { aiService } from './aiService'
 
 export interface AnalysisResult {
@@ -17,8 +16,6 @@ export interface AnalysisResult {
     description: string
   }[]
 }
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 // Mock analysis results removed - using real backend API
 

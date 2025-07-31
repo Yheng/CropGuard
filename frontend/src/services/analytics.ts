@@ -131,7 +131,7 @@ export const analyticsService = {
         params: { timeRange }
       })
       return response.data.data.healthTrend
-    } catch (error) {
+    } catch {
       // Fallback to mock data if backend fails
       console.warn('Failed to fetch health trend from backend, using mock data')
       const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[timeRange]
@@ -145,7 +145,7 @@ export const analyticsService = {
         params: { timeRange }
       })
       return response.data.data.analysisHistory
-    } catch (error) {
+    } catch {
       // Fallback to mock data if backend fails
       console.warn('Failed to fetch analysis history from backend, using mock data')
       const months = { '6m': 6, '1y': 12, '2y': 24 }[timeRange]
@@ -157,7 +157,7 @@ export const analyticsService = {
     try {
       const response = await axios.get(`${API_BASE_URL}/analytics/crop-distribution`)
       return response.data.data.cropDistribution
-    } catch (error) {
+    } catch {
       // Fallback to mock data if backend fails
       console.warn('Failed to fetch crop distribution from backend, using mock data')
       return generateCropDistributionData()
@@ -168,7 +168,7 @@ export const analyticsService = {
     try {
       const response = await axios.get(`${API_BASE_URL}/analytics/dashboard`)
       return response.data.data
-    } catch (error) {
+    } catch {
       // Fallback to mock data if backend fails
       console.warn('Failed to fetch analytics dashboard from backend, using mock data')
       return {

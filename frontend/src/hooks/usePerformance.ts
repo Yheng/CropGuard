@@ -84,7 +84,7 @@ export function usePerformance() {
           })
         }, 3000)
 
-      } catch (error) {
+      } catch {
         // Fallback for browsers that don't support observers
         setMetrics({
           loadTime,

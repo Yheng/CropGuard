@@ -204,7 +204,7 @@ class AIService {
         try {
           const errorData = JSON.parse(errorText)
           errorMessage = errorData.error?.message || errorMessage
-        } catch (parseError) {
+        } catch {
           errorMessage = errorText || errorMessage
         }
         
@@ -461,7 +461,7 @@ Focus on organic, sustainable treatment options when possible. ${additionalConte
         try {
           const errorData = JSON.parse(errorText)
           errorMessage = errorData.error?.message || errorMessage
-        } catch (parseError) {
+        } catch {
           errorMessage = errorText || errorMessage
         }
         

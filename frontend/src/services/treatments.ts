@@ -259,7 +259,7 @@ export const treatmentService = {
     return allTreatments.filter(treatment => treatment.type === type)
   },
 
-  saveTreatmentPlan: async (_planId: string): Promise<void> => {
+  saveTreatmentPlan: async (): Promise<void> => {
     await new Promise(resolve => setTimeout(resolve, 500))
     // TODO: Implement actual saving when backend is ready
   }
