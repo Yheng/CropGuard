@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { TutorialConfig, tutorialRegistry, getRecommendedTutorial } from '../components/tutorial/tutorialConfigs';
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { type TutorialConfig, tutorialRegistry, getRecommendedTutorial } from '../components/tutorial/tutorialConfigs';
 
 interface TutorialState {
   currentTutorial: TutorialConfig | null;

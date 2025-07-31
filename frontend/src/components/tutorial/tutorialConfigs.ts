@@ -1,4 +1,4 @@
-import { TutorialStep } from './TutorialSystem';
+import { type TutorialStep } from './TutorialSystem';
 
 export interface TutorialConfig {
   id: string;

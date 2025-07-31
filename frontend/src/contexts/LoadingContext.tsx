@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import { LoadingOverlay, NavigationLoader } from '../components/ui/LoadingSpinner'
 import { AnimatePresence } from 'framer-motion'
 

@@ -13,7 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { useTutorial, useTutorialTrigger } from '../../contexts/TutorialContext';
-import { TutorialConfig, getTutorialsByRole } from './tutorialConfigs';
+import { type TutorialConfig, getTutorialsByRole } from './tutorialConfigs';
 
 interface TutorialMenuProps {
   userRole: 'farmer' | 'agronomist' | 'admin';

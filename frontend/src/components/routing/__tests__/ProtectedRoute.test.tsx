@@ -15,17 +15,19 @@ Object.defineProperty(window, 'history', {
   writable: true
 });
 
+// Shared mock user for all tests
+const mockUser: User = {
+  id: 'user-123',
+  name: 'John Farmer',
+  email: 'john@farm.com',
+  role: 'farmer',
+  permissions: ['read_crops', 'write_analysis'],
+  subscriptionPlan: 'premium',
+  isActive: true,
+  assignedRegions: ['north-region']
+};
+
 describe('ProtectedRoute Component', () => {
-  const mockUser: User = {
-    id: 'user-123',
-    name: 'John Farmer',
-    email: 'john@farm.com',
-    role: 'farmer',
-    permissions: ['read_crops', 'write_analysis'],
-    subscriptionPlan: 'premium',
-    isActive: true,
-    assignedRegions: ['north-region']
-  };
 
   const TestComponent = () => <div>Protected Content</div>;
   const CustomFallback = () => <div>Custom Fallback</div>;
@@ -116,24 +118,24 @@ describe('ProtectedRoute Component', () => {
 
     it('denies access when user has none of the required roles', () => {
       render(
-        <ProtectedRoute user={mockUser} requiredRoles={['admin', 'supervisor']}>
+        <ProtectedRoute user={mockUser} requiredRoles={['admin', 'agronomist']}>
           <TestComponent />
         </ProtectedRoute>
       );
 
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.getByText('This page is restricted to admin, supervisor users only.')).toBeInTheDocument();
+      expect(screen.getByText('This page is restricted to admin, agronomist users only.')).toBeInTheDocument();
     });
 
     it('displays required roles in access denied message', () => {
       render(
-        <ProtectedRoute user={mockUser} requiredRoles={['admin', 'supervisor']}>
+        <ProtectedRoute user={mockUser} requiredRoles={['admin', 'agronomist']}>
           <TestComponent />
         </ProtectedRoute>
       );
 
       expect(screen.getByText('admin')).toBeInTheDocument();
-      expect(screen.getByText('supervisor')).toBeInTheDocument();
+      expect(screen.getByText('agronomist')).toBeInTheDocument();
     });
   });
 
