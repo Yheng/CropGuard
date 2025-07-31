@@ -14,7 +14,7 @@ class LocalAIProvider {
       batchSize: config.batchSize || 1,
       useGPU: config.useGPU || false,
       modelFormat: config.modelFormat || 'tflite', // tflite, onnx, or tensorflowjs
-      ...config
+      ...config,
     };
 
     this.modelVersion = '1.3.0-edge';
@@ -32,7 +32,7 @@ class LocalAIProvider {
       'powdery_mildew': { id: 4, severity: 'medium' },
       'aphids': { id: 5, severity: 'medium' },
       'spider_mites': { id: 6, severity: 'high' },
-      'thrips': { id: 7, severity: 'medium' }
+      'thrips': { id: 7, severity: 'medium' },
     };
 
     this.cropTypes = ['tomato', 'pepper', 'cucumber', 'lettuce'];
@@ -62,7 +62,7 @@ class LocalAIProvider {
         category: 'ai-provider',
         provider: 'local-ai',
         modelPath: this.config.modelPath,
-        modelFormat: this.config.modelFormat
+        modelFormat: this.config.modelFormat,
       });
 
       // Simulate model loading time
@@ -78,7 +78,7 @@ class LocalAIProvider {
       logger.info('Local AI model loaded successfully', {
         category: 'ai-provider',
         provider: 'local-ai',
-        modelVersion: this.modelVersion
+        modelVersion: this.modelVersion,
       });
 
       return true;
@@ -86,7 +86,7 @@ class LocalAIProvider {
       logger.error('Failed to load local AI model', {
         category: 'ai-provider',
         provider: 'local-ai',
-        error: error.message
+        error: error.message,
       });
       throw new AppError(`Model loading failed: ${error.message}`, 500);
     }
@@ -101,7 +101,7 @@ class LocalAIProvider {
         category: 'ai-provider',
         provider: 'local-ai',
         imagePath,
-        metadata
+        metadata,
       });
 
       // Ensure model is loaded
@@ -124,7 +124,7 @@ class LocalAIProvider {
         provider: 'local-ai',
         condition: result.condition,
         confidence: result.confidence,
-        processingTime: result.metadata.processing_time_ms
+        processingTime: result.metadata.processing_time_ms,
       });
 
       return result;
@@ -133,7 +133,7 @@ class LocalAIProvider {
         category: 'ai-provider',
         provider: 'local-ai',
         error: error.message,
-        imagePath
+        imagePath,
       });
       throw error;
     }
@@ -198,7 +198,7 @@ class LocalAIProvider {
       logger.debug('Preprocessing image for local AI model', {
         category: 'ai-provider',
         provider: 'local-ai',
-        imagePath
+        imagePath,
       });
 
       // Simulate preprocessing time
@@ -208,7 +208,7 @@ class LocalAIProvider {
       return {
         tensorData: new Float32Array(224 * 224 * 3), // Mock tensor data
         shape: [1, 224, 224, 3],
-        originalPath: imagePath
+        originalPath: imagePath,
       };
     } catch (error) {
       throw new AppError(`Image preprocessing failed: ${error.message}`, 500);
@@ -225,7 +225,7 @@ class LocalAIProvider {
       logger.debug('Running local AI model inference', {
         category: 'ai-provider',
         provider: 'local-ai',
-        inputShape: preprocessedImage.shape
+        inputShape: preprocessedImage.shape,
       });
 
       // Simulate inference time (local models are typically faster)
@@ -245,7 +245,7 @@ class LocalAIProvider {
         category: 'ai-provider',
         provider: 'local-ai',
         processingTime,
-        predictionsCount: predictions.length
+        predictionsCount: predictions.length,
       });
 
       return {
@@ -254,8 +254,8 @@ class LocalAIProvider {
         modelInfo: {
           version: this.modelVersion,
           format: this.config.modelFormat,
-          inputShape: preprocessedImage.shape
-        }
+          inputShape: preprocessedImage.shape,
+        },
       };
     } catch (error) {
       throw new AppError(`Model inference failed: ${error.message}`, 500);
@@ -274,7 +274,7 @@ class LocalAIProvider {
       predictions.push({
         classId: i,
         className: classNames[i],
-        confidence: Math.random()
+        confidence: Math.random(),
       });
     }
 
@@ -285,7 +285,7 @@ class LocalAIProvider {
     predictions[0].confidence = Math.max(0.6, predictions[0].confidence);
     
     // Normalize remaining predictions
-    let remainingProb = 1 - predictions[0].confidence;
+    const remainingProb = 1 - predictions[0].confidence;
     for (let i = 1; i < predictions.length; i++) {
       predictions[i].confidence = (predictions[i].confidence / (predictions.length - 1)) * remainingProb;
     }
@@ -344,12 +344,12 @@ class LocalAIProvider {
           edgeComputing: true,
           offlineCapable: true,
           modelSize: 'optimized',
-          inferenceSpeed: 'fast'
+          inferenceSpeed: 'fast',
         },
         confidenceDistribution: inferenceResults.predictions.map(p => ({
           class: p.className,
-          confidence: Math.round(p.confidence * 100) / 100
-        }))
+          confidence: Math.round(p.confidence * 100) / 100,
+        })),
       },
       metadata: {
         provider: 'local-ai',
@@ -357,8 +357,8 @@ class LocalAIProvider {
         model_format: this.config.modelFormat,
         processing_time_ms: inferenceResults.processingTime,
         edge_computing: true,
-        offline_capable: true
-      }
+        offline_capable: true,
+      },
     };
   }
 
@@ -373,7 +373,7 @@ class LocalAIProvider {
       'powdery_mildew': 'Powdery Mildew',
       'aphids': 'Aphid Infestation',
       'spider_mites': 'Spider Mites',
-      'thrips': 'Thrips Damage'
+      'thrips': 'Thrips Damage',
     };
     
     return formatMap[className] || className.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -390,7 +390,7 @@ class LocalAIProvider {
       'powdery_mildew': 'White powdery fungal growth on leaf surfaces.',
       'aphids': 'Small soft-bodied insects feeding on plant sap, causing leaf curl and yellowing.',
       'spider_mites': 'Microscopic pests causing stippling and fine webbing on leaves.',
-      'thrips': 'Tiny insects causing silvery streaks and black spots on leaves.'
+      'thrips': 'Tiny insects causing silvery streaks and black spots on leaves.',
     };
 
     return descriptions[className] || 'Condition detected but specific details unavailable.';
@@ -404,23 +404,23 @@ class LocalAIProvider {
       healthy: [
         'Continue current care practices',
         'Regular monitoring for early detection',
-        'Maintain proper plant spacing'
+        'Maintain proper plant spacing',
       ],
       disease: [
         'Remove affected plant material',
         'Improve air circulation',
         'Apply appropriate organic treatment',
-        'Monitor for disease spread'
+        'Monitor for disease spread',
       ],
       pest: [
         'Monitor pest population levels',
         'Apply targeted organic treatment',
         'Encourage beneficial insects',
-        'Remove heavily affected areas'
-      ]
+        'Remove heavily affected areas',
+      ],
     };
 
-    let recommendations = [...baseRecommendations[condition] || baseRecommendations.healthy];
+    const recommendations = [...baseRecommendations[condition] || baseRecommendations.healthy];
 
     // Add specific recommendations based on detected condition
     if (severity === 'high') {
@@ -472,19 +472,19 @@ class LocalAIProvider {
         'low_latency',
         'privacy_preserving',
         'disease_detection',
-        'pest_identification'
+        'pest_identification',
       ],
       advantages: [
         'no_internet_required',
         'fast_processing',
         'data_privacy',
-        'consistent_availability'
+        'consistent_availability',
       ],
       limitations: [
         'limited_crop_types',
         'smaller_model_accuracy',
-        'fewer_condition_classes'
-      ]
+        'fewer_condition_classes',
+      ],
     };
   }
 
@@ -502,7 +502,7 @@ class LocalAIProvider {
         latency: Math.round(50 + Math.random() * 100), // Local models are fast
         configured: this.isConfigured(),
         lastCheck: new Date().toISOString(),
-        offlineCapable: true
+        offlineCapable: true,
       };
     } catch (error) {
       return {
@@ -510,7 +510,7 @@ class LocalAIProvider {
         modelLoaded: this.modelLoaded,
         error: error.message,
         configured: this.isConfigured(),
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     }
   }
@@ -529,13 +529,13 @@ class LocalAIProvider {
       
       logger.info('Local AI model resources cleaned up', {
         category: 'ai-provider',
-        provider: 'local-ai'
+        provider: 'local-ai',
       });
     } catch (error) {
       logger.error('Error during local AI cleanup', {
         category: 'ai-provider',
         provider: 'local-ai',
-        error: error.message
+        error: error.message,
       });
     }
   }

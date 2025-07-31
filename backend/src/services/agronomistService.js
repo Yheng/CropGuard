@@ -12,7 +12,7 @@ class AgronomistService {
       totalReviews: 0,
       avgReviewTime: 0,
       approvalRate: 0,
-      expertCorrections: 0
+      expertCorrections: 0,
     };
     
     this.initializeDatabase();
@@ -100,7 +100,7 @@ class AgronomistService {
       logger.info('Agronomist service database initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize agronomist service database', {
-        error: error.message
+        error: error.message,
       });
       throw error;
     }
@@ -120,7 +120,7 @@ class AgronomistService {
         aiDiagnosis,
         aiConfidence,
         aiSeverity,
-        aiRecommendations
+        aiRecommendations,
       } = analysisData;
 
       // Insert analysis record
@@ -133,7 +133,7 @@ class AgronomistService {
       `, [
         farmerId, imagePath, originalImagePath, cropType, location,
         JSON.stringify(aiDiagnosis), aiConfidence, aiSeverity,
-        JSON.stringify(aiRecommendations), priority
+        JSON.stringify(aiRecommendations), priority,
       ]);
 
       const analysisId = analysisResult.lastID;
@@ -155,19 +155,19 @@ class AgronomistService {
         farmerId,
         priority,
         farmerRequested,
-        queuePosition
+        queuePosition,
       });
 
       return {
         analysisId,
         queuePosition,
-        estimatedWait: await this.estimateWaitTime(priority)
+        estimatedWait: await this.estimateWaitTime(priority),
       };
 
     } catch (error) {
       logger.error('Failed to queue analysis for review', {
         error: error.message,
-        analysisData
+        analysisData,
       });
       throw new AppError('Failed to queue analysis for review', 500);
     }
@@ -239,7 +239,7 @@ class AgronomistService {
       const processedAnalyses = analyses.map(analysis => ({
         ...analysis,
         ai_diagnosis: JSON.parse(analysis.ai_diagnosis || '{}'),
-        ai_recommendations: JSON.parse(analysis.ai_recommendations || '[]')
+        ai_recommendations: JSON.parse(analysis.ai_recommendations || '[]'),
       }));
 
       return processedAnalyses;
@@ -248,7 +248,7 @@ class AgronomistService {
       logger.error('Failed to get review queue', {
         error: error.message,
         agronomistId,
-        filters
+        filters,
       });
       throw new AppError('Failed to get review queue', 500);
     }
@@ -262,7 +262,7 @@ class AgronomistService {
       // Check if analysis exists and is pending
       const analysis = await db.get(
         'SELECT * FROM analyses WHERE id = ? AND status = "pending"',
-        [analysisId]
+        [analysisId],
       );
 
       if (!analysis) {
@@ -272,7 +272,7 @@ class AgronomistService {
       // Check if agronomist is available
       const agronomist = await db.get(
         'SELECT * FROM users WHERE id = ? AND role = "agronomist"',
-        [agronomistId]
+        [agronomistId],
       );
 
       if (!agronomist) {
@@ -290,12 +290,12 @@ class AgronomistService {
       this.reviewQueue.set(analysisId, {
         agronomistId,
         assignedAt: new Date(),
-        status: 'assigned'
+        status: 'assigned',
       });
 
       logger.info('Analysis assigned to agronomist', {
         analysisId,
-        agronomistId
+        agronomistId,
       });
 
       return { success: true, assignedAt: new Date() };
@@ -304,7 +304,7 @@ class AgronomistService {
       logger.error('Failed to assign analysis', {
         error: error.message,
         analysisId,
-        agronomistId
+        agronomistId,
       });
       throw error;
     }
@@ -324,7 +324,7 @@ class AgronomistService {
         expertRecommendations,
         expertComments,
         aiFeedback,
-        approvalStatus
+        approvalStatus,
       } = reviewData;
 
       // Validate review data
@@ -360,7 +360,7 @@ class AgronomistService {
         `, [
           analysisId, agronomistId, JSON.stringify(expertDiagnosis),
           expertConfidence, expertSeverity, JSON.stringify(expertRecommendations),
-          expertComments, aiFeedback, approvalStatus, reviewTimeSeconds, 1
+          expertComments, aiFeedback, approvalStatus, reviewTimeSeconds, 1,
         ]);
 
         // Update analysis status
@@ -390,7 +390,7 @@ class AgronomistService {
           analysisId,
           agronomistId,
           approvalStatus,
-          reviewTimeSeconds
+          reviewTimeSeconds,
         });
 
         return {
@@ -398,7 +398,7 @@ class AgronomistService {
           reviewId: analysisId,
           creditsEarned: 1,
           reviewTime: reviewTimeSeconds,
-          newStatus
+          newStatus,
         };
 
       } catch (error) {
@@ -410,7 +410,7 @@ class AgronomistService {
       logger.error('Failed to submit agronomist review', {
         error: error.message,
         analysisId,
-        agronomistId
+        agronomistId,
       });
       throw error;
     }
@@ -430,40 +430,40 @@ class AgronomistService {
           let result;
           
           switch (action) {
-            case 'approve':
-              result = await this.submitReview(analysisId, agronomistId, {
-                ...reviewData,
-                approvalStatus: 'approved'
-              });
-              break;
+          case 'approve':
+            result = await this.submitReview(analysisId, agronomistId, {
+              ...reviewData,
+              approvalStatus: 'approved',
+            });
+            break;
               
-            case 'modify':
-              result = await this.submitReview(analysisId, agronomistId, {
-                ...reviewData,
-                approvalStatus: 'modified'
-              });
-              break;
+          case 'modify':
+            result = await this.submitReview(analysisId, agronomistId, {
+              ...reviewData,
+              approvalStatus: 'modified',
+            });
+            break;
               
-            case 'reject':
-              result = await this.submitReview(analysisId, agronomistId, {
-                ...reviewData,
-                approvalStatus: 'rejected'
-              });
-              break;
+          case 'reject':
+            result = await this.submitReview(analysisId, agronomistId, {
+              ...reviewData,
+              approvalStatus: 'rejected',
+            });
+            break;
               
-            case 'reassign':
-              result = await this.reassignAnalysis(analysisId, reviewData.newAgronomistId);
-              break;
+          case 'reassign':
+            result = await this.reassignAnalysis(analysisId, reviewData.newAgronomistId);
+            break;
               
-            default:
-              throw new AppError(`Invalid bulk action: ${action}`, 400);
+          default:
+            throw new AppError(`Invalid bulk action: ${action}`, 400);
           }
 
           results.push({
             analysisId,
             action,
             success: true,
-            result
+            result,
           });
 
         } catch (error) {
@@ -471,7 +471,7 @@ class AgronomistService {
             analysisId,
             action,
             success: false,
-            error: error.message
+            error: error.message,
           });
         }
       }
@@ -483,20 +483,20 @@ class AgronomistService {
         agronomistId,
         total: operations.length,
         successful: successCount,
-        failed: failureCount
+        failed: failureCount,
       });
 
       return {
         total: operations.length,
         successful: successCount,
         failed: failureCount,
-        results
+        results,
       };
 
     } catch (error) {
       logger.error('Failed to perform bulk review operations', {
         error: error.message,
-        agronomistId
+        agronomistId,
       });
       throw new AppError('Failed to perform bulk operations', 500);
     }
@@ -535,27 +535,27 @@ class AgronomistService {
           approved: stats.approved_count || 0,
           avgReviewTime: Math.round(stats.avg_review_time || 0),
           approvalRate: stats.total_reviews > 0 ? 
-            Math.round((stats.approved_count / stats.total_reviews) * 100) : 0
+            Math.round((stats.approved_count / stats.total_reviews) * 100) : 0,
         },
         credits: {
           current: credits?.current_balance || 0,
           earned: credits?.credits_earned || 0,
           spent: credits?.credits_spent || 0,
-          level: credits?.level || 'bronze'
+          level: credits?.level || 'bronze',
         },
         queue: {
-          assigned: queueStats.assigned_count || 0
+          assigned: queueStats.assigned_count || 0,
         },
         activity: {
           firstReview: stats.first_review,
-          lastReview: stats.last_review
-        }
+          lastReview: stats.last_review,
+        },
       };
 
     } catch (error) {
       logger.error('Failed to get agronomist statistics', {
         error: error.message,
-        agronomistId
+        agronomistId,
       });
       throw new AppError('Failed to get statistics', 500);
     }
@@ -599,7 +599,7 @@ class AgronomistService {
       // Non-critical - assignment can happen manually
       logger.warn('Failed to auto-assign analysis', {
         error: error.message,
-        analysisId
+        analysisId,
       });
     }
   }
@@ -607,7 +607,7 @@ class AgronomistService {
   async updateAgronomistCredits(agronomistId, creditsEarned) {
     const current = await db.get(
       'SELECT * FROM agronomist_credits WHERE agronomist_id = ?',
-      [agronomistId]
+      [agronomistId],
     );
 
     if (current) {
@@ -632,9 +632,9 @@ class AgronomistService {
   }
 
   calculateLevel(totalCredits) {
-    if (totalCredits >= 1000) return 'platinum';
-    if (totalCredits >= 500) return 'gold';
-    if (totalCredits >= 100) return 'silver';
+    if (totalCredits >= 1000) {return 'platinum';}
+    if (totalCredits >= 500) {return 'gold';}
+    if (totalCredits >= 100) {return 'silver';}
     return 'bronze';
   }
 
@@ -653,7 +653,7 @@ class AgronomistService {
   getServiceMetrics() {
     return {
       ...this.metrics,
-      activeReviews: this.reviewQueue.size
+      activeReviews: this.reviewQueue.size,
     };
   }
 }

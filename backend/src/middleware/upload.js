@@ -15,7 +15,7 @@ class AdvancedUploadHandler {
       enableProgress: options.enableProgress || true,
       enableResumable: options.enableResumable || false,
       imageProcessing: options.imageProcessing || true,
-      ...options
+      ...options,
     };
 
     this.uploadProgress = new Map(); // Track upload progress
@@ -52,7 +52,7 @@ class AdvancedUploadHandler {
         const extMap = {
           'image/jpeg': '.jpg',
           'image/png': '.png',
-          'image/webp': '.webp'
+          'image/webp': '.webp',
         };
         return extMap[type] || '';
       }).filter(Boolean);
@@ -99,7 +99,7 @@ class AdvancedUploadHandler {
         req.uploadMetadata.generatedName = filename;
         
         cb(null, filename);
-      }
+      },
     });
   }
 
@@ -112,8 +112,8 @@ class AdvancedUploadHandler {
         fileSize: this.options.maxFileSize,
         files: 1,
         fieldNameSize: 100,
-        fieldSize: 1024 * 1024 // 1MB for other fields
-      }
+        fieldSize: 1024 * 1024, // 1MB for other fields
+      },
     });
   }
 
@@ -139,7 +139,7 @@ class AdvancedUploadHandler {
           bytesReceived,
           totalBytes: contentLength,
           progress: Math.round(progress),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       });
 
@@ -188,7 +188,7 @@ class AdvancedUploadHandler {
           { name: 'original', width: null, height: null },
           { name: 'large', width: 1024, height: 1024 },
           { name: 'medium', width: 512, height: 512 },
-          { name: 'thumbnail', width: 150, height: 150 }
+          { name: 'thumbnail', width: 150, height: 150 },
         ];
 
         const processedImages = {};
@@ -199,7 +199,7 @@ class AdvancedUploadHandler {
           if (size.width && size.height) {
             processor = processor.resize(size.width, size.height, {
               fit: 'inside',
-              withoutEnlargement: true
+              withoutEnlargement: true,
             });
           }
 
@@ -212,7 +212,7 @@ class AdvancedUploadHandler {
             path: sizeOutputPath,
             url: `/uploads/processed/${path.basename(sizeOutputPath)}`,
             width: size.width,
-            height: size.height
+            height: size.height,
           };
         }
 
@@ -224,7 +224,7 @@ class AdvancedUploadHandler {
           format: metadata.format,
           fileSize: req.file.size,
           hasAlpha: metadata.hasAlpha,
-          orientation: metadata.orientation
+          orientation: metadata.orientation,
         };
 
         next();
@@ -259,7 +259,7 @@ class AdvancedUploadHandler {
       this.createProgressMiddleware(),
       multerInstance.single(fieldName),
       this.createImageProcessor(),
-      this.createCleanupMiddleware()
+      this.createCleanupMiddleware(),
     ];
   }
 
@@ -270,7 +270,7 @@ class AdvancedUploadHandler {
       if (!sessionId) {
         return res.status(400).json({
           success: false,
-          error: 'Session ID required'
+          error: 'Session ID required',
         });
       }
 
@@ -278,13 +278,13 @@ class AdvancedUploadHandler {
       if (!progress) {
         return res.status(404).json({
           success: false,
-          error: 'Upload session not found'
+          error: 'Upload session not found',
         });
       }
 
       res.json({
         success: true,
-        data: progress
+        data: progress,
       });
     };
   }
@@ -300,7 +300,7 @@ const createImageUpload = (options = {}) => {
     maxFileSize: 10 * 1024 * 1024, // 10MB
     imageProcessing: true,
     enableProgress: true,
-    ...options
+    ...options,
   });
   
   return handler.createUploadMiddleware();
@@ -312,7 +312,7 @@ const createDocumentUpload = (options = {}) => {
     maxFileSize: 5 * 1024 * 1024, // 5MB
     imageProcessing: false,
     enableProgress: true,
-    ...options
+    ...options,
   });
   
   return handler.createUploadMiddleware();
@@ -322,5 +322,5 @@ module.exports = {
   AdvancedUploadHandler,
   defaultUploadHandler,
   createImageUpload,
-  createDocumentUpload
+  createDocumentUpload,
 };

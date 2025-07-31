@@ -258,7 +258,7 @@ async function seedTreatments() {
         'Add 1 tablespoon lime to reduce plant burn risk',
         'Spray thoroughly on affected and surrounding plants',
         'Apply in early morning or evening to avoid leaf burn',
-        'Ensure complete coverage of leaf surfaces'
+        'Ensure complete coverage of leaf surfaces',
       ]),
       effectiveness: 0.85,
       application_method: 'Foliar spray',
@@ -268,7 +268,7 @@ async function seedTreatments() {
       difficulty: 'easy',
       seasonal_notes: 'Most effective in warm, humid conditions',
       warnings: JSON.stringify(['Avoid application during full sun', 'Wear protective equipment']),
-      target_conditions: JSON.stringify(['early_blight', 'fungal_diseases'])
+      target_conditions: JSON.stringify(['early_blight', 'fungal_diseases']),
     },
     {
       name: 'Insecticidal Soap Spray',
@@ -280,7 +280,7 @@ async function seedTreatments() {
         'Spray directly on aphid colonies',
         'Target undersides of leaves where aphids congregate',
         'Apply every 3-4 days until infestation clears',
-        'Rinse plants with water 2-3 hours after application'
+        'Rinse plants with water 2-3 hours after application',
       ]),
       effectiveness: 0.80,
       application_method: 'Direct spray',
@@ -289,7 +289,7 @@ async function seedTreatments() {
       cost: 'low',
       difficulty: 'easy',
       warnings: JSON.stringify([]),
-      target_conditions: JSON.stringify(['aphids', 'soft_body_insects'])
+      target_conditions: JSON.stringify(['aphids', 'soft_body_insects']),
     },
     {
       name: 'Beneficial Insect Release',
@@ -301,7 +301,7 @@ async function seedTreatments() {
         'Ensure adequate moisture and shelter',
         'Release near aphid colonies for immediate impact',
         'Provide alternative food sources (pollen plants)',
-        'Avoid pesticides for 2 weeks before and after release'
+        'Avoid pesticides for 2 weeks before and after release',
       ]),
       effectiveness: 0.90,
       application_method: 'Biological release',
@@ -311,8 +311,8 @@ async function seedTreatments() {
       difficulty: 'moderate',
       seasonal_notes: 'Most effective in temperatures 65-80°F',
       warnings: JSON.stringify([]),
-      target_conditions: JSON.stringify(['aphids', 'pest_insects'])
-    }
+      target_conditions: JSON.stringify(['aphids', 'pest_insects']),
+    },
   ];
 
   for (const treatment of treatments) {
@@ -326,7 +326,7 @@ async function seedTreatments() {
       treatment.name, treatment.type, treatment.description, treatment.ingredients,
       treatment.instructions, treatment.effectiveness, treatment.application_method,
       treatment.frequency, treatment.safety_period, treatment.cost, treatment.difficulty,
-      treatment.seasonal_notes, treatment.warnings, treatment.target_conditions
+      treatment.seasonal_notes, treatment.warnings, treatment.target_conditions,
     ]);
   }
 
@@ -365,5 +365,5 @@ module.exports = {
   closeDatabase,
   runQuery,
   getQuery,
-  allQuery
+  allQuery,
 };

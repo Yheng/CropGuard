@@ -5,6 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
   console.error('FATAL: JWT_SECRET environment variable is not set');
+  // eslint-disable-next-line no-process-exit
   process.exit(1);
 }
 
@@ -14,12 +15,12 @@ function generateToken(user) {
     {
       id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     },
     JWT_SECRET,
     {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
-    }
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    },
   );
 }
 
@@ -37,7 +38,7 @@ async function authenticateToken(req, res, next) {
     if (!token) {
       return res.status(401).json({
         error: 'Access Denied',
-        message: 'No token provided'
+        message: 'No token provided',
       });
     }
 
@@ -48,7 +49,7 @@ async function authenticateToken(req, res, next) {
     try {
       user = await getQuery(
         'SELECT id, email, name, role, is_active FROM users WHERE id = ? AND is_active = 1',
-        [decoded.id]
+        [decoded.id],
       );
     } catch (dbError) {
       // Handle database connection issues in test environment
@@ -59,7 +60,7 @@ async function authenticateToken(req, res, next) {
           email: decoded.email,
           name: 'Test User',
           role: decoded.role,
-          is_active: 1
+          is_active: 1,
         };
       } else {
         throw new Error(`Database connection failed: ${dbError.message}`);
@@ -69,7 +70,7 @@ async function authenticateToken(req, res, next) {
     if (!user) {
       return res.status(401).json({
         error: 'Access Denied',
-        message: 'User not found or inactive'
+        message: 'User not found or inactive',
       });
     }
 
@@ -79,21 +80,21 @@ async function authenticateToken(req, res, next) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         error: 'Token Expired',
-        message: 'Please login again'
+        message: 'Please login again',
       });
     }
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         error: 'Invalid Token',
-        message: 'Token is malformed'
+        message: 'Token is malformed',
       });
     }
 
     console.error('Auth middleware error:', error);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Authentication failed'
+      message: 'Authentication failed',
     });
   }
 }
@@ -104,7 +105,7 @@ function requireRole(roles) {
     if (!req.user) {
       return res.status(401).json({
         error: 'Access Denied',
-        message: 'Authentication required'
+        message: 'Authentication required',
       });
     }
 
@@ -114,7 +115,7 @@ function requireRole(roles) {
     if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({
         error: 'Access Denied',
-        message: `Required role: ${allowedRoles.join(' or ')}`
+        message: `Required role: ${allowedRoles.join(' or ')}`,
       });
     }
 
@@ -137,7 +138,7 @@ async function optionalAuth(req, res, next) {
       const decoded = jwt.verify(token, JWT_SECRET);
       const user = await getQuery(
         'SELECT id, email, name, role, is_active FROM users WHERE id = ? AND is_active = 1',
-        [decoded.id]
+        [decoded.id],
       );
 
       if (user) {
@@ -157,14 +158,14 @@ function requireAdmin(req, res, next) {
   if (!req.user) {
     return res.status(401).json({
       error: 'Access Denied',
-      message: 'Authentication required'
+      message: 'Authentication required',
     });
   }
 
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       error: 'Access Denied',
-      message: 'Administrator access required'
+      message: 'Administrator access required',
     });
   }
 
@@ -176,5 +177,5 @@ module.exports = {
   authenticateToken,
   requireRole,
   requireAdmin,
-  optionalAuth
+  optionalAuth,
 };

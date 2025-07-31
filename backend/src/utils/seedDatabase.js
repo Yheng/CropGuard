@@ -11,7 +11,7 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0100',
     location: 'San Francisco, CA',
     email_verified: 1,
-    is_active: 1
+    is_active: 1,
   },
   {
     email: 'agronomist@cropguard.com',
@@ -21,7 +21,7 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0200',
     location: 'Davis, CA',
     email_verified: 1,
-    is_active: 1
+    is_active: 1,
   },
   {
     email: 'farmer@cropguard.com',
@@ -31,7 +31,7 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0300',
     location: 'Bakersfield, CA',
     email_verified: 1,
-    is_active: 1
+    is_active: 1,
   },
   // Demo users for testing
   {
@@ -42,7 +42,7 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0301',
     location: 'Fresno, CA',
     email_verified: 1,
-    is_active: 1
+    is_active: 1,
   },
   {
     email: 'david.kim@organicfarms.com',
@@ -52,7 +52,7 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0302',
     location: 'Salinas, CA',
     email_verified: 1,
-    is_active: 1
+    is_active: 1,
   },
   {
     email: 'lisa.brown@soilexperts.com',
@@ -62,8 +62,8 @@ const DEFAULT_ACCOUNTS = [
     phone: '+1-555-0201',
     location: 'Modesto, CA',
     email_verified: 1,
-    is_active: 1
-  }
+    is_active: 1,
+  },
 ];
 
 // Demo analysis data
@@ -79,15 +79,15 @@ const DEMO_ANALYSES = [
       'Apply copper-based fungicide',
       'Remove affected leaves',
       'Improve air circulation',
-      'Reduce overhead watering'
+      'Reduce overhead watering',
     ]),
     ai_model_version: 'v1.2.3',
     processing_time: 2.45,
     metadata: JSON.stringify({
       image_size: '1024x768',
       detected_objects: ['leaf_spots', 'discoloration'],
-      weather_conditions: 'humid'
-    })
+      weather_conditions: 'humid',
+    }),
   },
   {
     crop_type: 'corn',
@@ -100,15 +100,15 @@ const DEMO_ANALYSES = [
       'Release beneficial insects',
       'Apply insecticidal soap',
       'Remove heavily infested plants',
-      'Monitor weekly'
+      'Monitor weekly',
     ]),
     ai_model_version: 'v1.2.3',
     processing_time: 1.87,
     metadata: JSON.stringify({
       image_size: '1920x1080',
       detected_objects: ['aphids', 'honeydew'],
-      pest_count: 'high_density'
-    })
+      pest_count: 'high_density',
+    }),
   },
   {
     crop_type: 'lettuce',
@@ -120,16 +120,16 @@ const DEMO_ANALYSES = [
     recommendations: JSON.stringify([
       'Continue current care routine',
       'Monitor for seasonal pests',
-      'Maintain consistent watering'
+      'Maintain consistent watering',
     ]),
     ai_model_version: 'v1.2.3',
     processing_time: 1.23,
     metadata: JSON.stringify({
       image_size: '1024x1024',
       detected_objects: ['healthy_leaves'],
-      growth_stage: 'mature'
-    })
-  }
+      growth_stage: 'mature',
+    }),
+  },
 ];
 
 // Demo analytics data
@@ -138,20 +138,20 @@ const DEMO_ANALYTICS = [
     crop_type: 'tomato',
     health_score: 75,
     condition: 'warning',
-    analysis_count: 5
+    analysis_count: 5,
   },
   {
     crop_type: 'corn',
     health_score: 65,
     condition: 'critical',
-    analysis_count: 3
+    analysis_count: 3,
   },
   {
     crop_type: 'lettuce',
     health_score: 92,
     condition: 'healthy',
-    analysis_count: 2
-  }
+    analysis_count: 2,
+  },
 ];
 
 async function seedDefaultAccounts() {
@@ -167,7 +167,7 @@ async function seedDefaultAccounts() {
         const passwordHash = await bcrypt.hash(account.password, 12);
         
         // Create user
-        const result = await runQuery(`
+        const _result = await runQuery(`
           INSERT INTO users (
             email, password_hash, name, role, phone, location, 
             email_verified, is_active, created_at, updated_at
@@ -180,7 +180,7 @@ async function seedDefaultAccounts() {
           account.phone,
           account.location,
           account.email_verified,
-          account.is_active
+          account.is_active,
         ]);
         
         console.log(`✅ Created ${account.role}: ${account.email} (password: ${account.password})`);
@@ -227,7 +227,7 @@ async function seedDemoAnalyses() {
         analysis.recommendations,
         analysis.ai_model_version,
         analysis.processing_time,
-        analysis.metadata
+        analysis.metadata,
       ]);
       
       console.log(`✅ Created analysis: ${analysis.title} for user ${farmer.id}`);
@@ -275,7 +275,7 @@ async function seedDemoAnalytics() {
           baseData.crop_type,
           Math.round(healthScore),
           healthScore > 80 ? 'healthy' : healthScore > 60 ? 'warning' : 'critical',
-          Math.floor(Math.random() * 5) + 1 // 1-5 analyses per day
+          Math.floor(Math.random() * 5) + 1, // 1-5 analyses per day
         ]);
       } catch (error) {
         // Skip if date already exists (unique constraint)
@@ -327,10 +327,10 @@ async function seedDemoTreatmentPlans() {
         JSON.stringify({
           frequency: 'daily',
           duration: '2_weeks',
-          checkpoints: ['3_days', '1_week', '2_weeks']
+          checkpoints: ['3_days', '1_week', '2_weeks'],
         }),
         analysis.severity === 'high' ? '2-3 weeks' : analysis.severity === 'medium' ? '1-2 weeks' : '1 week',
-        analysis.severity === 'high' ? '$50-100' : analysis.severity === 'medium' ? '$25-50' : '$10-25'
+        analysis.severity === 'high' ? '$50-100' : analysis.severity === 'medium' ? '$25-50' : '$10-25',
       ]);
       
       console.log(`✅ Created treatment plan for analysis ${analysis.id}`);
@@ -402,5 +402,5 @@ module.exports = {
   seedDemoTreatmentPlans,
   seedAccountsOnly,
   clearDemoData,
-  DEFAULT_ACCOUNTS
+  DEFAULT_ACCOUNTS,
 };

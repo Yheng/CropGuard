@@ -17,12 +17,12 @@ const reviewSchema = {
   expertRecommendations: { type: 'array' },
   expertComments: { type: 'string' },
   aiFeedback: { type: 'string', enum: ['accurate', 'partially_accurate', 'inaccurate'] },
-  approvalStatus: { type: 'string', enum: ['approved', 'modified', 'rejected'], required: true }
+  approvalStatus: { type: 'string', enum: ['approved', 'modified', 'rejected'], required: true },
 };
 
 const assignmentSchema = {
   analysisId: { type: 'number', required: true },
-  agronomistId: { type: 'number', required: true }
+  agronomistId: { type: 'number', required: true },
 };
 
 const bulkReviewSchema = {
@@ -34,10 +34,10 @@ const bulkReviewSchema = {
       properties: {
         analysisId: { type: 'number', required: true },
         action: { type: 'string', enum: ['approve', 'modify', 'reject', 'reassign'], required: true },
-        reviewData: { type: 'object' }
-      }
-    }
-  }
+        reviewData: { type: 'object' },
+      },
+    },
+  },
 };
 
 /**
@@ -56,7 +56,7 @@ router.get('/queue',
         priority: req.query.priority ? parseInt(req.query.priority) : undefined,
         cropType: req.query.cropType,
         farmerRequested: req.query.farmer_requested === 'true',
-        limit: req.query.limit ? parseInt(req.query.limit) : 20
+        limit: req.query.limit ? parseInt(req.query.limit) : 20,
       };
 
       const queue = await agronomistService.getReviewQueue(agronomistId, filters);
@@ -66,21 +66,21 @@ router.get('/queue',
         data: {
           queue,
           totalCount: queue.length,
-          filters
-        }
+          filters,
+        },
       });
 
     } catch (error) {
       logger.error('Failed to get review queue', {
         error: error.message,
-        agronomistId: req.user.id
+        agronomistId: req.user.id,
       });
       res.status(500).json({
         success: false,
-        error: 'Failed to get review queue'
+        error: 'Failed to get review queue',
       });
     }
-  }
+  },
 );
 
 /**
@@ -100,7 +100,7 @@ router.post('/assign',
       if (req.user.role !== 'admin' && agronomistId !== req.user.id) {
         return res.status(403).json({
           success: false,
-          error: 'You can only assign analyses to yourself'
+          error: 'You can only assign analyses to yourself',
         });
       }
 
@@ -108,29 +108,29 @@ router.post('/assign',
 
       res.json({
         success: true,
-        data: result
+        data: result,
       });
 
     } catch (error) {
       logger.error('Failed to assign analysis', {
         error: error.message,
         body: req.body,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: 'Failed to assign analysis'
+        error: 'Failed to assign analysis',
       });
     }
-  }
+  },
 );
 
 /**
@@ -150,41 +150,41 @@ router.post('/review/:analysisId',
       if (isNaN(analysisId)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid analysis ID'
+          error: 'Invalid analysis ID',
         });
       }
 
       const result = await agronomistService.submitReview(
         analysisId,
         agronomistId,
-        req.body
+        req.body,
       );
 
       res.json({
         success: true,
-        data: result
+        data: result,
       });
 
     } catch (error) {
       logger.error('Failed to submit review', {
         error: error.message,
         analysisId: req.params.analysisId,
-        agronomistId: req.user.id
+        agronomistId: req.user.id,
       });
 
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: 'Failed to submit review'
+        error: 'Failed to submit review',
       });
     }
-  }
+  },
 );
 
 /**
@@ -205,29 +205,29 @@ router.post('/bulk-review',
 
       res.json({
         success: true,
-        data: result
+        data: result,
       });
 
     } catch (error) {
       logger.error('Failed to perform bulk review', {
         error: error.message,
         agronomistId: req.user.id,
-        operationCount: req.body.operations?.length
+        operationCount: req.body.operations?.length,
       });
 
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({
           success: false,
-          error: error.message
+          error: error.message,
         });
       }
 
       res.status(500).json({
         success: false,
-        error: 'Failed to perform bulk review'
+        error: 'Failed to perform bulk review',
       });
     }
-  }
+  },
 );
 
 /**
@@ -245,21 +245,21 @@ router.get('/stats',
 
       res.json({
         success: true,
-        data: stats
+        data: stats,
       });
 
     } catch (error) {
       logger.error('Failed to get agronomist stats', {
         error: error.message,
-        agronomistId: req.user.id
+        agronomistId: req.user.id,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to get statistics'
+        error: 'Failed to get statistics',
       });
     }
-  }
+  },
 );
 
 /**
@@ -277,7 +277,7 @@ router.get('/analysis/:analysisId',
       if (isNaN(analysisId)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid analysis ID'
+          error: 'Invalid analysis ID',
         });
       }
 
@@ -301,7 +301,7 @@ router.get('/analysis/:analysisId',
       if (!analysis) {
         return res.status(404).json({
           success: false,
-          error: 'Analysis not found'
+          error: 'Analysis not found',
         });
       }
 
@@ -309,7 +309,7 @@ router.get('/analysis/:analysisId',
       const processedAnalysis = {
         ...analysis,
         ai_diagnosis: JSON.parse(analysis.ai_diagnosis || '{}'),
-        ai_recommendations: JSON.parse(analysis.ai_recommendations || '[]')
+        ai_recommendations: JSON.parse(analysis.ai_recommendations || '[]'),
       };
 
       // Get any existing reviews
@@ -330,23 +330,23 @@ router.get('/analysis/:analysisId',
           existingReviews: existingReviews.map(review => ({
             ...review,
             expert_diagnosis: JSON.parse(review.expert_diagnosis || '{}'),
-            expert_recommendations: JSON.parse(review.expert_recommendations || '[]')
-          }))
-        }
+            expert_recommendations: JSON.parse(review.expert_recommendations || '[]'),
+          })),
+        },
       });
 
     } catch (error) {
       logger.error('Failed to get analysis details', {
         error: error.message,
-        analysisId: req.params.analysisId
+        analysisId: req.params.analysisId,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to get analysis details'
+        error: 'Failed to get analysis details',
       });
     }
-  }
+  },
 );
 
 /**
@@ -364,17 +364,17 @@ router.get('/leaderboard',
       
       let dateFilter = '';
       switch (timeframe) {
-        case 'week':
-          dateFilter = "AND ar.created_at >= datetime('now', '-7 days')";
-          break;
-        case 'month':
-          dateFilter = "AND ar.created_at >= datetime('now', '-30 days')";
-          break;
-        case 'year':
-          dateFilter = "AND ar.created_at >= datetime('now', '-365 days')";
-          break;
-        default:
-          dateFilter = '';
+      case 'week':
+        dateFilter = 'AND ar.created_at >= datetime(\'now\', \'-7 days\')';
+        break;
+      case 'month':
+        dateFilter = 'AND ar.created_at >= datetime(\'now\', \'-30 days\')';
+        break;
+      case 'year':
+        dateFilter = 'AND ar.created_at >= datetime(\'now\', \'-365 days\')';
+        break;
+      default:
+        dateFilter = '';
       }
 
       const leaderboard = await db.all(`
@@ -405,22 +405,22 @@ router.get('/leaderboard',
             ...entry,
             approval_rate: entry.reviews_completed > 0 ? 
               Math.round((entry.approvals / entry.reviews_completed) * 100) : 0,
-            avg_review_time: Math.round(entry.avg_review_time || 0)
-          }))
-        }
+            avg_review_time: Math.round(entry.avg_review_time || 0),
+          })),
+        },
       });
 
     } catch (error) {
       logger.error('Failed to get leaderboard', {
-        error: error.message
+        error: error.message,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to get leaderboard'
+        error: 'Failed to get leaderboard',
       });
     }
-  }
+  },
 );
 
 /**
@@ -461,21 +461,21 @@ router.get('/service-metrics',
         data: {
           service: metrics,
           database: dbMetrics,
-          queue: queueMetrics
-        }
+          queue: queueMetrics,
+        },
       });
 
     } catch (error) {
       logger.error('Failed to get service metrics', {
-        error: error.message
+        error: error.message,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to get service metrics'
+        error: 'Failed to get service metrics',
       });
     }
-  }
+  },
 );
 
 module.exports = router;

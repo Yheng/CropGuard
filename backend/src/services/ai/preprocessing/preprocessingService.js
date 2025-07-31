@@ -17,7 +17,7 @@ class ImagePreprocessingService {
       processedDir: config.processedDir || path.join(__dirname, '../../../../uploads/processed'),
       timeout: config.timeout || 30000, // 30 seconds
       maxConcurrentProcessing: config.maxConcurrentProcessing || 5,
-      ...config
+      ...config,
     };
 
     // Processing queue and statistics
@@ -27,7 +27,7 @@ class ImagePreprocessingService {
       totalProcessed: 0,
       totalErrors: 0,
       avgProcessingTime: 0,
-      lastProcessingTime: null
+      lastProcessingTime: null,
     };
 
     // Ensure directories exist
@@ -44,12 +44,12 @@ class ImagePreprocessingService {
       logger.info('Preprocessing directories initialized', {
         category: 'preprocessing',
         tempDir: this.config.tempDir,
-        processedDir: this.config.processedDir
+        processedDir: this.config.processedDir,
       });
     } catch (error) {
       logger.error('Failed to initialize preprocessing directories', {
         category: 'preprocessing',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -68,7 +68,7 @@ class ImagePreprocessingService {
       logger.info('Starting image preprocessing', {
         category: 'preprocessing',
         inputPath,
-        metadata
+        metadata,
       });
 
       // Validate input
@@ -81,7 +81,7 @@ class ImagePreprocessingService {
       if (this.activeProcessing >= this.config.maxConcurrentProcessing) {
         logger.info('Queuing preprocessing request', {
           category: 'preprocessing',
-          queueSize: this.processingQueue.length
+          queueSize: this.processingQueue.length,
         });
         return await this.queueProcessing(inputPath, outputPath, metadata);
       }
@@ -97,7 +97,7 @@ class ImagePreprocessingService {
         category: 'preprocessing',
         inputPath,
         outputPath: result.outputPath,
-        processingTime
+        processingTime,
       });
 
       return result;
@@ -110,7 +110,7 @@ class ImagePreprocessingService {
         category: 'preprocessing',
         inputPath,
         error: error.message,
-        processingTime
+        processingTime,
       });
       
       throw error;
@@ -170,7 +170,7 @@ class ImagePreprocessingService {
         metadata,
         resolve,
         reject,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       // Process queue when capacity becomes available
@@ -212,7 +212,7 @@ class ImagePreprocessingService {
       const args = [
         this.config.processorScript,
         inputPath,
-        outputPath
+        outputPath,
       ];
 
       // Add metadata as JSON string if provided
@@ -223,11 +223,11 @@ class ImagePreprocessingService {
       logger.debug('Spawning Python processor', {
         category: 'preprocessing',
         command: this.config.pythonExecutable,
-        args
+        args,
       });
 
       const pythonProcess = spawn(this.config.pythonExecutable, args, {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let stdout = '';
@@ -268,7 +268,7 @@ class ImagePreprocessingService {
                 fileSizeAfter: result.file_size_after,
                 preprocessingApplied: result.preprocessing_applied,
                 qualityMetrics: result.quality_metrics,
-                timestamp: result.timestamp
+                timestamp: result.timestamp,
               });
             } else {
               reject(new AppError(`Preprocessing failed: ${result.error}`, 500));
@@ -278,7 +278,7 @@ class ImagePreprocessingService {
               category: 'preprocessing',
               stdout,
               stderr,
-              parseError: parseError.message
+              parseError: parseError.message,
             });
             reject(new AppError('Failed to parse preprocessing result', 500));
           }
@@ -286,7 +286,7 @@ class ImagePreprocessingService {
           logger.error('Python processor exited with error', {
             category: 'preprocessing',
             code,
-            stderr
+            stderr,
           });
           reject(new AppError(`Image preprocessing failed (exit code: ${code})`, 500));
         }
@@ -298,7 +298,7 @@ class ImagePreprocessingService {
         
         logger.error('Failed to spawn Python processor', {
           category: 'preprocessing',
-          error: error.message
+          error: error.message,
         });
         
         reject(new AppError(`Failed to start image preprocessing: ${error.message}`, 500));
@@ -316,7 +316,7 @@ class ImagePreprocessingService {
     logger.info('Starting batch preprocessing', {
       category: 'preprocessing',
       imageCount: imagePaths.length,
-      batchSize
+      batchSize,
     });
 
     // Process in batches to avoid overwhelming the system
@@ -328,7 +328,7 @@ class ImagePreprocessingService {
           const imageMetadata = {
             ...metadata,
             batchIndex: i + index,
-            batchId: `batch_${Date.now()}`
+            batchId: `batch_${Date.now()}`,
           };
           
           return await this.preprocessImage(imagePath, imageMetadata);
@@ -336,7 +336,7 @@ class ImagePreprocessingService {
           return {
             success: false,
             inputPath: imagePath,
-            error: error.message
+            error: error.message,
           };
         }
       });
@@ -352,7 +352,7 @@ class ImagePreprocessingService {
       category: 'preprocessing',
       totalImages: results.length,
       successCount,
-      errorCount
+      errorCount,
     });
 
     return {
@@ -361,8 +361,8 @@ class ImagePreprocessingService {
       summary: {
         total: results.length,
         successful: successCount,
-        failed: errorCount
-      }
+        failed: errorCount,
+      },
     };
   }
 
@@ -393,8 +393,8 @@ class ImagePreprocessingService {
       activeProcessing: this.activeProcessing,
       config: {
         maxConcurrentProcessing: this.config.maxConcurrentProcessing,
-        timeout: this.config.timeout
-      }
+        timeout: this.config.timeout,
+      },
     };
   }
 
@@ -405,7 +405,7 @@ class ImagePreprocessingService {
     try {
       // Check if Python executable is available
       const testProcess = spawn(this.config.pythonExecutable, ['--version'], {
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
 
       return new Promise((resolve) => {
@@ -422,7 +422,7 @@ class ImagePreprocessingService {
             pythonVersion: isHealthy ? versionOutput.trim() : null,
             processorScript: this.config.processorScript,
             directoriesAccessible: true, // We'll assume directories are accessible if service starts
-            statistics: this.getStatistics()
+            statistics: this.getStatistics(),
           });
         });
 
@@ -430,14 +430,14 @@ class ImagePreprocessingService {
           resolve({
             status: 'unhealthy',
             error: 'Python executable not found',
-            pythonExecutable: this.config.pythonExecutable
+            pythonExecutable: this.config.pythonExecutable,
           });
         });
       });
     } catch (error) {
       return {
         status: 'unhealthy',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -464,14 +464,14 @@ class ImagePreprocessingService {
       logger.info('Processed files cleanup completed', {
         category: 'preprocessing',
         deletedCount,
-        maxAgeHours
+        maxAgeHours,
       });
 
       return { deletedCount };
     } catch (error) {
       logger.error('Failed to cleanup processed files', {
         category: 'preprocessing',
-        error: error.message
+        error: error.message,
       });
       throw error;
     }

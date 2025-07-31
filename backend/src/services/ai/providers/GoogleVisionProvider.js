@@ -15,7 +15,7 @@ class GoogleVisionProvider {
       endpoint: config.endpoint || 'https://ml.googleapis.com/v1',
       confidence_threshold: config.confidence_threshold || 0.5,
       max_predictions: config.max_predictions || 5,
-      ...config
+      ...config,
     };
 
     this.modelVersion = '2.1.0';
@@ -33,7 +33,7 @@ class GoogleVisionProvider {
       'thrips': 'pest',
       'mite': 'pest',
       'caterpillar': 'pest',
-      'unknown': 'unknown'
+      'unknown': 'unknown',
     };
 
     this.diseaseDatabase = {
@@ -41,32 +41,32 @@ class GoogleVisionProvider {
         title: 'Early Blight',
         description: 'Alternaria solani infection causing dark spots with concentric rings',
         severity: 'medium',
-        treatments: ['copper_fungicide', 'crop_rotation', 'proper_spacing']
+        treatments: ['copper_fungicide', 'crop_rotation', 'proper_spacing'],
       },
       'late_blight': {
         title: 'Late Blight',
         description: 'Phytophthora infestans causing water-soaked lesions',
         severity: 'high',
-        treatments: ['copper_fungicide', 'remove_affected_plants', 'improve_air_circulation']
+        treatments: ['copper_fungicide', 'remove_affected_plants', 'improve_air_circulation'],
       },
       'powdery_mildew': {
         title: 'Powdery Mildew',
         description: 'White powdery fungal growth on leaf surfaces',
         severity: 'medium',
-        treatments: ['neem_oil', 'baking_soda_spray', 'improve_air_circulation']
+        treatments: ['neem_oil', 'baking_soda_spray', 'improve_air_circulation'],
       },
       'rust': {
         title: 'Rust Disease',
         description: 'Orange or brown pustules on leaf undersides',
         severity: 'medium',
-        treatments: ['copper_fungicide', 'remove_affected_leaves', 'avoid_overhead_watering']
+        treatments: ['copper_fungicide', 'remove_affected_leaves', 'avoid_overhead_watering'],
       },
       'bacterial_spot': {
         title: 'Bacterial Spot',
         description: 'Small dark spots with yellow halos',
         severity: 'high',
-        treatments: ['copper_spray', 'improve_air_circulation', 'avoid_overhead_watering']
-      }
+        treatments: ['copper_spray', 'improve_air_circulation', 'avoid_overhead_watering'],
+      },
     };
 
     this.pestDatabase = {
@@ -74,26 +74,26 @@ class GoogleVisionProvider {
         title: 'Aphid Infestation',
         description: 'Small soft-bodied insects feeding on plant sap',
         severity: 'medium',
-        treatments: ['insecticidal_soap', 'beneficial_insects', 'neem_oil']
+        treatments: ['insecticidal_soap', 'beneficial_insects', 'neem_oil'],
       },
       'thrips': {
         title: 'Thrips Damage',
         description: 'Tiny insects causing silvery streaks and black spots',
         severity: 'medium',
-        treatments: ['blue_sticky_traps', 'beneficial_mites', 'insecticidal_soap']
+        treatments: ['blue_sticky_traps', 'beneficial_mites', 'insecticidal_soap'],
       },
       'spider_mites': {
         title: 'Spider Mites',
         description: 'Microscopic pests causing stippling and webbing',
         severity: 'high',
-        treatments: ['predatory_mites', 'neem_oil', 'increase_humidity']
+        treatments: ['predatory_mites', 'neem_oil', 'increase_humidity'],
       },
       'whiteflies': {
         title: 'Whitefly Infestation',
         description: 'Small white flying insects on leaf undersides',
         severity: 'medium',
-        treatments: ['yellow_sticky_traps', 'beneficial_insects', 'insecticidal_soap']
-      }
+        treatments: ['yellow_sticky_traps', 'beneficial_insects', 'insecticidal_soap'],
+      },
     };
   }
 
@@ -106,7 +106,7 @@ class GoogleVisionProvider {
         category: 'ai-provider',
         provider: 'google-vision',
         imagePath,
-        metadata
+        metadata,
       });
 
       // Validate input
@@ -123,7 +123,7 @@ class GoogleVisionProvider {
         category: 'ai-provider',
         provider: 'google-vision',
         condition: result.condition,
-        confidence: result.confidence
+        confidence: result.confidence,
       });
 
       return result;
@@ -132,7 +132,7 @@ class GoogleVisionProvider {
         category: 'ai-provider',
         provider: 'google-vision',
         error: error.message,
-        imagePath
+        imagePath,
       });
       throw error;
     }
@@ -157,7 +157,7 @@ class GoogleVisionProvider {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
         '.png': 'image/png',
-        '.webp': 'image/webp'
+        '.webp': 'image/webp',
       };
 
       const mimeType = mimeTypeMap[ext];
@@ -185,46 +185,46 @@ class GoogleVisionProvider {
         predictions: [{
           displayName: 'Healthy Tomato Leaf',
           confidence: 0.92,
-          category: 'healthy'
+          category: 'healthy',
         }],
-        cropType: 'tomato'
+        cropType: 'tomato',
       },
       {
         predictions: [{
           displayName: 'Early Blight',
           confidence: 0.87,
-          category: 'early_blight'
+          category: 'early_blight',
         }, {
           displayName: 'Healthy',
           confidence: 0.13,
-          category: 'healthy'
+          category: 'healthy',
         }],
-        cropType: 'tomato'
+        cropType: 'tomato',
       },
       {
         predictions: [{
           displayName: 'Aphid Infestation',
           confidence: 0.84,
-          category: 'aphids'
+          category: 'aphids',
         }],
-        cropType: 'pepper'
+        cropType: 'pepper',
       },
       {
         predictions: [{
           displayName: 'Powdery Mildew',
           confidence: 0.91,
-          category: 'powdery_mildew'
+          category: 'powdery_mildew',
         }],
-        cropType: 'cucumber'
+        cropType: 'cucumber',
       },
       {
         predictions: [{
           displayName: 'Spider Mites',
           confidence: 0.78,
-          category: 'spider_mites'
+          category: 'spider_mites',
         }],
-        cropType: 'tomato'
-      }
+        cropType: 'tomato',
+      },
     ];
 
     // Select scenario based on metadata or random
@@ -267,7 +267,7 @@ class GoogleVisionProvider {
         title: 'Healthy Crop',
         description: 'No signs of disease or pest damage detected',
         severity: 'low',
-        treatments: ['continue_current_care', 'regular_monitoring']
+        treatments: ['continue_current_care', 'regular_monitoring'],
       };
     }
 
@@ -292,15 +292,15 @@ class GoogleVisionProvider {
         processing_metadata: {
           model_version: this.modelVersion,
           analysis_timestamp: new Date().toISOString(),
-          image_analysis_complete: true
-        }
+          image_analysis_complete: true,
+        },
       },
       metadata: {
         provider: 'google-vision',
         model_version: this.modelVersion,
         api_version: '2.1.0',
-        processing_time_ms: Math.round(1000 + Math.random() * 2000)
-      }
+        processing_time_ms: Math.round(1000 + Math.random() * 2000),
+      },
     };
   }
 
@@ -313,31 +313,31 @@ class GoogleVisionProvider {
         'Continue current care practices',
         'Monitor plants regularly for early detection',
         'Maintain proper plant spacing for air circulation',
-        'Follow integrated pest management practices'
+        'Follow integrated pest management practices',
       ],
       disease: [
         'Remove and dispose of affected plant material',
         'Improve air circulation around plants',
         'Avoid overhead watering',
         'Apply appropriate organic treatments',
-        'Monitor closely for disease spread'
+        'Monitor closely for disease spread',
       ],
       pest: [
         'Identify and monitor pest population levels',
         'Use integrated pest management approach',
         'Consider beneficial insect releases',
         'Apply targeted organic treatments',
-        'Remove heavily infested plant parts'
+        'Remove heavily infested plant parts',
       ],
       unknown: [
         'Consult with local agricultural extension office',
         'Take additional photos for re-analysis',
         'Monitor plant development closely',
-        'Consider professional plant diagnostic services'
-      ]
+        'Consider professional plant diagnostic services',
+      ],
     };
 
-    let recommendations = [...baseRecommendations[condition]];
+    const recommendations = [...baseRecommendations[condition]];
 
     // Add specific treatment recommendations
     if (conditionData?.treatments) {
@@ -351,7 +351,7 @@ class GoogleVisionProvider {
         'crop_rotation': 'Plan crop rotation for next growing season',
         'baking_soda_spray': 'Apply baking soda solution (1 tsp per quart water)',
         'yellow_sticky_traps': 'Install yellow sticky traps to monitor and catch pests',
-        'blue_sticky_traps': 'Use blue sticky traps specifically for thrips control'
+        'blue_sticky_traps': 'Use blue sticky traps specifically for thrips control',
       };
 
       conditionData.treatments.forEach(treatment => {
@@ -416,8 +416,8 @@ class GoogleVisionProvider {
         'pest_identification',
         'crop_type_detection',
         'severity_assessment',
-        'treatment_recommendations'
-      ]
+        'treatment_recommendations',
+      ],
     };
   }
 
@@ -431,14 +431,14 @@ class GoogleVisionProvider {
         status: 'healthy',
         latency: Math.round(100 + Math.random() * 200),
         configured: this.isConfigured(),
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     } catch (error) {
       return {
         status: 'unhealthy',
         error: error.message,
         configured: this.isConfigured(),
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     }
   }

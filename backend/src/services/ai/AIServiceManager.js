@@ -16,7 +16,7 @@ class AIServiceManager {
       successfulRequests: 0,
       failedRequests: 0,
       averageResponseTime: 0,
-      providerStats: {}
+      providerStats: {},
     };
     
     // Initialize preprocessing service
@@ -38,7 +38,7 @@ class AIServiceManager {
       requestCount: 0,
       successCount: 0,
       failureCount: 0,
-      ...options
+      ...options,
     };
 
     this.providers.set(name, providerConfig);
@@ -46,7 +46,7 @@ class AIServiceManager {
       requests: 0,
       successes: 0,
       failures: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     };
 
     // Set default provider if none exists
@@ -60,7 +60,7 @@ class AIServiceManager {
     logger.info(`AI provider registered: ${name}`, {
       category: 'ai-service',
       provider: name,
-      priority: providerConfig.priority
+      priority: providerConfig.priority,
     });
   }
 
@@ -86,7 +86,7 @@ class AIServiceManager {
       logger.debug('Starting image preprocessing', {
         category: 'ai-service',
         imagePath,
-        metadata
+        metadata,
       });
       
       const preprocessingResult = await this.preprocessingService.preprocessImage(imagePath, metadata);
@@ -97,13 +97,13 @@ class AIServiceManager {
         originalPath: imagePath,
         processedPath: processedImagePath,
         preprocessingTime: preprocessingResult.processingTime,
-        qualityMetrics: preprocessingResult.qualityMetrics
+        qualityMetrics: preprocessingResult.qualityMetrics,
       });
 
       // Step 2: Check cache with processed image
       const cacheKey = await this.generateCacheKey(processedImagePath, {
         ...metadata,
-        preprocessing: preprocessingResult.preprocessingApplied
+        preprocessing: preprocessingResult.preprocessingApplied,
       });
       const cachedResult = this.getCachedResult(cacheKey);
       
@@ -111,7 +111,7 @@ class AIServiceManager {
         logger.debug('Returning cached AI analysis result', {
           category: 'ai-service',
           cacheKey: cacheKey.substring(0, 16) + '...',
-          cacheHit: true
+          cacheHit: true,
         });
         // Add preprocessing info to cached result
         cachedResult.preprocessing = preprocessingResult;
@@ -147,7 +147,7 @@ class AIServiceManager {
           logger.warn(`AI provider ${providerName} failed`, {
             category: 'ai-service',
             provider: providerName,
-            error: error.message
+            error: error.message,
           });
           
           this.updateMetrics(providerName, false, Date.now() - startTime);
@@ -167,7 +167,7 @@ class AIServiceManager {
         category: 'ai-service',
         error: error.message,
         imagePath,
-        metadata
+        metadata,
       });
       throw error;
     }
@@ -193,7 +193,7 @@ class AIServiceManager {
       // Execute analysis with timeout
       const result = await Promise.race([
         provider.instance.analyzeImage(imagePath, metadata),
-        this.createTimeoutPromise(provider.timeout)
+        this.createTimeoutPromise(provider.timeout),
       ]);
 
       // Validate result
@@ -232,7 +232,7 @@ class AIServiceManager {
         logger.warn(`Provider ${providerName} has low success rate: ${(successRate * 100).toFixed(1)}%`, {
           category: 'ai-service',
           provider: providerName,
-          successRate
+          successRate,
         });
         return false;
       }
@@ -247,7 +247,7 @@ class AIServiceManager {
   checkRateLimit(providerName) {
     const provider = this.providers.get(providerName);
     const now = Date.now();
-    const oneMinuteAgo = now - 60000;
+    const _oneMinuteAgo = now - 60000;
 
     // Simple rate limiting - could be enhanced with sliding window
     const recentRequests = provider.requestCount; // Simplified for this implementation
@@ -270,7 +270,7 @@ class AIServiceManager {
    */
   validateAnalysisResult(result) {
     const requiredFields = ['condition', 'title', 'description', 'confidence'];
-    const missingFields = requiredFields.filter(field => !result.hasOwnProperty(field));
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(result, field));
     
     if (missingFields.length > 0) {
       throw new AppError(`Invalid AI result: missing fields ${missingFields.join(', ')}`, 500);
@@ -327,7 +327,7 @@ class AIServiceManager {
   setCachedResult(cacheKey, result) {
     this.cache.set(cacheKey, {
       result: { ...result },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Cleanup old cache entries (simple LRU)
@@ -374,7 +374,7 @@ class AIServiceManager {
         successRate: stats.requests > 0 ? (stats.successes / stats.requests * 100).toFixed(1) + '%' : 'N/A',
         averageResponseTime: Math.round(stats.averageResponseTime),
         lastUsed: provider.lastUsed,
-        status: this.isProviderAvailable(name) ? 'healthy' : 'unhealthy'
+        status: this.isProviderAvailable(name) ? 'healthy' : 'unhealthy',
       };
     }
     
@@ -390,7 +390,7 @@ class AIServiceManager {
       cacheSize: this.cache.size,
       successRate: this.metrics.totalRequests > 0 ? 
         (this.metrics.successfulRequests / this.metrics.totalRequests * 100).toFixed(1) + '%' : 'N/A',
-      preprocessing: this.preprocessingService.getStatistics()
+      preprocessing: this.preprocessingService.getStatistics(),
     };
   }
 
@@ -421,7 +421,7 @@ class AIServiceManager {
       logger.info(`AI provider ${enabled ? 'enabled' : 'disabled'}: ${providerName}`, {
         category: 'ai-service',
         provider: providerName,
-        enabled
+        enabled,
       });
     }
   }

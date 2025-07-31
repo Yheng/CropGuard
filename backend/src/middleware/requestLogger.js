@@ -50,7 +50,7 @@ async function logToDatabase(req, res, responseTime) {
       res.statusCode,
       responseTime,
       req.ip,
-      req.get('User-Agent') || null
+      req.get('User-Agent') || null,
     ]);
   } catch (error) {
     // Don't throw errors for logging failures
@@ -66,7 +66,7 @@ function requestTiming(req, res, next) {
 
 // Get request duration
 function getRequestDuration(req) {
-  if (!req.startTime) return 0;
+  if (!req.startTime) {return 0;}
   const endTime = process.hrtime.bigint();
   return Number(endTime - req.startTime) / 1000000; // Convert to milliseconds
 }
@@ -75,5 +75,5 @@ module.exports = {
   requestLogger,
   requestTiming,
   getRequestDuration,
-  generateRequestId
+  generateRequestId,
 };

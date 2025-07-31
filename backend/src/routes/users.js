@@ -20,7 +20,7 @@ router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: { user }
+    data: { user },
   });
 }));
 
@@ -31,8 +31,8 @@ router.get('/', authenticateToken, requireRole(['admin']), asyncHandler(async (r
   const offset = (page - 1) * limit;
   const { role, search } = req.query;
 
-  let whereConditions = ['is_active = 1'];
-  let queryParams = [];
+  const whereConditions = ['is_active = 1'];
+  const queryParams = [];
 
   if (role) {
     whereConditions.push('role = ?');
@@ -67,9 +67,9 @@ router.get('/', authenticateToken, requireRole(['admin']), asyncHandler(async (r
         page,
         limit,
         total: countResult.total,
-        pages: Math.ceil(countResult.total / limit)
-      }
-    }
+        pages: Math.ceil(countResult.total / limit),
+      },
+    },
   });
 }));
 
@@ -109,7 +109,7 @@ router.get('/:id/details', authenticateToken, requireRole(['admin', 'agronomist'
       WHERE user_id = ?
       ORDER BY created_at DESC
       LIMIT 5
-    `, [req.params.id])
+    `, [req.params.id]),
   ]);
 
   res.json({
@@ -121,9 +121,9 @@ router.get('/:id/details', authenticateToken, requireRole(['admin', 'agronomist'
         thisMonthAnalyses: stats[1].total,
         treatmentPlans: stats[2].total,
         avgConfidence: Math.round((stats[3].avg || 0) * 100),
-        recentAnalyses: stats[4]
-      }
-    }
+        recentAnalyses: stats[4],
+      },
+    },
   });
 }));
 
@@ -136,7 +136,7 @@ router.put('/:id', authenticateToken, requireRole(['admin']), asyncHandler(async
     phone: Joi.string().optional(),
     location: Joi.string().optional(),
     isActive: Joi.boolean().optional(),
-    emailVerified: Joi.boolean().optional()
+    emailVerified: Joi.boolean().optional(),
   });
 
   const { error, value } = updateSchema.validate(req.body);
@@ -187,7 +187,7 @@ router.put('/:id', authenticateToken, requireRole(['admin']), asyncHandler(async
   res.json({
     success: true,
     message: 'User updated successfully',
-    data: { user: updatedUser }
+    data: { user: updatedUser },
   });
 }));
 
@@ -208,7 +208,7 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), asyncHandler(as
 
   res.json({
     success: true,
-    message: 'User deactivated successfully'
+    message: 'User deactivated successfully',
   });
 }));
 
@@ -227,7 +227,7 @@ router.get('/role/farmers', authenticateToken, requireRole(['agronomist', 'admin
 
   res.json({
     success: true,
-    data: { farmers }
+    data: { farmers },
   });
 }));
 
@@ -245,7 +245,7 @@ router.get('/role/agronomists', authenticateToken, requireRole(['admin']), async
 
   res.json({
     success: true,
-    data: { agronomists }
+    data: { agronomists },
   });
 }));
 
@@ -275,9 +275,9 @@ router.get('/:id/activity', authenticateToken, requireRole(['admin']), asyncHand
         page,
         limit,
         total: countResult.total,
-        pages: Math.ceil(countResult.total / limit)
-      }
-    }
+        pages: Math.ceil(countResult.total / limit),
+      },
+    },
   });
 }));
 

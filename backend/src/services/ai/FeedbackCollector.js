@@ -12,7 +12,7 @@ class FeedbackCollector {
       CORRECT: 'correct',
       INCORRECT: 'incorrect',
       PARTIAL: 'partial',
-      UNCERTAIN: 'uncertain'
+      UNCERTAIN: 'uncertain',
     };
 
     this.expertRoles = ['agronomist', 'admin'];
@@ -26,12 +26,12 @@ class FeedbackCollector {
     try {
       await this.ensureFeedbackTables();
       logger.info('AI Feedback Collector initialized', {
-        category: 'ai-feedback'
+        category: 'ai-feedback',
       });
     } catch (error) {
       logger.error('Failed to initialize AI Feedback Collector', {
         category: 'ai-feedback',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -115,7 +115,7 @@ class FeedbackCollector {
         correctDescription,
         correctSeverity,
         confidenceRating,
-        notes
+        notes,
       } = feedbackData;
 
       // Validate feedback type
@@ -137,7 +137,7 @@ class FeedbackCollector {
       `, [
         analysisId, userId, feedbackType, correctCondition,
         correctTitle, correctDescription, correctSeverity,
-        confidenceRating, notes, isExpert
+        confidenceRating, notes, isExpert,
       ]);
 
       // If this is incorrect feedback from an expert, add to training data
@@ -146,7 +146,7 @@ class FeedbackCollector {
           condition: correctCondition,
           title: correctTitle,
           description: correctDescription,
-          severity: correctSeverity
+          severity: correctSeverity,
         });
       }
 
@@ -158,13 +158,13 @@ class FeedbackCollector {
         analysisId,
         userId,
         feedbackType,
-        isExpert
+        isExpert,
       });
 
       appLogger.userAction('ai_feedback_submitted', {
         analysisId,
         feedbackType,
-        expertValidation: isExpert
+        expertValidation: isExpert,
       }, userId);
 
       return result.id;
@@ -173,7 +173,7 @@ class FeedbackCollector {
         category: 'ai-feedback',
         error: error.message,
         analysisId,
-        userId
+        userId,
       });
       throw error;
     }
@@ -220,7 +220,7 @@ class FeedbackCollector {
         `, [
           groundTruth.condition, groundTruth.title,
           groundTruth.description, groundTruth.severity,
-          validatedBy, imageHash
+          validatedBy, imageHash,
         ]);
       } else {
         // Insert new training record
@@ -233,7 +233,7 @@ class FeedbackCollector {
         `, [
           analysis.image_path, imageHash, groundTruth.condition,
           groundTruth.title, groundTruth.description, groundTruth.severity,
-          analysis.crop_type, validatedBy, analysis.metadata
+          analysis.crop_type, validatedBy, analysis.metadata,
         ]);
       }
 
@@ -241,14 +241,14 @@ class FeedbackCollector {
         category: 'ai-feedback',
         analysisId,
         imageHash: imageHash.substring(0, 16) + '...',
-        groundTruthCondition: groundTruth.condition
+        groundTruthCondition: groundTruth.condition,
       });
 
     } catch (error) {
       logger.error('Failed to add to training data', {
         category: 'ai-feedback',
         error: error.message,
-        analysisId
+        analysisId,
       });
     }
   }
@@ -295,19 +295,19 @@ class FeedbackCollector {
       // Update metrics based on feedback
       let correctIncrement = 0;
       let falsePositiveIncrement = 0;
-      let falseNegativeIncrement = 0;
+      const falseNegativeIncrement = 0;
 
       switch (feedbackType) {
-        case this.feedbackTypes.CORRECT:
-          correctIncrement = 1;
-          break;
-        case this.feedbackTypes.INCORRECT:
-          // This would need more sophisticated logic to determine if it's FP or FN
-          falsePositiveIncrement = 1;
-          break;
-        case this.feedbackTypes.PARTIAL:
-          correctIncrement = 0.5; // Partial credit
-          break;
+      case this.feedbackTypes.CORRECT:
+        correctIncrement = 1;
+        break;
+      case this.feedbackTypes.INCORRECT:
+        // This would need more sophisticated logic to determine if it's FP or FN
+        falsePositiveIncrement = 1;
+        break;
+      case this.feedbackTypes.PARTIAL:
+        correctIncrement = 0.5; // Partial credit
+        break;
       }
 
       // Update performance record
@@ -331,7 +331,7 @@ class FeedbackCollector {
       `, [
         newTotal, newCorrect, newFP, newFN,
         accuracy, precision, recall, f1Score,
-        modelProvider, conditionType
+        modelProvider, conditionType,
       ]);
 
       logger.debug('Updated model performance metrics', {
@@ -341,14 +341,14 @@ class FeedbackCollector {
         accuracy: accuracy.toFixed(3),
         precision: precision.toFixed(3),
         recall: recall.toFixed(3),
-        f1Score: f1Score.toFixed(3)
+        f1Score: f1Score.toFixed(3),
       });
 
     } catch (error) {
       logger.error('Failed to update model performance', {
         category: 'ai-feedback',
         error: error.message,
-        analysisId
+        analysisId,
       });
     }
   }
@@ -371,13 +371,13 @@ class FeedbackCollector {
         analysisId,
         totalFeedback: stats.reduce((sum, stat) => sum + stat.count, 0),
         feedbackBreakdown: stats,
-        expertValidations: stats.reduce((sum, stat) => sum + stat.expert_count, 0)
+        expertValidations: stats.reduce((sum, stat) => sum + stat.expert_count, 0),
       };
     } catch (error) {
       logger.error('Failed to get feedback stats', {
         category: 'ai-feedback',
         error: error.message,
-        analysisId
+        analysisId,
       });
       return null;
     }
@@ -389,7 +389,7 @@ class FeedbackCollector {
   async getPerformanceReport(modelProvider = null) {
     try {
       let query = 'SELECT * FROM ai_model_performance';
-      let params = [];
+      const params = [];
 
       if (modelProvider) {
         query += ' WHERE model_provider = ?';
@@ -417,16 +417,16 @@ class FeedbackCollector {
         overall: {
           ...overall,
           accuracy: overallAccuracy,
-          conditionsTracked: performance.length
+          conditionsTracked: performance.length,
         },
         byCondition: performance,
-        reportGeneratedAt: new Date().toISOString()
+        reportGeneratedAt: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Failed to generate performance report', {
         category: 'ai-feedback',
         error: error.message,
-        modelProvider
+        modelProvider,
       });
       throw error;
     }
@@ -477,20 +477,20 @@ class FeedbackCollector {
       logger.info('Training data exported', {
         category: 'ai-feedback',
         recordCount: trainingData.length,
-        filters
+        filters,
       });
 
       return {
         data: trainingData,
         count: trainingData.length,
         filters,
-        exportedAt: new Date().toISOString()
+        exportedAt: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Failed to export training data', {
         category: 'ai-feedback',
         error: error.message,
-        filters
+        filters,
       });
       throw error;
     }
@@ -516,13 +516,13 @@ class FeedbackCollector {
       return {
         period: `${days} days`,
         trends,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Failed to get feedback trends', {
         category: 'ai-feedback',
         error: error.message,
-        days
+        days,
       });
       throw error;
     }

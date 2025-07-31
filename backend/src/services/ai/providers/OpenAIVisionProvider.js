@@ -13,7 +13,7 @@ class OpenAIVisionProvider {
       maxTokens: config.maxTokens || 1000,
       temperature: config.temperature || 0.3,
       endpoint: config.endpoint || 'https://api.openai.com/v1/chat/completions',
-      ...config
+      ...config,
     };
 
     this.modelVersion = '4.0-vision';
@@ -57,7 +57,7 @@ Key guidelines:
         category: 'ai-provider',
         provider: 'openai-vision',
         imagePath,
-        metadata
+        metadata,
       });
 
       // Validate input
@@ -79,7 +79,7 @@ Key guidelines:
         category: 'ai-provider',
         provider: 'openai-vision',
         condition: result.condition,
-        confidence: result.confidence
+        confidence: result.confidence,
       });
 
       return result;
@@ -88,7 +88,7 @@ Key guidelines:
         category: 'ai-provider',
         provider: 'openai-vision',
         error: error.message,
-        imagePath
+        imagePath,
       });
       throw error;
     }
@@ -137,7 +137,7 @@ Key guidelines:
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
         '.png': 'image/png',
-        '.webp': 'image/webp'
+        '.webp': 'image/webp',
       };
       
       const mimeType = mimeTypeMap[ext] || 'image/jpeg';
@@ -151,7 +151,7 @@ Key guidelines:
    * Create analysis prompt with context
    */
   createAnalysisPrompt(metadata) {
-    let prompt = `Please analyze this crop image for diseases, pests, and overall plant health.`;
+    let prompt = 'Please analyze this crop image for diseases, pests, and overall plant health.';
     
     if (metadata.cropType) {
       prompt += ` The crop type is: ${metadata.cropType}.`;
@@ -193,28 +193,28 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
       model: this.config.model,
       messages: [
         {
-          role: "system",
-          content: this.systemPrompt
+          role: 'system',
+          content: this.systemPrompt,
         },
         {
-          role: "user",
+          role: 'user',
           content: [
             {
-              type: "text",
-              text: prompt
+              type: 'text',
+              text: prompt,
             },
             {
-              type: "image_url",
+              type: 'image_url',
               image_url: {
                 url: imageBase64,
-                detail: "high"
-              }
-            }
-          ]
-        }
+                detail: 'high',
+              },
+            },
+          ],
+        },
       ],
       max_tokens: this.config.maxTokens,
-      temperature: this.config.temperature
+      temperature: this.config.temperature,
     };
 
     try {
@@ -223,9 +223,9 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
       const response = await axios.post(this.config.endpoint, payload, {
         headers: {
           'Authorization': `Bearer ${this.config.apiKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 30000, // 30 second timeout
       });
 
       const processingTime = Date.now() - startTime;
@@ -234,7 +234,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
         category: 'ai-provider',
         provider: 'openai-vision',
         processingTime,
-        tokensUsed: response.data.usage?.total_tokens || 0
+        tokensUsed: response.data.usage?.total_tokens || 0,
       });
 
       // Extract and parse the response
@@ -259,7 +259,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
         logger.warn('Failed to parse JSON response, creating structured response', {
           category: 'ai-provider',
           provider: 'openai-vision',
-          parseError: parseError.message
+          parseError: parseError.message,
         });
         return this.parseTextResponse(content, processingTime);
       }
@@ -270,7 +270,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
         provider: 'openai-vision',
         error: error.message,
         status: error.response?.status,
-        statusText: error.response?.statusText
+        statusText: error.response?.statusText,
       });
 
       if (error.response?.status === 401) {
@@ -308,7 +308,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
       preventiveMeasures: this.extractPreventiveMeasures(content),
       urgency: this.extractUrgency(content),
       processingTime,
-      tokensUsed: 0
+      tokensUsed: 0,
     };
   }
 
@@ -337,7 +337,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
     const symptomPatterns = [
       /symptoms?[:\-\s]+([^.]+)/i,
       /signs?[:\-\s]+([^.]+)/i,
-      /observed[:\-\s]+([^.]+)/i
+      /observed[:\-\s]+([^.]+)/i,
     ];
 
     for (const pattern of symptomPatterns) {
@@ -360,7 +360,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
     const recPatterns = [
       /recommendations?[:\-\s]+([^.]+(?:\.[^.]+)*)/i,
       /treatment[:\-\s]+([^.]+(?:\.[^.]+)*)/i,
-      /suggest[:\-\s]+([^.]+(?:\.[^.]+)*)/i
+      /suggest[:\-\s]+([^.]+(?:\.[^.]+)*)/i,
     ];
 
     for (const pattern of recPatterns) {
@@ -406,7 +406,7 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
   processAnalysisResult(apiResult) {
     // Validate required fields
     const requiredFields = ['condition', 'title', 'description', 'confidence', 'severity'];
-    const missingFields = requiredFields.filter(field => !apiResult.hasOwnProperty(field));
+    const missingFields = requiredFields.filter(field => !Object.prototype.hasOwnProperty.call(apiResult, field));
     
     if (missingFields.length > 0) {
       throw new AppError(`Invalid analysis result: missing ${missingFields.join(', ')}`, 500);
@@ -439,17 +439,17 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
             'plant_morphology',
             'environmental_context',
             'disease_patterns',
-            'pest_identification'
-          ]
-        }
+            'pest_identification',
+          ],
+        },
       },
       metadata: {
         provider: 'openai-vision',
         model_version: this.config.model,
         analysis_method: 'deep_learning_vision',
         processing_time_ms: apiResult.processingTime || 0,
-        tokens_used: apiResult.tokensUsed || 0
-      }
+        tokens_used: apiResult.tokensUsed || 0,
+      },
     };
   }
 
@@ -484,14 +484,14 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
         'preventive_recommendations',
         'urgency_assessment',
         'crop_type_detection',
-        'causative_agent_identification'
+        'causative_agent_identification',
       ],
       strengths: [
         'detailed_natural_language_analysis',
         'comprehensive_symptom_assessment',
         'contextual_recommendations',
-        'multi_factor_analysis'
-      ]
+        'multi_factor_analysis',
+      ],
     };
   }
 
@@ -506,14 +506,14 @@ Provide your analysis in the specified JSON format with detailed, actionable rec
         latency: Math.round(200 + Math.random() * 300),
         configured: this.isConfigured(),
         lastCheck: new Date().toISOString(),
-        modelStatus: 'operational'
+        modelStatus: 'operational',
       };
     } catch (error) {
       return {
         status: 'unhealthy',
         error: error.message,
         configured: this.isConfigured(),
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     }
   }

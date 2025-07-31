@@ -37,7 +37,7 @@ class AIService {
   async performInitialization() {
     try {
       logger.info('Initializing AI service with multiple providers', {
-        category: 'ai-service'
+        category: 'ai-service',
       });
 
       // Initialize providers based on configuration
@@ -53,19 +53,19 @@ class AIService {
       logger.info('AI service initialized successfully', {
         category: 'ai-service',
         providerCount: this.manager.providers.size,
-        providers: Array.from(this.manager.providers.keys())
+        providers: Array.from(this.manager.providers.keys()),
       });
 
       appLogger.systemEvent('ai_service_initialized', {
         providers: Array.from(this.manager.providers.keys()),
-        defaultProvider: this.manager.defaultProvider
+        defaultProvider: this.manager.defaultProvider,
       });
 
       return this.manager;
     } catch (error) {
       logger.error('Failed to initialize AI service', {
         category: 'ai-service',
-        error: error.message
+        error: error.message,
       });
       throw error;
     }
@@ -81,43 +81,43 @@ class AIService {
         provider: GoogleVisionProvider,
         config: {
           apiKey: process.env.GOOGLE_VISION_API_KEY,
-          projectId: process.env.GOOGLE_CLOUD_PROJECT_ID
+          projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
         },
         options: {
           priority: 10,
           enabled: !!process.env.GOOGLE_VISION_API_KEY,
           timeout: 30000,
-          rateLimit: 1000
-        }
+          rateLimit: 1000,
+        },
       },
       {
         name: 'openai-vision',
         provider: OpenAIVisionProvider,
         config: {
           apiKey: process.env.OPENAI_API_KEY,
-          model: process.env.OPENAI_MODEL || 'gpt-4-vision-preview'
+          model: process.env.OPENAI_MODEL || 'gpt-4-vision-preview',
         },
         options: {
           priority: 9,
           enabled: !!process.env.OPENAI_API_KEY,
           timeout: 45000,
-          rateLimit: 200
-        }
+          rateLimit: 200,
+        },
       },
       {
         name: 'local-ai',
         provider: LocalAIProvider,
         config: {
           modelPath: process.env.LOCAL_AI_MODEL_PATH || './models/crop-disease-detection.tflite',
-          useGPU: process.env.LOCAL_AI_USE_GPU === 'true'
+          useGPU: process.env.LOCAL_AI_USE_GPU === 'true',
         },
         options: {
           priority: 5, // Lower priority but always available
           enabled: true, // Always enable local fallback
           timeout: 10000,
-          rateLimit: 500
-        }
-      }
+          rateLimit: 500,
+        },
+      },
     ];
 
     // Initialize each provider
@@ -126,7 +126,7 @@ class AIService {
         if (!providerConfig.options.enabled) {
           logger.info(`Skipping disabled provider: ${providerConfig.name}`, {
             category: 'ai-service',
-            provider: providerConfig.name
+            provider: providerConfig.name,
           });
           continue;
         }
@@ -140,27 +140,27 @@ class AIService {
           this.manager.registerProvider(
             providerConfig.name,
             providerInstance,
-            providerConfig.options
+            providerConfig.options,
           );
 
           logger.info(`AI provider registered successfully: ${providerConfig.name}`, {
             category: 'ai-service',
             provider: providerConfig.name,
             priority: providerConfig.options.priority,
-            health: healthStatus.status
+            health: healthStatus.status,
           });
         } else {
           logger.warn(`AI provider failed health check: ${providerConfig.name}`, {
             category: 'ai-service',
             provider: providerConfig.name,
-            health: healthStatus
+            health: healthStatus,
           });
         }
       } catch (error) {
         logger.error(`Failed to initialize AI provider: ${providerConfig.name}`, {
           category: 'ai-service',
           provider: providerConfig.name,
-          error: error.message
+          error: error.message,
         });
         
         // Don't fail initialization if optional providers fail
@@ -173,12 +173,12 @@ class AIService {
           const fallbackProvider = new LocalAIProvider({ ...providerConfig.config, fallbackMode: true });
           this.manager.registerProvider(providerConfig.name, fallbackProvider, {
             ...providerConfig.options,
-            priority: 1 // Lowest priority for fallback mode
+            priority: 1, // Lowest priority for fallback mode
           });
         } catch (fallbackError) {
           logger.error('Failed to create local AI fallback', {
             category: 'ai-service',
-            error: fallbackError.message
+            error: fallbackError.message,
           });
         }
       }
@@ -199,8 +199,8 @@ class AIService {
         metadata: {
           cropType: metadata.cropType,
           userId: metadata.userId,
-          location: metadata.location
-        }
+          location: metadata.location,
+        },
       });
 
       // Use AI service manager to handle provider selection and fallback
@@ -211,7 +211,7 @@ class AIService {
         totalProviders: this.manager.providers.size,
         availableProviders: Array.from(this.manager.providers.keys()),
         requestId: this.generateRequestId(),
-        analysisTimestamp: new Date().toISOString()
+        analysisTimestamp: new Date().toISOString(),
       };
 
       logger.info('AI image analysis completed successfully', {
@@ -219,7 +219,7 @@ class AIService {
         provider: result.metadata?.provider,
         condition: result.condition,
         confidence: result.confidence,
-        processingTime: result.metadata?.processing_time_ms
+        processingTime: result.metadata?.processing_time_ms,
       });
 
       return result;
@@ -228,7 +228,7 @@ class AIService {
         category: 'ai-service',
         error: error.message,
         imagePath,
-        metadata
+        metadata,
       });
       throw error;
     }
@@ -254,17 +254,17 @@ class AIService {
           totalRequests: metrics.totalRequests,
           successRate: metrics.successRate,
           averageResponseTime: metrics.averageResponseTime,
-          cacheSize: metrics.cacheSize
+          cacheSize: metrics.cacheSize,
         },
         capabilities: await this.getCapabilities(),
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     } catch (error) {
       return {
         status: 'unhealthy',
         error: error.message,
         initialized: this.initialized,
-        lastCheck: new Date().toISOString()
+        lastCheck: new Date().toISOString(),
       };
     }
   }
@@ -278,7 +278,7 @@ class AIService {
       supportedConditions: new Set(),
       supportedCrops: new Set(),
       features: new Set(),
-      maxFileSize: 0
+      maxFileSize: 0,
     };
 
     for (const [name, provider] of this.manager.providers) {
@@ -297,7 +297,7 @@ class AIService {
         logger.warn(`Failed to get capabilities for provider ${name}`, {
           category: 'ai-service',
           provider: name,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -309,7 +309,7 @@ class AIService {
       features: Array.from(capabilities.features),
       maxFileSize: capabilities.maxFileSize,
       offlineCapable: this.manager.providers.has('local-ai'),
-      multiProvider: this.manager.providers.size > 1
+      multiProvider: this.manager.providers.size > 1,
     };
   }
 
@@ -358,7 +358,7 @@ class AIService {
 
     logger.info(`Starting batch analysis of ${imagePaths.length} images`, {
       category: 'ai-service',
-      batchSize: imagePaths.length
+      batchSize: imagePaths.length,
     });
 
     // Process images in parallel with controlled concurrency
@@ -371,7 +371,7 @@ class AIService {
           const result = await this.analyzeImage(imagePath, {
             ...metadata,
             batchIndex: index,
-            batchTotal: imagePaths.length
+            batchTotal: imagePaths.length,
           });
           return { imagePath, result, success: true };
         } catch (error) {
@@ -390,11 +390,11 @@ class AIService {
       });
     }
 
-    logger.info(`Batch analysis completed`, {
+    logger.info('Batch analysis completed', {
       category: 'ai-service',
       successful: results.length,
       failed: errors.length,
-      total: imagePaths.length
+      total: imagePaths.length,
     });
 
     return {
@@ -404,8 +404,8 @@ class AIService {
         total: imagePaths.length,
         successful: results.length,
         failed: errors.length,
-        successRate: ((results.length / imagePaths.length) * 100).toFixed(1) + '%'
-      }
+        successRate: ((results.length / imagePaths.length) * 100).toFixed(1) + '%',
+      },
     };
   }
 

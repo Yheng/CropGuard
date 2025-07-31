@@ -13,7 +13,7 @@ router.get('/health-trend', authenticateToken, asyncHandler(async (req, res) => 
     '7d': 7,
     '30d': 30,
     '90d': 90,
-    '1y': 365
+    '1y': 365,
   }[timeRange] || 30;
 
   // Generate mock health trend data
@@ -21,7 +21,7 @@ router.get('/health-trend', authenticateToken, asyncHandler(async (req, res) => 
 
   res.json({
     success: true,
-    data: { healthTrend: healthTrendData }
+    data: { healthTrend: healthTrendData },
   });
 }));
 
@@ -32,7 +32,7 @@ router.get('/analysis-history', authenticateToken, asyncHandler(async (req, res)
   const months = {
     '6m': 6,
     '1y': 12,
-    '2y': 24
+    '2y': 24,
   }[timeRange] || 6;
 
   // Get actual analysis data from database
@@ -53,7 +53,7 @@ router.get('/analysis-history', authenticateToken, asyncHandler(async (req, res)
 
   res.json({
     success: true,
-    data: { analysisHistory: processedData }
+    data: { analysisHistory: processedData },
   });
 }));
 
@@ -76,12 +76,12 @@ router.get('/crop-distribution', authenticateToken, asyncHandler(async (req, res
     name: item.crop_type || 'Unknown',
     count: item.count,
     healthScore: Math.round(item.avg_health_score || 75),
-    color: colors[index % colors.length]
+    color: colors[index % colors.length],
   }));
 
   res.json({
     success: true,
-    data: { cropDistribution: processedData }
+    data: { cropDistribution: processedData },
   });
 }));
 
@@ -123,7 +123,7 @@ router.get('/dashboard', authenticateToken, asyncHandler(async (req, res) => {
       name: item.crop_type || 'Unknown',
       count: item.count,
       healthScore: Math.round(item.avg_health_score || 75),
-      color: colors[index % colors.length]
+      color: colors[index % colors.length],
     }));
 
     res.json({
@@ -131,8 +131,8 @@ router.get('/dashboard', authenticateToken, asyncHandler(async (req, res) => {
       data: {
         healthTrend,
         analysisHistory,
-        cropDistribution
-      }
+        cropDistribution,
+      },
     });
   } catch (error) {
     console.error('Analytics dashboard error:', error);
@@ -161,7 +161,7 @@ router.get('/stats', authenticateToken, asyncHandler(async (req, res) => {
     `, [req.user.id]),
     
     // Average confidence
-    getQuery('SELECT AVG(confidence) as avg_confidence FROM analyses WHERE user_id = ?', [req.user.id])
+    getQuery('SELECT AVG(confidence) as avg_confidence FROM analyses WHERE user_id = ?', [req.user.id]),
   ]);
 
   const totalAnalyses = stats[0].total;
@@ -175,8 +175,8 @@ router.get('/stats', authenticateToken, asyncHandler(async (req, res) => {
       totalAnalyses,
       thisMonthAnalyses,
       healthyRate,
-      avgConfidence
-    }
+      avgConfidence,
+    },
   });
 }));
 
@@ -211,7 +211,7 @@ router.get('/admin/system', authenticateToken, requireRole(['admin']), asyncHand
       SELECT condition, COUNT(*) as count
       FROM analyses
       GROUP BY condition
-    `)
+    `),
   ]);
 
   res.json({
@@ -221,13 +221,13 @@ router.get('/admin/system', authenticateToken, requireRole(['admin']), asyncHand
       totalAnalyses: systemStats[1].total,
       thisMonthAnalyses: systemStats[2].total,
       userGrowth: systemStats[3],
-      conditionBreakdown: systemStats[4]
-    }
+      conditionBreakdown: systemStats[4],
+    },
   });
 }));
 
 // Helper function to generate mock health trend data
-function generateHealthTrendData(days, userId) {
+function generateHealthTrendData(days, _userId) {
   const data = [];
   
   for (let i = days; i >= 0; i--) {
@@ -243,8 +243,8 @@ function generateHealthTrendData(days, userId) {
     baseScore += seasonalFactor;
     
     // Add some random events
-    if (Math.random() < 0.1) baseScore -= 20; // Disease outbreak
-    if (Math.random() < 0.05) baseScore -= 30; // Severe pest issue
+    if (Math.random() < 0.1) {baseScore -= 20;} // Disease outbreak
+    if (Math.random() < 0.05) {baseScore -= 30;} // Severe pest issue
     
     baseScore = Math.max(20, Math.min(100, baseScore));
     
@@ -254,7 +254,7 @@ function generateHealthTrendData(days, userId) {
       date: date.toISOString().split('T')[0],
       healthScore: Math.round(baseScore),
       condition,
-      cropType: ['tomato', 'corn', 'wheat', 'lettuce', 'pepper'][Math.floor(Math.random() * 5)]
+      cropType: ['tomato', 'corn', 'wheat', 'lettuce', 'pepper'][Math.floor(Math.random() * 5)],
     });
   }
   
@@ -286,7 +286,7 @@ function processAnalysisHistoryData(rawData, months) {
       healthy,
       pest,
       disease: disease + unknown, // Combine disease and unknown
-      total: healthy + pest + disease + unknown
+      total: healthy + pest + disease + unknown,
     });
   }
   

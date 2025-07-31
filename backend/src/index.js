@@ -2,10 +2,10 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
+// const morgan = require('morgan'); // Currently unused
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
-const rateLimit = require('rate-limiter-flexible');
+// const rateLimit = require('rate-limiter-flexible'); // Currently unused
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -23,7 +23,7 @@ const {
   requestLogger, 
   performanceLogger, 
   logger, 
-  appLogger 
+  appLogger, 
 } = require('./middleware/logger');
 const {
   createRateLimitMiddleware,
@@ -31,39 +31,40 @@ const {
   requestSizeValidator,
   advancedSanitization,
   securityHeaders,
-  requestIdMiddleware
+  requestIdMiddleware,
 } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limiting
-const rateLimiter = new rateLimit.RateLimiterMemory({
-  points: 100, // Number of requests
-  duration: 60, // Per 60 seconds
-});
+// Rate limiting - currently unused but kept for potential future use
+// const rateLimiter = new rateLimit.RateLimiterMemory({
+//   points: 100, // Number of requests
+//   duration: 60, // Per 60 seconds
+// });
 
-const rateLimitMiddleware = async (req, res, next) => {
-  try {
-    await rateLimiter.consume(req.ip);
-    next();
-  } catch (rejRes) {
-    res.status(429).json({
-      error: 'Too many requests',
-      message: 'Rate limit exceeded. Try again later.'
-    });
-  }
-};
+// Rate limit middleware - currently unused but kept for potential future use
+// const rateLimitMiddleware = async (req, res, next) => {
+//   try {
+//     await rateLimiter.consume(req.ip);
+//     next();
+//   } catch (rejRes) {
+//     res.status(429).json({
+//       error: 'Too many requests',
+//       message: 'Rate limit exceeded. Try again later.',
+//     });
+//   }
+// };
 
 // Security middleware (order is important)
 app.use(requestIdMiddleware);
 app.use(securityHeaders);
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  credentials: true,
 }));
 app.use(compression());
 
@@ -91,7 +92,7 @@ app.get('/health-simple', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
@@ -114,7 +115,7 @@ app.use('/uploads/processed', express.static(path.join(__dirname, '../uploads/pr
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
-    message: `Route ${req.originalUrl} not found`
+    message: `Route ${req.originalUrl} not found`,
   });
 });
 
@@ -132,7 +133,7 @@ async function startServer() {
       logger.info(`CropGuard API server running on port ${PORT}`, {
         port: PORT,
         environment: process.env.NODE_ENV || 'development',
-        healthCheck: `http://localhost:${PORT}/health`
+        healthCheck: `http://localhost:${PORT}/health`,
       });
       
       // Legacy console logs for development
@@ -145,6 +146,7 @@ async function startServer() {
   } catch (error) {
     logger.error('Failed to start server', { error: error.message, stack: error.stack });
     console.error('❌ Failed to start server:', error);
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
   }
 }
@@ -154,6 +156,7 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
   appLogger.systemEvent('server_shutdown', { signal: 'SIGTERM' });
   console.log('🛑 SIGTERM received, shutting down gracefully');
+  // eslint-disable-next-line no-process-exit
   process.exit(0);
 });
 
@@ -161,6 +164,7 @@ process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully');
   appLogger.systemEvent('server_shutdown', { signal: 'SIGINT' });
   console.log('🛑 SIGINT received, shutting down gracefully');
+  // eslint-disable-next-line no-process-exit
   process.exit(0);
 });
 

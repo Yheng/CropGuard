@@ -11,7 +11,7 @@ if (!fs.existsSync(logsDir)) {
 // Custom format for structured logging
 const logFormat = winston.format.combine(
   winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS'
+    format: 'YYYY-MM-DD HH:mm:ss.SSS',
   }),
   winston.format.errors({ stack: true }),
   winston.format.json(),
@@ -25,27 +25,27 @@ const logFormat = winston.format.combine(
       ...(endpoint && { endpoint }),
       ...(duration && { duration }),
       ...(error && { error }),
-      ...meta
+      ...meta,
     };
     return JSON.stringify(logEntry);
-  })
+  }),
 );
 
 // Console format for development
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({
-    format: 'HH:mm:ss'
+    format: 'HH:mm:ss',
   }),
   winston.format.printf(({ timestamp, level, message, service, userId, endpoint, duration }) => {
     let logMessage = `${timestamp} [${level}]`;
-    if (service) logMessage += ` [${service}]`;
-    if (userId) logMessage += ` [User:${userId}]`;
-    if (endpoint) logMessage += ` [${endpoint}]`;
-    if (duration) logMessage += ` [${duration}ms]`;
+    if (service) {logMessage += ` [${service}]`;}
+    if (userId) {logMessage += ` [User:${userId}]`;}
+    if (endpoint) {logMessage += ` [${endpoint}]`;}
+    if (duration) {logMessage += ` [${duration}ms]`;}
     logMessage += `: ${message}`;
     return logMessage;
-  })
+  }),
 );
 
 // Create Winston logger
@@ -54,7 +54,7 @@ const logger = winston.createLogger({
   format: logFormat,
   defaultMeta: { 
     service: 'cropguard-api',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   },
   transports: [
     // Error log file
@@ -63,7 +63,7 @@ const logger = winston.createLogger({
       level: 'error',
       maxsize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
-      tailable: true
+      tailable: true,
     }),
     
     // Combined log file
@@ -71,7 +71,7 @@ const logger = winston.createLogger({
       filename: path.join(logsDir, 'combined.log'),
       maxsize: 10 * 1024 * 1024, // 10MB
       maxFiles: 10,
-      tailable: true
+      tailable: true,
     }),
     
     // Access log for API requests
@@ -80,30 +80,30 @@ const logger = winston.createLogger({
       level: 'http',
       maxsize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
-      tailable: true
-    })
+      tailable: true,
+    }),
   ],
   
   // Handle uncaught exceptions
   exceptionHandlers: [
     new winston.transports.File({
-      filename: path.join(logsDir, 'exceptions.log')
-    })
+      filename: path.join(logsDir, 'exceptions.log'),
+    }),
   ],
   
   // Handle unhandled promise rejections
   rejectionHandlers: [
     new winston.transports.File({
-      filename: path.join(logsDir, 'rejections.log')
-    })
-  ]
+      filename: path.join(logsDir, 'rejections.log'),
+    }),
+  ],
 });
 
 // Add console transport for development
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: consoleFormat,
-    level: 'debug'
+    level: 'debug',
   }));
 }
 
@@ -122,7 +122,7 @@ const requestLogger = (req, res, next) => {
     userAgent,
     userId,
     endpoint: `${method} ${url}`,
-    requestId: req.id || generateRequestId()
+    requestId: req.id || generateRequestId(),
   });
 
   // Override res.json to log response
@@ -140,7 +140,7 @@ const requestLogger = (req, res, next) => {
       statusCode,
       duration,
       endpoint: `${method} ${url}`,
-      responseSize: JSON.stringify(data).length
+      responseSize: JSON.stringify(data).length,
     });
     
     return originalJson.call(this, data);
@@ -164,7 +164,7 @@ const performanceLogger = (req, res, next) => {
         duration: Math.round(duration),
         userId: req.user?.id,
         endpoint: `${req.method} ${req.url}`,
-        statusCode: res.statusCode
+        statusCode: res.statusCode,
       });
     }
   });
@@ -179,7 +179,7 @@ const dbLogger = {
       sql: sql.substring(0, 200) + (sql.length > 200 ? '...' : ''),
       params: params?.length || 0,
       duration: Math.round(duration || 0),
-      category: 'database'
+      category: 'database',
     });
   },
   
@@ -188,7 +188,7 @@ const dbLogger = {
       sql: sql.substring(0, 500) + (sql.length > 500 ? '...' : ''),
       params,
       duration: Math.round(duration),
-      category: 'database'
+      category: 'database',
     });
   },
   
@@ -198,9 +198,9 @@ const dbLogger = {
       sql: sql?.substring(0, 200) + (sql?.length > 200 ? '...' : ''),
       params,
       category: 'database',
-      stack: error.stack
+      stack: error.stack,
     });
-  }
+  },
 };
 
 // Security event logging
@@ -213,7 +213,7 @@ const securityLogger = {
       userAgent: req.get('User-Agent'),
       userId: req.user?.id,
       endpoint: `${req.method} ${req.url}`,
-      category: 'security'
+      category: 'security',
     });
   },
   
@@ -223,7 +223,7 @@ const securityLogger = {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       endpoint: `${req.method} ${req.url}`,
-      category: 'security'
+      category: 'security',
     });
   },
   
@@ -234,9 +234,9 @@ const securityLogger = {
       userAgent: req.get('User-Agent'),
       userId: req.user?.id,
       endpoint: `${req.method} ${req.url}`,
-      category: 'security'
+      category: 'security',
     });
-  }
+  },
 };
 
 // Application event logging
@@ -246,7 +246,7 @@ const appLogger = {
       action,
       details,
       userId,
-      category: 'user-activity'
+      category: 'user-activity',
     });
   },
   
@@ -254,7 +254,7 @@ const appLogger = {
     logger.info('System event', {
       event,
       details,
-      category: 'system'
+      category: 'system',
     });
   },
   
@@ -264,9 +264,9 @@ const appLogger = {
       confidence,
       processingTime,
       userId,
-      category: 'ai-analysis'
+      category: 'ai-analysis',
     });
-  }
+  },
 };
 
 // Error logging with context
@@ -275,7 +275,7 @@ const errorLogger = (error, req = null, context = {}) => {
     message: error.message,
     stack: error.stack,
     category: 'error',
-    ...context
+    ...context,
   };
   
   if (req) {
@@ -313,7 +313,7 @@ const cleanupOldLogs = () => {
   logger.info('Log cleanup initiated', {
     retentionDays,
     cutoffDate: cutoffDate.toISOString(),
-    category: 'maintenance'
+    category: 'maintenance',
   });
 };
 
@@ -326,5 +326,5 @@ module.exports = {
   appLogger,
   errorLogger,
   healthCheck,
-  cleanupOldLogs
+  cleanupOldLogs,
 };

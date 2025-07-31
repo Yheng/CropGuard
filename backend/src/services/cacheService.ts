@@ -1,9 +1,7 @@
 // CropGuard Redis Caching Service
 // Optimized for rural connectivity and API rate limiting
 
-import Redis from 'ioredis'
-import { promisify } from 'util'
-import crypto from 'crypto'
+import Redis from 'ioredis';
 
 export interface CacheOptions {
   ttl?: number // Time to live in seconds
@@ -42,15 +40,15 @@ export interface CacheConfig {
 }
 
 class RedisCacheService {
-  private redis: Redis
-  private config: CacheConfig
-  private isConnected: boolean = false
+  private redis: Redis;
+  private config: CacheConfig;
+  private isConnected: boolean = false;
   private stats = {
     hits: 0,
     misses: 0,
     sets: 0,
-    deletes: 0
-  }
+    deletes: 0,
+  };
 
   // Cache key prefixes for different data types
   private readonly KEY_PREFIXES = {
@@ -63,8 +61,8 @@ class RedisCacheService {
     API_RATE_LIMIT: 'rate_limit',
     FARMER_DATA: 'farmer',
     AGRONOMIST_DATA: 'agronomist',
-    SYSTEM_CONFIG: 'config'
-  }
+    SYSTEM_CONFIG: 'config',
+  };
 
   // Default TTL values (in seconds)
   private readonly DEFAULT_TTL = {
@@ -76,12 +74,12 @@ class RedisCacheService {
     SESSION: 1800, // 30 minutes
     API_RATE_LIMIT: 3600, // 1 hour
     SYSTEM_CONFIG: 86400, // 24 hours
-    TEMPORARY: 300 // 5 minutes
-  }
+    TEMPORARY: 300, // 5 minutes
+  };
 
   constructor(config: CacheConfig) {
-    this.config = config
-    this.initializeRedis()
+    this.config = config;
+    this.initializeRedis();
   }
 
   private initializeRedis(): void {
@@ -91,12 +89,12 @@ class RedisCacheService {
         this.redis = new Redis.Cluster(this.config.cluster.nodes, {
           redisOptions: {
             password: this.config.password,
-            keyPrefix: this.config.keyPrefix
+            keyPrefix: this.config.keyPrefix,
           },
           enableOfflineQueue: false,
           retryDelayOnFailover: 1000,
-          maxRetriesPerRequest: 3
-        })
+          maxRetriesPerRequest: 3,
+        });
       } else if (this.config.sentinel?.enabled) {
         // Redis Sentinel configuration
         this.redis = new Redis({
@@ -106,8 +104,8 @@ class RedisCacheService {
           db: this.config.db,
           keyPrefix: this.config.keyPrefix,
           retryDelayOnFailover: 1000,
-          maxRetriesPerRequest: 3
-        })
+          maxRetriesPerRequest: 3,
+        });
       } else {
         // Single Redis instance
         this.redis = new Redis({
@@ -120,449 +118,449 @@ class RedisCacheService {
           retryDelayOnFailover: 100,
           maxRetriesPerRequest: 3,
           connectTimeout: 5000,
-          commandTimeout: 3000
-        })
+          commandTimeout: 3000,
+        });
       }
 
-      this.setupEventListeners()
-      this.setupMemoryOptimization()
+      this.setupEventListeners();
+      this.setupMemoryOptimization();
     } catch (error) {
-      console.error('[CacheService] Redis initialization failed:', error)
-      throw error
+      console.error('[CacheService] Redis initialization failed:', error);
+      throw error;
     }
   }
 
   private setupEventListeners(): void {
     this.redis.on('connect', () => {
-      console.log('[CacheService] Connected to Redis')
-      this.isConnected = true
-    })
+      console.log('[CacheService] Connected to Redis');
+      this.isConnected = true;
+    });
 
     this.redis.on('error', (error) => {
-      console.error('[CacheService] Redis error:', error)
-      this.isConnected = false
-    })
+      console.error('[CacheService] Redis error:', error);
+      this.isConnected = false;
+    });
 
     this.redis.on('close', () => {
-      console.log('[CacheService] Redis connection closed')
-      this.isConnected = false
-    })
+      console.log('[CacheService] Redis connection closed');
+      this.isConnected = false;
+    });
 
     this.redis.on('reconnecting', () => {
-      console.log('[CacheService] Reconnecting to Redis...')
-    })
+      console.log('[CacheService] Reconnecting to Redis...');
+    });
 
     // Monitor memory usage
     setInterval(async () => {
       try {
-        await this.monitorMemoryUsage()
+        await this.monitorMemoryUsage();
       } catch (error) {
-        console.error('[CacheService] Memory monitoring failed:', error)
+        console.error('[CacheService] Memory monitoring failed:', error);
       }
-    }, 60000) // Check every minute
+    }, 60000); // Check every minute
   }
 
   private setupMemoryOptimization(): void {
     // Configure Redis for optimal memory usage
-    this.redis.config('SET', 'maxmemory', this.config.maxMemory)
-    this.redis.config('SET', 'maxmemory-policy', this.config.evictionPolicy)
+    this.redis.config('SET', 'maxmemory', this.config.maxMemory);
+    this.redis.config('SET', 'maxmemory-policy', this.config.evictionPolicy);
     
     // Enable key expiration notifications
-    this.redis.config('SET', 'notify-keyspace-events', 'Ex')
+    this.redis.config('SET', 'notify-keyspace-events', 'Ex');
   }
 
   // Core cache operations
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     if (!this.isConnected) {
-      console.warn('[CacheService] Redis not connected, skipping cache get')
-      return null
+      console.warn('[CacheService] Redis not connected, skipping cache get');
+      return null;
     }
 
     try {
-      const value = await this.redis.get(key)
+      const value = await this.redis.get(key);
       
       if (value === null) {
-        this.stats.misses++
-        return null
+        this.stats.misses++;
+        return null;
       }
 
-      this.stats.hits++
+      this.stats.hits++;
       
       // Handle compressed data
-      const parsed = JSON.parse(value)
+      const parsed = JSON.parse(value);
       if (parsed._compressed) {
-        return this.decompress(parsed.data)
+        return this.decompress(parsed.data);
       }
       
-      return parsed
+      return parsed;
     } catch (error) {
-      console.error(`[CacheService] Get failed for key ${key}:`, error)
-      this.stats.misses++
-      return null
+      console.error(`[CacheService] Get failed for key ${key}:`, error);
+      this.stats.misses++;
+      return null;
     }
   }
 
-  async set(key: string, value: any, options: CacheOptions = {}): Promise<boolean> {
+  async set(key: string, value: unknown, options: CacheOptions = {}): Promise<boolean> {
     if (!this.isConnected) {
-      console.warn('[CacheService] Redis not connected, skipping cache set')
-      return false
+      console.warn('[CacheService] Redis not connected, skipping cache set');
+      return false;
     }
 
     try {
-      let serialized = JSON.stringify(value)
+      let serialized = JSON.stringify(value);
       
       // Compress large values
       if (options.compression || serialized.length > 1024) {
-        const compressed = await this.compress(serialized)
+        const compressed = await this.compress(serialized);
         serialized = JSON.stringify({
           _compressed: true,
-          data: compressed
-        })
+          data: compressed,
+        });
       }
 
-      const ttl = options.ttl || this.DEFAULT_TTL.TEMPORARY
-      const result = await this.redis.setex(key, ttl, serialized)
+      const ttl = options.ttl || this.DEFAULT_TTL.TEMPORARY;
+      const result = await this.redis.setex(key, ttl, serialized);
       
       // Add tags for pattern-based invalidation
       if (options.tags && options.tags.length > 0) {
-        await this.addCacheTags(key, options.tags, ttl)
+        await this.addCacheTags(key, options.tags, ttl);
       }
 
-      this.stats.sets++
-      return result === 'OK'
+      this.stats.sets++;
+      return result === 'OK';
     } catch (error) {
-      console.error(`[CacheService] Set failed for key ${key}:`, error)
-      return false
+      console.error(`[CacheService] Set failed for key ${key}:`, error);
+      return false;
     }
   }
 
   async del(key: string | string[]): Promise<number> {
     if (!this.isConnected) {
-      return 0
+      return 0;
     }
 
     try {
-      const keys = Array.isArray(key) ? key : [key]
-      const result = await this.redis.del(...keys)
-      this.stats.deletes += result
-      return result
+      const keys = Array.isArray(key) ? key : [key];
+      const result = await this.redis.del(...keys);
+      this.stats.deletes += result;
+      return result;
     } catch (error) {
-      console.error(`[CacheService] Delete failed for key(s) ${key}:`, error)
-      return 0
+      console.error(`[CacheService] Delete failed for key(s) ${key}:`, error);
+      return 0;
     }
   }
 
   async exists(key: string): Promise<boolean> {
     if (!this.isConnected) {
-      return false
+      return false;
     }
 
     try {
-      const result = await this.redis.exists(key)
-      return result === 1
+      const result = await this.redis.exists(key);
+      return result === 1;
     } catch (error) {
-      console.error(`[CacheService] Exists check failed for key ${key}:`, error)
-      return false
+      console.error(`[CacheService] Exists check failed for key ${key}:`, error);
+      return false;
     }
   }
 
   async expire(key: string, ttl: number): Promise<boolean> {
     if (!this.isConnected) {
-      return false
+      return false;
     }
 
     try {
-      const result = await this.redis.expire(key, ttl)
-      return result === 1
+      const result = await this.redis.expire(key, ttl);
+      return result === 1;
     } catch (error) {
-      console.error(`[CacheService] Expire failed for key ${key}:`, error)
-      return false
+      console.error(`[CacheService] Expire failed for key ${key}:`, error);
+      return false;
     }
   }
 
   // Pattern-based operations
   async invalidateByPattern(pattern: string): Promise<number> {
     if (!this.isConnected) {
-      return 0
+      return 0;
     }
 
     try {
-      const keys = await this.redis.keys(pattern)
+      const keys = await this.redis.keys(pattern);
       if (keys.length === 0) {
-        return 0
+        return 0;
       }
 
-      return await this.del(keys)
+      return await this.del(keys);
     } catch (error) {
-      console.error(`[CacheService] Pattern invalidation failed for ${pattern}:`, error)
-      return 0
+      console.error(`[CacheService] Pattern invalidation failed for ${pattern}:`, error);
+      return 0;
     }
   }
 
   async invalidateByTags(tags: string[]): Promise<number> {
     if (!this.isConnected || tags.length === 0) {
-      return 0
+      return 0;
     }
 
     try {
-      let totalDeleted = 0
+      let totalDeleted = 0;
       
       for (const tag of tags) {
-        const tagKey = `tag:${tag}`
-        const keys = await this.redis.smembers(tagKey)
+        const tagKey = `tag:${tag}`;
+        const keys = await this.redis.smembers(tagKey);
         
         if (keys.length > 0) {
-          const deleted = await this.del(keys)
-          totalDeleted += deleted
+          const deleted = await this.del(keys);
+          totalDeleted += deleted;
           
           // Clean up the tag set
-          await this.redis.del(tagKey)
+          await this.redis.del(tagKey);
         }
       }
       
-      return totalDeleted
+      return totalDeleted;
     } catch (error) {
-      console.error(`[CacheService] Tag invalidation failed for tags ${tags}:`, error)
-      return 0
+      console.error(`[CacheService] Tag invalidation failed for tags ${tags}:`, error);
+      return 0;
     }
   }
 
   // Specialized cache methods for CropGuard
   async cacheAnalysisResult(
     analysisId: string, 
-    result: any, 
-    farmerId: string
+    result: Record<string, unknown>, 
+    farmerId: string,
   ): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.ANALYSIS, analysisId)
+    const key = this.buildKey(this.KEY_PREFIXES.ANALYSIS, analysisId);
     return await this.set(key, result, {
       ttl: this.DEFAULT_TTL.ANALYSIS,
       tags: [`farmer:${farmerId}`, 'analysis'],
-      compression: true
-    })
+      compression: true,
+    });
   }
 
-  async getCachedAnalysis(analysisId: string): Promise<any | null> {
-    const key = this.buildKey(this.KEY_PREFIXES.ANALYSIS, analysisId)
-    return await this.get(key)
+  async getCachedAnalysis(analysisId: string): Promise<Record<string, unknown> | null> {
+    const key = this.buildKey(this.KEY_PREFIXES.ANALYSIS, analysisId);
+    return await this.get(key);
   }
 
-  async cacheUserProfile(userId: string, profile: any): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.USER, userId)
+  async cacheUserProfile(userId: string, profile: Record<string, unknown>): Promise<boolean> {
+    const key = this.buildKey(this.KEY_PREFIXES.USER, userId);
     return await this.set(key, profile, {
       ttl: this.DEFAULT_TTL.USER_PROFILE,
-      tags: [`user:${userId}`]
-    })
+      tags: [`user:${userId}`],
+    });
   }
 
-  async getCachedUserProfile(userId: string): Promise<any | null> {
-    const key = this.buildKey(this.KEY_PREFIXES.USER, userId)
-    return await this.get(key)
+  async getCachedUserProfile(userId: string): Promise<Record<string, unknown> | null> {
+    const key = this.buildKey(this.KEY_PREFIXES.USER, userId);
+    return await this.get(key);
   }
 
-  async cacheWeatherData(location: string, data: any): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.WEATHER, location)
+  async cacheWeatherData(location: string, data: Record<string, unknown>): Promise<boolean> {
+    const key = this.buildKey(this.KEY_PREFIXES.WEATHER, location);
     return await this.set(key, data, {
       ttl: this.DEFAULT_TTL.WEATHER,
-      tags: ['weather']
-    })
+      tags: ['weather'],
+    });
   }
 
-  async getCachedWeatherData(location: string): Promise<any | null> {
-    const key = this.buildKey(this.KEY_PREFIXES.WEATHER, location)
-    return await this.get(key)
+  async getCachedWeatherData(location: string): Promise<Record<string, unknown> | null> {
+    const key = this.buildKey(this.KEY_PREFIXES.WEATHER, location);
+    return await this.get(key);
   }
 
   async cacheAIResponse(
     inputHash: string, 
-    response: any, 
-    modelVersion: string
+    response: Record<string, unknown>, 
+    modelVersion: string,
   ): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.AI_RESPONSE, `${inputHash}:${modelVersion}`)
+    const key = this.buildKey(this.KEY_PREFIXES.AI_RESPONSE, `${inputHash}:${modelVersion}`);
     return await this.set(key, response, {
       ttl: this.DEFAULT_TTL.AI_RESPONSE,
       tags: ['ai_response', `model:${modelVersion}`],
-      compression: true
-    })
+      compression: true,
+    });
   }
 
   async getCachedAIResponse(
     inputHash: string, 
-    modelVersion: string
-  ): Promise<any | null> {
-    const key = this.buildKey(this.KEY_PREFIXES.AI_RESPONSE, `${inputHash}:${modelVersion}`)
-    return await this.get(key)
+    modelVersion: string,
+  ): Promise<Record<string, unknown> | null> {
+    const key = this.buildKey(this.KEY_PREFIXES.AI_RESPONSE, `${inputHash}:${modelVersion}`);
+    return await this.get(key);
   }
 
   // Rate limiting
   async checkRateLimit(
     identifier: string, 
     limit: number, 
-    windowSeconds: number
+    windowSeconds: number,
   ): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
     if (!this.isConnected) {
-      return { allowed: true, remaining: limit, resetTime: Date.now() + windowSeconds * 1000 }
+      return { allowed: true, remaining: limit, resetTime: Date.now() + windowSeconds * 1000 };
     }
 
-    const key = this.buildKey(this.KEY_PREFIXES.API_RATE_LIMIT, identifier)
+    const key = this.buildKey(this.KEY_PREFIXES.API_RATE_LIMIT, identifier);
     
     try {
-      const multi = this.redis.multi()
-      multi.incr(key)
-      multi.expire(key, windowSeconds)
+      const multi = this.redis.multi();
+      multi.incr(key);
+      multi.expire(key, windowSeconds);
       
-      const results = await multi.exec()
-      const count = results?.[0]?.[1] as number
+      const results = await multi.exec();
+      const count = results?.[0]?.[1] as number;
       
-      const allowed = count <= limit
-      const remaining = Math.max(0, limit - count)
-      const resetTime = Date.now() + windowSeconds * 1000
+      const allowed = count <= limit;
+      const remaining = Math.max(0, limit - count);
+      const resetTime = Date.now() + windowSeconds * 1000;
       
-      return { allowed, remaining, resetTime }
+      return { allowed, remaining, resetTime };
     } catch (error) {
-      console.error(`[CacheService] Rate limit check failed for ${identifier}:`, error)
-      return { allowed: true, remaining: limit, resetTime: Date.now() + windowSeconds * 1000 }
+      console.error(`[CacheService] Rate limit check failed for ${identifier}:`, error);
+      return { allowed: true, remaining: limit, resetTime: Date.now() + windowSeconds * 1000 };
     }
   }
 
   // Session management
-  async setSession(sessionId: string, data: any): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId)
+  async setSession(sessionId: string, data: Record<string, unknown>): Promise<boolean> {
+    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId);
     return await this.set(key, data, {
-      ttl: this.DEFAULT_TTL.SESSION
-    })
+      ttl: this.DEFAULT_TTL.SESSION,
+    });
   }
 
-  async getSession(sessionId: string): Promise<any | null> {
-    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId)
-    return await this.get(key)
+  async getSession(sessionId: string): Promise<Record<string, unknown> | null> {
+    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId);
+    return await this.get(key);
   }
 
   async extendSession(sessionId: string, ttl?: number): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId)
-    return await this.expire(key, ttl || this.DEFAULT_TTL.SESSION)
+    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId);
+    return await this.expire(key, ttl || this.DEFAULT_TTL.SESSION);
   }
 
   async destroySession(sessionId: string): Promise<boolean> {
-    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId)
-    return (await this.del(key)) > 0
+    const key = this.buildKey(this.KEY_PREFIXES.SESSION, sessionId);
+    return (await this.del(key)) > 0;
   }
 
   // Bulk operations for sync optimization
-  async mget(keys: string[]): Promise<(any | null)[]> {
+  async mget(keys: string[]): Promise<(unknown | null)[]> {
     if (!this.isConnected || keys.length === 0) {
-      return new Array(keys.length).fill(null)
+      return new Array(keys.length).fill(null);
     }
 
     try {
-      const values = await this.redis.mget(...keys)
+      const values = await this.redis.mget(...keys);
       return values.map(value => {
         if (value === null) {
-          this.stats.misses++
-          return null
+          this.stats.misses++;
+          return null;
         }
         
-        this.stats.hits++
-        const parsed = JSON.parse(value)
+        this.stats.hits++;
+        const parsed = JSON.parse(value);
         
         if (parsed._compressed) {
-          return this.decompress(parsed.data)
+          return this.decompress(parsed.data);
         }
         
-        return parsed
-      })
+        return parsed;
+      });
     } catch (error) {
-      console.error('[CacheService] Bulk get failed:', error)
-      this.stats.misses += keys.length
-      return new Array(keys.length).fill(null)
+      console.error('[CacheService] Bulk get failed:', error);
+      this.stats.misses += keys.length;
+      return new Array(keys.length).fill(null);
     }
   }
 
-  async mset(keyValuePairs: Array<{ key: string; value: any; ttl?: number }>): Promise<boolean> {
+  async mset(keyValuePairs: Array<{ key: string; value: unknown; ttl?: number }>): Promise<boolean> {
     if (!this.isConnected || keyValuePairs.length === 0) {
-      return false
+      return false;
     }
 
     try {
-      const pipeline = this.redis.pipeline()
+      const pipeline = this.redis.pipeline();
       
       for (const { key, value, ttl } of keyValuePairs) {
-        let serialized = JSON.stringify(value)
+        let serialized = JSON.stringify(value);
         
         if (serialized.length > 1024) {
-          const compressed = await this.compress(serialized)
+          const compressed = await this.compress(serialized);
           serialized = JSON.stringify({
             _compressed: true,
-            data: compressed
-          })
+            data: compressed,
+          });
         }
         
-        pipeline.setex(key, ttl || this.DEFAULT_TTL.TEMPORARY, serialized)
+        pipeline.setex(key, ttl || this.DEFAULT_TTL.TEMPORARY, serialized);
       }
       
-      const results = await pipeline.exec()
-      const success = results?.every(result => result[1] === 'OK') || false
+      const results = await pipeline.exec();
+      const success = results?.every(result => result[1] === 'OK') || false;
       
       if (success) {
-        this.stats.sets += keyValuePairs.length
+        this.stats.sets += keyValuePairs.length;
       }
       
-      return success
+      return success;
     } catch (error) {
-      console.error('[CacheService] Bulk set failed:', error)
-      return false
+      console.error('[CacheService] Bulk set failed:', error);
+      return false;
     }
   }
 
   // Utility methods
   private buildKey(...parts: string[]): string {
-    return parts.join(':')
+    return parts.join(':');
   }
 
   private async addCacheTags(key: string, tags: string[], ttl: number): Promise<void> {
-    const pipeline = this.redis.pipeline()
+    const pipeline = this.redis.pipeline();
     
     for (const tag of tags) {
-      const tagKey = `tag:${tag}`
-      pipeline.sadd(tagKey, key)
-      pipeline.expire(tagKey, ttl)
+      const tagKey = `tag:${tag}`;
+      pipeline.sadd(tagKey, key);
+      pipeline.expire(tagKey, ttl);
     }
     
-    await pipeline.exec()
+    await pipeline.exec();
   }
 
   private async compress(data: string): Promise<string> {
     // Simple base64 compression - in production, use actual compression library
-    return Buffer.from(data).toString('base64')
+    return Buffer.from(data).toString('base64');
   }
 
-  private decompress(data: string): any {
+  private decompress(data: string): unknown {
     try {
-      const decompressed = Buffer.from(data, 'base64').toString('utf-8')
-      return JSON.parse(decompressed)
+      const decompressed = Buffer.from(data, 'base64').toString('utf-8');
+      return JSON.parse(decompressed);
     } catch (error) {
-      console.error('[CacheService] Decompression failed:', error)
-      return null
+      console.error('[CacheService] Decompression failed:', error);
+      return null;
     }
   }
 
   private async monitorMemoryUsage(): Promise<void> {
     try {
-      const info = await this.redis.info('memory')
-      const lines = info.split('\r\n')
+      const info = await this.redis.info('memory');
+      const lines = info.split('\r\n');
       
       for (const line of lines) {
         if (line.startsWith('used_memory:')) {
-          const usedMemory = parseInt(line.split(':')[1])
-          const maxMemory = parseInt(this.config.maxMemory.replace(/\D/g, ''))
+          const usedMemory = parseInt(line.split(':')[1]);
+          const maxMemory = parseInt(this.config.maxMemory.replace(/\D/g, ''));
           
           if (usedMemory > maxMemory * 0.9) {
-            console.warn('[CacheService] Memory usage is high, consider increasing cache size or TTL values')
+            console.warn('[CacheService] Memory usage is high, consider increasing cache size or TTL values');
           }
-          break
+          break;
         }
       }
     } catch (error) {
-      console.error('[CacheService] Memory monitoring failed:', error)
+      console.error('[CacheService] Memory monitoring failed:', error);
     }
   }
 
@@ -575,31 +573,31 @@ class RedisCacheService {
         totalRequests: 0,
         memoryUsage: 0,
         keyCount: 0,
-        evictionCount: 0
-      }
+        evictionCount: 0,
+      };
     }
 
     try {
-      const info = await this.redis.info()
-      const lines = info.split('\r\n')
+      const info = await this.redis.info();
+      const lines = info.split('\r\n');
       
-      let memoryUsage = 0
-      let keyCount = 0
-      let evictionCount = 0
+      let memoryUsage = 0;
+      let keyCount = 0;
+      let evictionCount = 0;
       
       for (const line of lines) {
         if (line.startsWith('used_memory:')) {
-          memoryUsage = parseInt(line.split(':')[1])
+          memoryUsage = parseInt(line.split(':')[1]);
         } else if (line.startsWith('db0:keys=')) {
-          keyCount = parseInt(line.split('=')[1].split(',')[0])
+          keyCount = parseInt(line.split('=')[1].split(',')[0]);
         } else if (line.startsWith('evicted_keys:')) {
-          evictionCount = parseInt(line.split(':')[1])
+          evictionCount = parseInt(line.split(':')[1]);
         }
       }
       
-      const totalRequests = this.stats.hits + this.stats.misses
-      const hitRate = totalRequests > 0 ? (this.stats.hits / totalRequests) * 100 : 0
-      const missRate = totalRequests > 0 ? (this.stats.misses / totalRequests) * 100 : 0
+      const totalRequests = this.stats.hits + this.stats.misses;
+      const hitRate = totalRequests > 0 ? (this.stats.hits / totalRequests) * 100 : 0;
+      const missRate = totalRequests > 0 ? (this.stats.misses / totalRequests) * 100 : 0;
       
       return {
         hitRate,
@@ -607,62 +605,62 @@ class RedisCacheService {
         totalRequests,
         memoryUsage,
         keyCount,
-        evictionCount
-      }
+        evictionCount,
+      };
     } catch (error) {
-      console.error('[CacheService] Stats retrieval failed:', error)
+      console.error('[CacheService] Stats retrieval failed:', error);
       return {
         hitRate: 0,
         missRate: 0,
         totalRequests: 0,
         memoryUsage: 0,
         keyCount: 0,
-        evictionCount: 0
-      }
+        evictionCount: 0,
+      };
     }
   }
 
   async flushAll(): Promise<boolean> {
     if (!this.isConnected) {
-      return false
+      return false;
     }
 
     try {
-      await this.redis.flushdb()
-      this.stats = { hits: 0, misses: 0, sets: 0, deletes: 0 }
-      return true
+      await this.redis.flushdb();
+      this.stats = { hits: 0, misses: 0, sets: 0, deletes: 0 };
+      return true;
     } catch (error) {
-      console.error('[CacheService] Flush failed:', error)
-      return false
+      console.error('[CacheService] Flush failed:', error);
+      return false;
     }
   }
 
   async disconnect(): Promise<void> {
     if (this.redis) {
-      await this.redis.quit()
-      console.log('[CacheService] Disconnected from Redis')
+      await this.redis.quit();
+      console.log('[CacheService] Disconnected from Redis');
     }
   }
 
   // Health check
   async isHealthy(): Promise<boolean> {
     if (!this.isConnected) {
-      return false
+      return false;
     }
 
     try {
-      const result = await this.redis.ping()
-      return result === 'PONG'
+      const result = await this.redis.ping();
+      return result === 'PONG';
     } catch (error) {
-      console.error('[CacheService] Health check failed:', error)
-      return false
+      console.error('[CacheService] Health check failed:', error);
+      return false;
     }
   }
 }
 
 // Factory function for creating cache service
 export function createCacheService(config: CacheConfig): RedisCacheService {
-  return new RedisCacheService(config)
+  return new RedisCacheService(config);
 }
 
 // Default configuration for different environments
@@ -673,7 +671,7 @@ export const cacheConfigs = {
     db: 0,
     keyPrefix: 'cropguard:dev:',
     maxMemory: '256mb',
-    evictionPolicy: 'allkeys-lru'
+    evictionPolicy: 'allkeys-lru',
   },
   production: {
     host: process.env.REDIS_HOST || 'localhost',
@@ -685,10 +683,10 @@ export const cacheConfigs = {
     evictionPolicy: 'allkeys-lru',
     cluster: {
       enabled: process.env.REDIS_CLUSTER_ENABLED === 'true',
-      nodes: JSON.parse(process.env.REDIS_CLUSTER_NODES || '[]')
-    }
-  }
-}
+      nodes: JSON.parse(process.env.REDIS_CLUSTER_NODES || '[]'),
+    },
+  },
+};
 
-export type { CacheOptions, CacheStats, CacheConfig }
-export default RedisCacheService
+export type { CacheOptions, CacheStats, CacheConfig };
+export default RedisCacheService;

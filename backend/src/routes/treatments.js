@@ -1,4 +1,5 @@
 const express = require('express');
+const Joi = require('joi');
 const { runQuery, getQuery, allQuery } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
@@ -6,7 +7,7 @@ const {
   validationSchemas, 
   validate, 
   sanitizeInput,
-  createEndpointRateLimit 
+  createEndpointRateLimit, 
 } = require('../middleware/validation');
 
 const router = express.Router();
@@ -23,64 +24,64 @@ router.get('/plan/:analysisId',
   treatmentRateLimit,
   validate(validationSchemas.idParam, 'params'),
   asyncHandler(async (req, res) => {
-  const analysis = await getQuery(`
+    const analysis = await getQuery(`
     SELECT id, user_id, condition, title, severity
     FROM analyses WHERE id = ?
   `, [req.params.analysisId]);
 
-  if (!analysis) {
-    throw new AppError('Analysis not found', 404);
-  }
+    if (!analysis) {
+      throw new AppError('Analysis not found', 404);
+    }
 
-  // Check if user owns this analysis
-  if (analysis.user_id !== req.user.id && !['agronomist', 'admin'].includes(req.user.role)) {
-    throw new AppError('Access denied', 403);
-  }
+    // Check if user owns this analysis
+    if (analysis.user_id !== req.user.id && !['agronomist', 'admin'].includes(req.user.role)) {
+      throw new AppError('Access denied', 403);
+    }
 
-  // Check if treatment plan already exists
-  let treatmentPlan = await getQuery(`
+    // Check if treatment plan already exists
+    let treatmentPlan = await getQuery(`
     SELECT * FROM treatment_plans WHERE analysis_id = ?
   `, [req.params.analysisId]);
 
-  if (!treatmentPlan) {
+    if (!treatmentPlan) {
     // Generate new treatment plan
-    treatmentPlan = await generateTreatmentPlan(analysis);
+      treatmentPlan = await generateTreatmentPlan(analysis);
     
-    // Save to database
-    const result = await runQuery(`
+      // Save to database
+      const result = await runQuery(`
       INSERT INTO treatment_plans (
         analysis_id, user_id, condition, severity, urgency,
         primary_treatments, alternative_treatments, preventive_measures,
         monitoring_schedule, estimated_recovery_time, total_cost, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `, [
-      analysis.id,
-      analysis.user_id,
-      treatmentPlan.condition,
-      treatmentPlan.severity,
-      treatmentPlan.urgency,
-      JSON.stringify(treatmentPlan.primaryTreatments),
-      JSON.stringify(treatmentPlan.alternativeTreatments),
-      JSON.stringify(treatmentPlan.preventiveMeasures),
-      JSON.stringify(treatmentPlan.monitoringSchedule),
-      treatmentPlan.estimatedRecoveryTime,
-      treatmentPlan.totalCost
-    ]);
+        analysis.id,
+        analysis.user_id,
+        treatmentPlan.condition,
+        treatmentPlan.severity,
+        treatmentPlan.urgency,
+        JSON.stringify(treatmentPlan.primaryTreatments),
+        JSON.stringify(treatmentPlan.alternativeTreatments),
+        JSON.stringify(treatmentPlan.preventiveMeasures),
+        JSON.stringify(treatmentPlan.monitoringSchedule),
+        treatmentPlan.estimatedRecoveryTime,
+        treatmentPlan.totalCost,
+      ]);
 
-    treatmentPlan.id = result.id;
-  } else {
+      treatmentPlan.id = result.id;
+    } else {
     // Parse JSON fields
-    treatmentPlan.primaryTreatments = JSON.parse(treatmentPlan.primary_treatments);
-    treatmentPlan.alternativeTreatments = JSON.parse(treatmentPlan.alternative_treatments);
-    treatmentPlan.preventiveMeasures = JSON.parse(treatmentPlan.preventive_measures);
-    treatmentPlan.monitoringSchedule = JSON.parse(treatmentPlan.monitoring_schedule);
-  }
+      treatmentPlan.primaryTreatments = JSON.parse(treatmentPlan.primary_treatments);
+      treatmentPlan.alternativeTreatments = JSON.parse(treatmentPlan.alternative_treatments);
+      treatmentPlan.preventiveMeasures = JSON.parse(treatmentPlan.preventive_measures);
+      treatmentPlan.monitoringSchedule = JSON.parse(treatmentPlan.monitoring_schedule);
+    }
 
-  res.json({
-    success: true,
-    data: { treatmentPlan }
-  });
-}));
+    res.json({
+      success: true,
+      data: { treatmentPlan },
+    });
+  }));
 
 // Generate treatment plan based on analysis
 async function generateTreatmentPlan(analysis) {
@@ -107,7 +108,7 @@ async function generateTreatmentPlan(analysis) {
     ingredients: JSON.parse(treatment.ingredients || '[]'),
     instructions: JSON.parse(treatment.instructions || '[]'),
     warnings: JSON.parse(treatment.warnings || '[]'),
-    targetConditions: JSON.parse(treatment.target_conditions || '[]')
+    targetConditions: JSON.parse(treatment.target_conditions || '[]'),
   });
 
   const primaryTreatments = treatments.slice(0, 2).map(parseTreatment);
@@ -116,20 +117,20 @@ async function generateTreatmentPlan(analysis) {
 
   // Determine urgency based on severity
   const urgency = analysis.severity === 'high' ? 'immediate' : 
-                 analysis.severity === 'medium' ? 'within_week' : 'monitor';
+    analysis.severity === 'medium' ? 'within_week' : 'monitor';
 
   // Generate monitoring schedule
   const monitoringSchedule = {
     frequency: analysis.severity === 'high' ? 'Daily' : 
-              analysis.severity === 'medium' ? 'Every 3 days' : 'Weekly',
+      analysis.severity === 'medium' ? 'Every 3 days' : 'Weekly',
     duration: analysis.severity === 'high' ? '2-3 weeks' : 
-             analysis.severity === 'medium' ? '3-4 weeks' : '4-6 weeks',
+      analysis.severity === 'medium' ? '3-4 weeks' : '4-6 weeks',
     checkpoints: [
       'Check for new symptoms',
       'Monitor treatment effectiveness',
       'Assess plant recovery progress',
-      'Watch for treatment side effects'
-    ]
+      'Watch for treatment side effects',
+    ],
   };
 
   return {
@@ -141,8 +142,8 @@ async function generateTreatmentPlan(analysis) {
     preventiveMeasures,
     monitoringSchedule,
     estimatedRecoveryTime: analysis.severity === 'high' ? '2-4 weeks' : 
-                          analysis.severity === 'medium' ? '1-3 weeks' : '1-2 weeks',
-    totalCost: '$15-45'
+      analysis.severity === 'medium' ? '1-3 weeks' : '1-2 weeks',
+    totalCost: '$15-45',
   };
 }
 
@@ -152,22 +153,22 @@ router.get('/',
   treatmentRateLimit,
   validate(validationSchemas.treatmentQuery, 'query'),
   asyncHandler(async (req, res) => {
-  const { type, condition } = req.query;
+    const { type, condition } = req.query;
   
-  let whereConditions = ['is_active = 1'];
-  let queryParams = [];
+    const whereConditions = ['is_active = 1'];
+    const queryParams = [];
 
-  if (type) {
-    whereConditions.push('type = ?');
-    queryParams.push(type);
-  }
+    if (type) {
+      whereConditions.push('type = ?');
+      queryParams.push(type);
+    }
 
-  if (condition) {
-    whereConditions.push('target_conditions LIKE ?');
-    queryParams.push(`%${condition}%`);
-  }
+    if (condition) {
+      whereConditions.push('target_conditions LIKE ?');
+      queryParams.push(`%${condition}%`);
+    }
 
-  const treatments = await allQuery(`
+    const treatments = await allQuery(`
     SELECT id, name, type, description, effectiveness, application_method,
            frequency, safety_period, cost, difficulty, target_conditions
     FROM treatments
@@ -175,17 +176,17 @@ router.get('/',
     ORDER BY effectiveness DESC, name ASC
   `, queryParams);
 
-  // Parse JSON fields
-  const parsedTreatments = treatments.map(treatment => ({
-    ...treatment,
-    targetConditions: JSON.parse(treatment.target_conditions || '[]')
-  }));
+    // Parse JSON fields
+    const parsedTreatments = treatments.map(treatment => ({
+      ...treatment,
+      targetConditions: JSON.parse(treatment.target_conditions || '[]'),
+    }));
 
-  res.json({
-    success: true,
-    data: { treatments: parsedTreatments }
-  });
-}));
+    res.json({
+      success: true,
+      data: { treatments: parsedTreatments },
+    });
+  }));
 
 // Get specific treatment details
 router.get('/:id', 
@@ -193,28 +194,28 @@ router.get('/:id',
   treatmentRateLimit,
   validate(validationSchemas.idParam, 'params'),
   asyncHandler(async (req, res) => {
-  const treatment = await getQuery(`
+    const treatment = await getQuery(`
     SELECT * FROM treatments WHERE id = ? AND is_active = 1
   `, [req.params.id]);
 
-  if (!treatment) {
-    throw new AppError('Treatment not found', 404);
-  }
+    if (!treatment) {
+      throw new AppError('Treatment not found', 404);
+    }
 
-  // Parse JSON fields
-  const parsedTreatment = {
-    ...treatment,
-    ingredients: JSON.parse(treatment.ingredients || '[]'),
-    instructions: JSON.parse(treatment.instructions || '[]'),
-    warnings: JSON.parse(treatment.warnings || '[]'),
-    targetConditions: JSON.parse(treatment.target_conditions || '[]')
-  };
+    // Parse JSON fields
+    const parsedTreatment = {
+      ...treatment,
+      ingredients: JSON.parse(treatment.ingredients || '[]'),
+      instructions: JSON.parse(treatment.instructions || '[]'),
+      warnings: JSON.parse(treatment.warnings || '[]'),
+      targetConditions: JSON.parse(treatment.target_conditions || '[]'),
+    };
 
-  res.json({
-    success: true,
-    data: { treatment: parsedTreatment }
-  });
-}));
+    res.json({
+      success: true,
+      data: { treatment: parsedTreatment },
+    });
+  }));
 
 // Save treatment to user's list
 router.post('/:id/save', 
@@ -223,34 +224,34 @@ router.post('/:id/save',
   validate(validationSchemas.idParam, 'params'),
   validate(validationSchemas.saveTreatment),
   asyncHandler(async (req, res) => {
-  const { notes } = req.body;
+    const { notes } = req.body;
 
-  // Check if treatment exists
-  const treatment = await getQuery('SELECT id FROM treatments WHERE id = ? AND is_active = 1', [req.params.id]);
-  if (!treatment) {
-    throw new AppError('Treatment not found', 404);
-  }
+    // Check if treatment exists
+    const treatment = await getQuery('SELECT id FROM treatments WHERE id = ? AND is_active = 1', [req.params.id]);
+    if (!treatment) {
+      throw new AppError('Treatment not found', 404);
+    }
 
-  // Check if already saved
-  const existing = await getQuery(`
+    // Check if already saved
+    const existing = await getQuery(`
     SELECT id FROM user_treatments WHERE user_id = ? AND treatment_id = ?
   `, [req.user.id, req.params.id]);
 
-  if (existing) {
-    throw new AppError('Treatment already saved', 409);
-  }
+    if (existing) {
+      throw new AppError('Treatment already saved', 409);
+    }
 
-  // Save treatment
-  await runQuery(`
+    // Save treatment
+    await runQuery(`
     INSERT INTO user_treatments (user_id, treatment_id, notes, saved_at)
     VALUES (?, ?, ?, CURRENT_TIMESTAMP)
   `, [req.user.id, req.params.id, notes || null]);
 
-  res.status(201).json({
-    success: true,
-    message: 'Treatment saved successfully'
-  });
-}));
+    res.status(201).json({
+      success: true,
+      message: 'Treatment saved successfully',
+    });
+  }));
 
 // Get user's saved treatments
 router.get('/saved/list', authenticateToken, asyncHandler(async (req, res) => {
@@ -265,7 +266,7 @@ router.get('/saved/list', authenticateToken, asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: { treatments: savedTreatments }
+    data: { treatments: savedTreatments },
   });
 }));
 
@@ -282,7 +283,7 @@ router.delete('/saved/:id', authenticateToken, asyncHandler(async (req, res) => 
 
   res.json({
     success: true,
-    message: 'Treatment removed from saved list'
+    message: 'Treatment removed from saved list',
   });
 }));
 
@@ -302,7 +303,7 @@ router.post('/admin/create', authenticateToken, requireRole(['admin']), asyncHan
     difficulty: Joi.string().valid('easy', 'moderate', 'advanced').required(),
     seasonalNotes: Joi.string().optional(),
     warnings: Joi.array().items(Joi.string()).optional(),
-    targetConditions: Joi.array().items(Joi.string()).required()
+    targetConditions: Joi.array().items(Joi.string()).required(),
   });
 
   const { error, value } = treatmentSchema.validate(req.body);
@@ -322,13 +323,13 @@ router.post('/admin/create', authenticateToken, requireRole(['admin']), asyncHan
     value.effectiveness, value.applicationMethod, value.frequency,
     value.safetyPeriod, value.cost, value.difficulty,
     value.seasonalNotes || null, JSON.stringify(value.warnings || []),
-    JSON.stringify(value.targetConditions)
+    JSON.stringify(value.targetConditions),
   ]);
 
   res.status(201).json({
     success: true,
     message: 'Treatment created successfully',
-    data: { treatmentId: result.id }
+    data: { treatmentId: result.id },
   });
 }));
 

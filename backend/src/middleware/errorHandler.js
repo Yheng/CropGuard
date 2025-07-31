@@ -25,15 +25,15 @@ async function logError(error, req) {
       error: {
         message: error.message,
         stack: error.stack,
-        statusCode: error.statusCode
+        statusCode: error.statusCode,
       },
       request: {
         method: req?.method,
         url: req?.originalUrl,
         ip: req?.ip,
         userAgent: req?.get('User-Agent'),
-        userId: req?.user?.id
-      }
+        userId: req?.user?.id,
+      },
     };
 
     await fs.appendFile(logFile, JSON.stringify(logEntry) + '\n');
@@ -43,7 +43,7 @@ async function logError(error, req) {
 }
 
 // Main error handler middleware
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, _next) {
   // Default error properties
   let error = { ...err };
   error.message = err.message;
@@ -103,7 +103,7 @@ function errorHandler(err, req, res, next) {
     success: false,
     error: isDevelopment ? error.name || 'Error' : 'Internal Server Error',
     message: message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   // Include stack trace in development
@@ -143,5 +143,5 @@ module.exports = {
   errorHandler,
   notFound,
   asyncHandler,
-  logError
+  logError,
 };

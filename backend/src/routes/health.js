@@ -1,6 +1,6 @@
 const express = require('express');
 const { getQuery } = require('../config/database');
-const { asyncHandler, AppError } = require('../middleware/errorHandler');
+const { asyncHandler } = require('../middleware/errorHandler');
 const { healthCheck: loggerHealthCheck } = require('../middleware/logger');
 const aiService = require('../services/ai');
 const fs = require('fs').promises;
@@ -22,8 +22,8 @@ router.get('/', asyncHandler(async (req, res) => {
       filesystem: await checkFilesystem(),
       memory: checkMemory(),
       logging: loggerHealthCheck(),
-      aiService: await checkAIService()
-    }
+      aiService: await checkAIService(),
+    },
   };
 
   // Determine overall status
@@ -48,28 +48,28 @@ router.get('/metrics', asyncHandler(async (req, res) => {
       nodeVersion: process.version,
       uptime: {
         process: process.uptime(),
-        system: os.uptime()
+        system: os.uptime(),
       },
       cpu: {
         model: os.cpus()[0]?.model || 'unknown',
         cores: os.cpus().length,
-        usage: process.cpuUsage()
+        usage: process.cpuUsage(),
       },
       memory: {
         total: os.totalmem(),
         free: os.freemem(),
         used: os.totalmem() - os.freemem(),
-        process: process.memoryUsage()
+        process: process.memoryUsage(),
       },
-      load: os.loadavg()
+      load: os.loadavg(),
     },
     application: {
       environment: process.env.NODE_ENV || 'development',
       pid: process.pid,
-      version: '1.0.0'
+      version: '1.0.0',
     },
     database: await getDatabaseMetrics(),
-    api: await getApiMetrics()
+    api: await getApiMetrics(),
   };
 
   res.json(metrics);
@@ -79,7 +79,7 @@ router.get('/metrics', asyncHandler(async (req, res) => {
 router.get('/ready', asyncHandler(async (req, res) => {
   const checks = [
     checkDatabase(),
-    checkFilesystem()
+    checkFilesystem(),
   ];
 
   const results = await Promise.all(checks);
@@ -91,7 +91,7 @@ router.get('/ready', asyncHandler(async (req, res) => {
     res.status(503).json({ 
       status: 'not ready', 
       timestamp: new Date().toISOString(),
-      checks: results
+      checks: results,
     });
   }
 }));
@@ -111,13 +111,13 @@ async function checkDatabase() {
     return {
       status: 'healthy',
       responseTime: duration,
-      message: 'Database connection successful'
+      message: 'Database connection successful',
     };
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error.message,
-      message: 'Database connection failed'
+      message: 'Database connection failed',
     };
   }
 }
@@ -133,19 +133,19 @@ async function checkFilesystem() {
     await fs.access(logsDir, fs.constants.W_OK);
     
     // Check disk space
-    const stats = await fs.stat(uploadsDir);
+    const _stats = await fs.stat(uploadsDir);
     
     return {
       status: 'healthy',
       message: 'Filesystem accessible',
       uploadsDir,
-      logsDir
+      logsDir,
     };
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error.message,
-      message: 'Filesystem check failed'
+      message: 'Filesystem check failed',
     };
   }
 }
@@ -171,15 +171,15 @@ function checkMemory() {
       heapUsed: usage.heapUsed,
       heapTotal: usage.heapTotal,
       external: usage.external,
-      rss: usage.rss
+      rss: usage.rss,
     },
     system: {
       total: totalMemory,
       free: freeMemory,
       used: usedMemory,
-      usagePercent: Math.round(systemMemoryUsagePercent)
+      usagePercent: Math.round(systemMemoryUsagePercent),
     },
-    processUsagePercent: Math.round(memoryUsagePercent)
+    processUsagePercent: Math.round(memoryUsagePercent),
   };
 }
 
@@ -195,13 +195,13 @@ async function getDatabaseMetrics() {
       statistics: {
         users: userCount.count,
         analyses: analysisCount.count,
-        treatments: treatmentCount.count
-      }
+        treatments: treatmentCount.count,
+      },
     };
   } catch (error) {
     return {
       status: 'error',
-      error: error.message
+      error: error.message,
     };
   }
 }
@@ -219,14 +219,14 @@ async function checkAIService() {
       message: healthStatus.status === 'healthy' ? 'AI service operational' : 'AI service degraded',
       metrics: {
         totalRequests: healthStatus.metrics?.totalRequests || 0,
-        successRate: healthStatus.metrics?.successRate || 'N/A'
-      }
+        successRate: healthStatus.metrics?.successRate || 'N/A',
+      },
     };
   } catch (error) {
     return {
       status: 'unhealthy',
       error: error.message,
-      message: 'AI service unavailable'
+      message: 'AI service unavailable',
     };
   }
 }
@@ -240,15 +240,15 @@ async function getApiMetrics() {
       analysis: '/api/analysis',
       treatments: '/api/treatments',
       analytics: '/api/analytics',
-      users: '/api/users'
+      users: '/api/users',
     },
     features: {
       fileUpload: 'enabled',
       imageProcessing: 'enabled',
       validation: 'enabled',
       rateLimit: 'enabled',
-      aiIntegration: 'enabled'
-    }
+      aiIntegration: 'enabled',
+    },
   };
 }
 

@@ -45,7 +45,7 @@ const rateLimiters = {
     points: 3, // Max 3 consecutive failures
     duration: 300, // Reset counter after 5 minutes
     blockDuration: 900, // Block for 15 minutes after limit
-  })
+  }),
 };
 
 // IP-based rate limiting middleware
@@ -70,7 +70,7 @@ const createRateLimitMiddleware = (limiterType, options = {}) => {
       securityLogger.rateLimitExceeded({
         limiterType,
         key: options.useUserId && req.user?.id ? req.user.id : req.ip,
-        retryAfter
+        retryAfter,
       }, req);
 
       res.status(429).json({
@@ -78,7 +78,7 @@ const createRateLimitMiddleware = (limiterType, options = {}) => {
         error: 'Rate Limit Exceeded',
         message: `Too many requests. Try again in ${retryAfter} seconds.`,
         retryAfter,
-        type: limiterType
+        type: limiterType,
       });
     }
   };
@@ -96,7 +96,7 @@ const suspiciousActivityDetector = (req, res, next) => {
     // Command injection patterns
     /[;&|`]/g,
     // Base64 encoded payloads
-    /[A-Za-z0-9+\/]{50,}={0,2}/g
+    /[A-Za-z0-9+/]{50,}={0,2}/g,
   ];
 
   const checkString = (str) => {
@@ -128,13 +128,13 @@ const suspiciousActivityDetector = (req, res, next) => {
       body: req.body,
       query: req.query,
       userAgent: req.get('User-Agent'),
-      referer: req.get('Referer')
+      referer: req.get('Referer'),
     }, req);
 
     return res.status(400).json({
       success: false,
       error: 'Invalid Request',
-      message: 'Request contains potentially malicious content'
+      message: 'Request contains potentially malicious content',
     });
   }
 
@@ -153,13 +153,13 @@ const requestSizeValidator = (options = {}) => {
     if (bodySize > maxBodySize) {
       securityLogger.suspiciousActivity('oversized_request_body', {
         size: bodySize,
-        limit: maxBodySize
+        limit: maxBodySize,
       }, req);
 
       return res.status(413).json({
         success: false,
         error: 'Request Too Large',
-        message: 'Request body exceeds maximum allowed size'
+        message: 'Request body exceeds maximum allowed size',
       });
     }
 
@@ -168,13 +168,13 @@ const requestSizeValidator = (options = {}) => {
     if (queryParamCount > maxQueryParams) {
       securityLogger.suspiciousActivity('excessive_query_params', {
         count: queryParamCount,
-        limit: maxQueryParams
+        limit: maxQueryParams,
       }, req);
 
       return res.status(400).json({
         success: false,
         error: 'Bad Request',
-        message: 'Too many query parameters'
+        message: 'Too many query parameters',
       });
     }
 
@@ -183,13 +183,13 @@ const requestSizeValidator = (options = {}) => {
     if (headerCount > maxHeaders) {
       securityLogger.suspiciousActivity('excessive_headers', {
         count: headerCount,
-        limit: maxHeaders
+        limit: maxHeaders,
       }, req);
 
       return res.status(400).json({
         success: false,
         error: 'Bad Request',
-        message: 'Too many headers'
+        message: 'Too many headers',
       });
     }
 
@@ -207,7 +207,7 @@ const advancedSanitization = (req, res, next) => {
         .replace(/javascript:/gi, '')
         .replace(/on\w+\s*=/gi, '')
         // Remove SQL injection attempts
-        .replace(/('|(\\'))+/g, '')
+        .replace(/('|')+/g, '')
         .replace(/(;|--|\b(DROP|DELETE|INSERT|UPDATE|SELECT)\b)/gi, '')
         // Remove path traversal
         .replace(/\.\.\//g, '')
@@ -249,13 +249,13 @@ const advancedSanitization = (req, res, next) => {
 const securityHeaders = (req, res, next) => {
   // Content Security Policy
   res.setHeader('Content-Security-Policy', 
-    "default-src 'self'; " +
-    "script-src 'self'; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https:; " +
-    "font-src 'self'; " +
-    "connect-src 'self'; " +
-    "frame-ancestors 'none';"
+    'default-src \'self\'; ' +
+    'script-src \'self\'; ' +
+    'style-src \'self\' \'unsafe-inline\'; ' +
+    'img-src \'self\' data: https:; ' +
+    'font-src \'self\'; ' +
+    'connect-src \'self\'; ' +
+    'frame-ancestors \'none\';',
   );
 
   // Additional security headers
@@ -287,14 +287,14 @@ const bruteForceProtection = async (req, res, next) => {
     
     securityLogger.suspiciousActivity('brute_force_detected', {
       consecutiveFailures: rejRes.hits,
-      retryAfter
+      retryAfter,
     }, req);
 
     res.status(429).json({
       success: false,
       error: 'Brute Force Protection',
       message: 'Too many failed attempts. Account temporarily locked.',
-      retryAfter
+      retryAfter,
     });
   }
 };
@@ -320,13 +320,13 @@ const fileUploadSecurity = (req, res, next) => {
       securityLogger.suspiciousActivity('dangerous_file_upload', {
         filename: file.originalname,
         extension: fileExt,
-        mimetype: file.mimetype
+        mimetype: file.mimetype,
       }, req);
 
       return res.status(400).json({
         success: false,
         error: 'File Not Allowed',
-        message: 'File type not permitted for security reasons'
+        message: 'File type not permitted for security reasons',
       });
     }
 
@@ -335,7 +335,7 @@ const fileUploadSecurity = (req, res, next) => {
       '.jpg': ['image/jpeg'],
       '.jpeg': ['image/jpeg'],
       '.png': ['image/png'],
-      '.webp': ['image/webp']
+      '.webp': ['image/webp'],
     };
 
     if (allowedMimeTypes[fileExt] && !allowedMimeTypes[fileExt].includes(file.mimetype)) {
@@ -343,13 +343,13 @@ const fileUploadSecurity = (req, res, next) => {
         filename: file.originalname,
         extension: fileExt,
         mimetype: file.mimetype,
-        expectedMimeTypes: allowedMimeTypes[fileExt]
+        expectedMimeTypes: allowedMimeTypes[fileExt],
       }, req);
 
       return res.status(400).json({
         success: false,
         error: 'File Validation Failed',
-        message: 'File content does not match extension'
+        message: 'File content does not match extension',
       });
     }
   }
@@ -367,5 +367,5 @@ module.exports = {
   requestIdMiddleware,
   bruteForceProtection,
   resetBruteForceCounter,
-  fileUploadSecurity
+  fileUploadSecurity,
 };

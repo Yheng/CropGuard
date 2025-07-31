@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs')
-const { v4: uuidv4 } = require('uuid')
+const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 
 // Demo user database (in production this would be a real database)
-let users = [
+const users = [
   {
     id: '1',
     name: 'Demo Farmer',
@@ -16,7 +16,7 @@ let users = [
     phone: '+1-555-0123',
     totalAnalyses: 24,
     accuracyRate: 89.5,
-    subscriptionPlan: 'Basic'
+    subscriptionPlan: 'Basic',
   },
   {
     id: '2',
@@ -32,7 +32,7 @@ let users = [
     totalAnalyses: 156,
     totalReviews: 89,
     accuracyRate: 94.2,
-    subscriptionPlan: 'Professional'
+    subscriptionPlan: 'Professional',
   },
   {
     id: '3',
@@ -47,7 +47,7 @@ let users = [
     phone: '+1-555-0789',
     totalAnalyses: 0,
     accuracyRate: 100,
-    subscriptionPlan: 'Enterprise'
+    subscriptionPlan: 'Enterprise',
   },
   {
     id: '4',
@@ -62,7 +62,7 @@ let users = [
     phone: '+1-555-0234',
     totalAnalyses: 18,
     accuracyRate: 87.3,
-    subscriptionPlan: 'Basic'
+    subscriptionPlan: 'Basic',
   },
   {
     id: '5',
@@ -77,9 +77,9 @@ let users = [
     phone: '+1-555-0567',
     totalAnalyses: 7,
     accuracyRate: 82.1,
-    subscriptionPlan: 'Basic'
-  }
-]
+    subscriptionPlan: 'Basic',
+  },
+];
 
 // Audit log storage
 let auditLogs = [
@@ -92,7 +92,7 @@ let auditLogs = [
     details: 'Admin user logged in to system',
     ipAddress: '192.168.1.100',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    severity: 'low'
+    severity: 'low',
   },
   {
     id: '2',
@@ -103,7 +103,7 @@ let auditLogs = [
     details: 'Reviewed and approved 3 plant disease analyses',
     ipAddress: '192.168.1.101',
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15',
-    severity: 'low'
+    severity: 'low',
   },
   {
     id: '3',
@@ -114,7 +114,7 @@ let auditLogs = [
     details: 'Submitted new plant image for disease analysis',
     ipAddress: '192.168.1.102',
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-    severity: 'low'
+    severity: 'low',
   },
   {
     id: '4',
@@ -125,7 +125,7 @@ let auditLogs = [
     details: 'Changed user john.smith@agri.com status to inactive',
     ipAddress: '192.168.1.100',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    severity: 'medium'
+    severity: 'medium',
   },
   {
     id: '5',
@@ -136,57 +136,57 @@ let auditLogs = [
     details: 'Updated OpenAI API settings and model parameters',
     ipAddress: '192.168.1.100',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    severity: 'high'
-  }
-]
+    severity: 'high',
+  },
+];
 
 class UserService {
   // Get all users with optional filtering
   static async getAllUsers(filters = {}) {
-    let filteredUsers = [...users]
+    let filteredUsers = [...users];
     
     if (filters.role) {
-      filteredUsers = filteredUsers.filter(user => user.role === filters.role)
+      filteredUsers = filteredUsers.filter(user => user.role === filters.role);
     }
     
     if (filters.status) {
-      filteredUsers = filteredUsers.filter(user => user.status === filters.status)
+      filteredUsers = filteredUsers.filter(user => user.status === filters.status);
     }
     
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
+      const searchLower = filters.search.toLowerCase();
       filteredUsers = filteredUsers.filter(user => 
         user.name.toLowerCase().includes(searchLower) ||
-        user.email.toLowerCase().includes(searchLower)
-      )
+        user.email.toLowerCase().includes(searchLower),
+      );
     }
     
     return filteredUsers.map(user => ({
       ...user,
-      password_hash: undefined // Don't return password hash
-    }))
+      password_hash: undefined, // Don't return password hash
+    }));
   }
   
   // Get user by ID
   static async getUserById(id) {
-    const user = users.find(u => u.id === id)
-    if (!user) return null
+    const user = users.find(u => u.id === id);
+    if (!user) {return null;}
     
-    const { password_hash, ...userWithoutPassword } = user
-    return userWithoutPassword
+    const { password_hash: _password_hash, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
   
   // Create new user
   static async createUser(userData) {
-    const { name, email, password, role = 'farmer', status = 'active', location, phone } = userData
+    const { name, email, password, role = 'farmer', status = 'active', location, phone } = userData;
     
     // Check if email already exists
     if (users.find(u => u.email === email)) {
-      throw new Error('Email already exists')
+      throw new Error('Email already exists');
     }
     
     // Hash password
-    const password_hash = await bcrypt.hash(password || 'defaultPassword123', 10)
+    const password_hash = await bcrypt.hash(password || 'defaultPassword123', 10);
     
     const newUser = {
       id: uuidv4(),
@@ -202,141 +202,141 @@ class UserService {
       totalAnalyses: 0,
       totalReviews: role === 'agronomist' ? 0 : undefined,
       accuracyRate: 0,
-      subscriptionPlan: role === 'admin' ? 'Enterprise' : 'Basic'
-    }
+      subscriptionPlan: role === 'admin' ? 'Enterprise' : 'Basic',
+    };
     
-    users.push(newUser)
+    users.push(newUser);
     
     // Log the creation
-    await this.logAuditEvent('admin', 'User Creation', `Created new user: ${email}`, 'medium')
+    await this.logAuditEvent('admin', 'User Creation', `Created new user: ${email}`, 'medium');
     
-    const { password_hash: _, ...userWithoutPassword } = newUser
-    return userWithoutPassword
+    const { password_hash: _password_hash, ...userWithoutPassword } = newUser;
+    return userWithoutPassword;
   }
   
   // Update user
   static async updateUser(id, updates) {
-    const userIndex = users.findIndex(u => u.id === id)
+    const userIndex = users.findIndex(u => u.id === id);
     if (userIndex === -1) {
-      throw new Error('User not found')
+      throw new Error('User not found');
     }
     
-    const user = users[userIndex]
-    const oldData = { ...user }
+    const user = users[userIndex];
+    const _oldData = { ...user };
     
     // Update allowed fields
-    const allowedUpdates = ['name', 'email', 'role', 'status', 'location', 'phone']
+    const allowedUpdates = ['name', 'email', 'role', 'status', 'location', 'phone'];
     allowedUpdates.forEach(field => {
       if (updates[field] !== undefined) {
-        user[field] = updates[field]
+        user[field] = updates[field];
       }
-    })
+    });
     
     // Hash new password if provided
     if (updates.password) {
-      user.password_hash = await bcrypt.hash(updates.password, 10)
+      user.password_hash = await bcrypt.hash(updates.password, 10);
     }
     
-    users[userIndex] = user
+    users[userIndex] = user;
     
     // Log the update
-    await this.logAuditEvent('admin', 'User Update', `Updated user: ${user.email}`, 'medium')
+    await this.logAuditEvent('admin', 'User Update', `Updated user: ${user.email}`, 'medium');
     
-    const { password_hash, ...userWithoutPassword } = user
-    return userWithoutPassword
+    const { password_hash: _password_hash, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
   
   // Delete user
   static async deleteUser(id) {
-    const userIndex = users.findIndex(u => u.id === id)
+    const userIndex = users.findIndex(u => u.id === id);
     if (userIndex === -1) {
-      throw new Error('User not found')
+      throw new Error('User not found');
     }
     
-    const user = users[userIndex]
-    users.splice(userIndex, 1)
+    const user = users[userIndex];
+    users.splice(userIndex, 1);
     
     // Log the deletion
-    await this.logAuditEvent('admin', 'User Deletion', `Deleted user: ${user.email}`, 'high')
+    await this.logAuditEvent('admin', 'User Deletion', `Deleted user: ${user.email}`, 'high');
     
-    return { message: 'User deleted successfully' }
+    return { message: 'User deleted successfully' };
   }
   
   // Activate user
   static async activateUser(id) {
-    return this.updateUserStatus(id, 'active')
+    return this.updateUserStatus(id, 'active');
   }
   
   // Suspend user
   static async suspendUser(id) {
-    return this.updateUserStatus(id, 'suspended')
+    return this.updateUserStatus(id, 'suspended');
   }
   
   // Deactivate user
   static async deactivateUser(id) {
-    return this.updateUserStatus(id, 'inactive')
+    return this.updateUserStatus(id, 'inactive');
   }
   
   // Update user status
   static async updateUserStatus(id, status) {
-    const user = users.find(u => u.id === id)
+    const user = users.find(u => u.id === id);
     if (!user) {
-      throw new Error('User not found')
+      throw new Error('User not found');
     }
     
-    const oldStatus = user.status
-    user.status = status
+    const oldStatus = user.status;
+    user.status = status;
     
     // Log the status change
     await this.logAuditEvent('admin', 'User Status Change', 
-      `Changed user ${user.email} status from ${oldStatus} to ${status}`, 'medium')
+      `Changed user ${user.email} status from ${oldStatus} to ${status}`, 'medium');
     
-    const { password_hash, ...userWithoutPassword } = user
-    return userWithoutPassword
+    const { password_hash: _password_hash, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
   
   // Bulk operations
   static async bulkUpdateUsers(userIds, updates) {
-    const results = []
+    const results = [];
     
     for (const id of userIds) {
       try {
-        const user = await this.updateUser(id, updates)
-        results.push({ id, success: true, user })
+        const user = await this.updateUser(id, updates);
+        results.push({ id, success: true, user });
       } catch (error) {
-        results.push({ id, success: false, error: error.message })
+        results.push({ id, success: false, error: error.message });
       }
     }
     
-    return results
+    return results;
   }
   
   static async bulkDeleteUsers(userIds) {
-    const results = []
+    const results = [];
     
     for (const id of userIds) {
       try {
-        await this.deleteUser(id)
-        results.push({ id, success: true })
+        await this.deleteUser(id);
+        results.push({ id, success: true });
       } catch (error) {
-        results.push({ id, success: false, error: error.message })
+        results.push({ id, success: false, error: error.message });
       }
     }
     
-    return results
+    return results;
   }
   
   // User statistics
   static async getUserStats() {
-    const totalUsers = users.length
-    const activeUsers = users.filter(u => u.status === 'active').length
+    const totalUsers = users.length;
+    const activeUsers = users.filter(u => u.status === 'active').length;
     const usersByRole = users.reduce((acc, user) => {
-      acc[user.role] = (acc[user.role] || 0) + 1
-      return acc
-    }, {})
+      acc[user.role] = (acc[user.role] || 0) + 1;
+      return acc;
+    }, {});
     
-    const totalAnalyses = users.reduce((sum, user) => sum + (user.totalAnalyses || 0), 0)
-    const avgAccuracy = users.reduce((sum, user) => sum + (user.accuracyRate || 0), 0) / users.length
+    const totalAnalyses = users.reduce((sum, user) => sum + (user.totalAnalyses || 0), 0);
+    const avgAccuracy = users.reduce((sum, user) => sum + (user.accuracyRate || 0), 0) / users.length;
     
     return {
       totalUsers,
@@ -347,9 +347,9 @@ class UserService {
       totalAnalyses,
       averageAccuracy: Math.round(avgAccuracy * 10) / 10,
       recentRegistrations: users.filter(u => 
-        new Date(u.registrationDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      ).length
-    }
+        new Date(u.registrationDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      ).length,
+    };
   }
   
   // Audit logging
@@ -359,82 +359,82 @@ class UserService {
       timestamp: new Date().toISOString(),
       userId: typeof userId === 'string' ? userId : userId.toString(),
       userName: userId === 'admin' ? 'System Administrator' : 
-                users.find(u => u.id === userId)?.name || 'Unknown User',
+        users.find(u => u.id === userId)?.name || 'Unknown User',
       action,
       details,
       ipAddress: additionalData.ip || '127.0.0.1',
       userAgent: additionalData.userAgent || 'CropGuard Admin Dashboard',
-      severity
-    }
+      severity,
+    };
     
-    auditLogs.unshift(newLog) // Add to beginning for newest first
+    auditLogs.unshift(newLog); // Add to beginning for newest first
     
     // Keep only last 1000 logs
     if (auditLogs.length > 1000) {
-      auditLogs = auditLogs.slice(0, 1000)
+      auditLogs = auditLogs.slice(0, 1000);
     }
     
-    return newLog
+    return newLog;
   }
   
   // Get audit logs
   static async getAuditLogs(limit = 50, offset = 0) {
-    return auditLogs.slice(offset, offset + limit)
+    return auditLogs.slice(offset, offset + limit);
   }
   
   // Export data
   static async exportUsers(format = 'json') {
     const exportData = users.map(user => {
-      const { password_hash, ...userData } = user
-      return userData
-    })
+      const { password_hash: _password_hash, ...userData } = user;
+      return userData;
+    });
     
     if (format === 'csv') {
-      const headers = Object.keys(exportData[0] || {})
+      const headers = Object.keys(exportData[0] || {});
       const csvContent = [
         headers.join(','),
         ...exportData.map(user => 
-          headers.map(header => `"${user[header] || ''}"`).join(',')
-        )
-      ].join('\n')
+          headers.map(header => `"${user[header] || ''}"`).join(','),
+        ),
+      ].join('\n');
       
       return {
         data: csvContent,
         filename: `cropguard_users_${new Date().toISOString().split('T')[0]}.csv`,
-        mimeType: 'text/csv'
-      }
+        mimeType: 'text/csv',
+      };
     }
     
     return {
       data: JSON.stringify(exportData, null, 2),
       filename: `cropguard_users_${new Date().toISOString().split('T')[0]}.json`,
-      mimeType: 'application/json'
-    }
+      mimeType: 'application/json',
+    };
   }
   
   static async exportAuditLogs(format = 'json') {
     if (format === 'csv') {
-      const headers = Object.keys(auditLogs[0] || {})
+      const headers = Object.keys(auditLogs[0] || {});
       const csvContent = [
         headers.join(','),
         ...auditLogs.map(log => 
-          headers.map(header => `"${log[header] || ''}"`).join(',')
-        )
-      ].join('\n')
+          headers.map(header => `"${log[header] || ''}"`).join(','),
+        ),
+      ].join('\n');
       
       return {
         data: csvContent,
         filename: `cropguard_audit_logs_${new Date().toISOString().split('T')[0]}.csv`,
-        mimeType: 'text/csv'
-      }
+        mimeType: 'text/csv',
+      };
     }
     
     return {
       data: JSON.stringify(auditLogs, null, 2),
       filename: `cropguard_audit_logs_${new Date().toISOString().split('T')[0]}.json`,
-      mimeType: 'application/json'
-    }
+      mimeType: 'application/json',
+    };
   }
 }
 
-module.exports = UserService
+module.exports = UserService;
